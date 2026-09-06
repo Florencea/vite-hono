@@ -1,6 +1,5 @@
 import "dotenv/config";
 
-import chalk from "chalk";
 import { readFileSync } from "node:fs";
 import { join, posix } from "node:path";
 import { cwd, exit } from "node:process";
@@ -26,7 +25,7 @@ const getEnv = ({
 }) => {
   const ENV = process.env[env] ?? defaultValue;
   if (ENV === undefined) {
-    const errorMsg = chalk.red(`No \`${field}\` field found in \`${from}\`, exit`);
+    const errorMsg = `No \`${field}\` field found in \`${from}\`, exit`;
     console.error(errorMsg);
     exit(1);
   } else {
@@ -51,7 +50,7 @@ const getEnvFlag = ({
   } else if (ENV === "0" || ENV === "false") {
     return false;
   } else {
-    const errorMsg = chalk.red(`Flag \`${field}\` must be \`1\` or \`0\` in \`${from}\`, exit`);
+    const errorMsg = `Flag \`${field}\` must be \`1\` or \`0\` in \`${from}\`, exit`;
     console.error(errorMsg);
     exit(1);
   }
@@ -249,14 +248,12 @@ export const SWAGGER_UI_OPTIONS: SwaggerUiCustomOptions = {
   customfavIcon: "favicon.ico",
 };
 
-const timestamp = chalk.gray(new Date().toLocaleTimeString("en-US"));
-const plugin = chalk.bold.cyan("[hono]");
-const message = chalk.green("Server Ready on");
-const serverUrl = chalk.bold(
-  IS_PRODUCTION ? `port: ${PORT}, base: ${BASE}` : `http://localhost:${PORT}${BASE}`,
-);
+const timestamp = new Date().toLocaleTimeString("en-US");
+const serverUrl = IS_PRODUCTION
+  ? `port: ${PORT}, base: ${BASE}`
+  : `http://localhost:${PORT}${BASE}`;
 
 /**
  * Server ready message
  */
-export const SERVER_READY_MESSAGE = `${timestamp} ${plugin} ${message} ${serverUrl}`;
+export const SERVER_READY_MESSAGE = `${timestamp} [hono] Server Ready on ${serverUrl}`;
