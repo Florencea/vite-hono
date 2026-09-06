@@ -8,10 +8,10 @@ import {
   DOC_ROUTE,
   ENABLE_OPENAPI,
   IS_PRODUCTION,
-} from "./config.js";
-import { i18nMiddleware } from "./i18n.js";
-import { openapiConfig, scalarReference } from "./openapi.js";
-import { apiRouter } from "./router.js";
+} from "./config.ts";
+import { i18nMiddleware } from "./i18n.ts";
+import { openapiConfig, scalarReference } from "./openapi.ts";
+import { apiRouter } from "./router.ts";
 
 /**
  * Creates the core Hono application instance containing:

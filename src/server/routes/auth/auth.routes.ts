@@ -1,6 +1,6 @@
 import { createRoute } from "@hono/zod-openapi";
-import { EmptyResSchema, ErrorResSchema } from "../../common/schemas.js";
-import { LoginReqSchema, UserInfoResSchema } from "./auth.schema.js";
+import { EmptyResSchema, ErrorResSchema } from "../../common/schemas.ts";
+import { LoginReqSchema, UserInfoResSchema } from "./auth.schema.ts";
 
 export const loginRoute = createRoute({
   method: "post",

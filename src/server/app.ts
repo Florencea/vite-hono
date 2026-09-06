@@ -14,9 +14,9 @@ import {
   OUTDIR,
   PORT,
   SERVER_READY_MESSAGE,
-} from "./config.js";
-import { createCoreApp } from "./core.js";
-import { apiRouter } from "./router.js";
+} from "./config.ts";
+import { createCoreApp } from "./core.ts";
+import { apiRouter } from "./router.ts";
 
 const app = createCoreApp();
 

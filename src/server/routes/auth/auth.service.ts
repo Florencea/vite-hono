@@ -1,5 +1,5 @@
-import { verifyPassword } from "../../auth.js";
-import type { Database } from "../../database/index.js";
+import { verifyPassword } from "../../auth.ts";
+import type { Database } from "../../database/index.ts";
 
 export type AuthenticateResult =
   | { success: true; user: { id: number; account: string } }

@@ -1,7 +1,7 @@
 import type { Context, MiddlewareHandler } from "hono";
 import { languageDetector } from "hono/language";
-import enUS from "../locales/en-US.js";
-import zhTW from "../locales/zh-TW.js";
+import enUS from "../locales/en-US.ts";
+import zhTW from "../locales/zh-TW.ts";
 
 export const SUPPORTED_LANGUAGES = ["en-US", "zh-TW"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];

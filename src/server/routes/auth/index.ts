@@ -1,12 +1,12 @@
-import { createRouter } from "../../common/factory.js";
-import { getUserInfoHandler, loginHandler, logoutHandler } from "./auth.handlers.js";
-import { getUserInfoRoute, loginRoute, logoutRoute } from "./auth.routes.js";
+import { createRouter } from "../../common/factory.ts";
+import { getUserInfoHandler, loginHandler, logoutHandler } from "./auth.handlers.ts";
+import { getUserInfoRoute, loginRoute, logoutRoute } from "./auth.routes.ts";
 
 export const authRouter = createRouter()
   .openapi(loginRoute, loginHandler)
   .openapi(logoutRoute, logoutHandler)
   .openapi(getUserInfoRoute, getUserInfoHandler);
 
-export * from "./auth.routes.js";
-export * from "./auth.schema.js";
-export * from "./auth.service.js";
+export * from "./auth.routes.ts";
+export * from "./auth.schema.ts";
+export * from "./auth.service.ts";

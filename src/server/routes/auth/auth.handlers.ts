@@ -1,10 +1,10 @@
 import type { RouteHandler } from "@hono/zod-openapi";
-import { deleteSession, getSession, setSession } from "../../auth.js";
-import type { AppEnv } from "../../common/factory.js";
-import { getDb } from "../../database/index.js";
-import { t } from "../../i18n.js";
-import type { getUserInfoRoute, loginRoute, logoutRoute } from "./auth.routes.js";
-import { authenticateUser } from "./auth.service.js";
+import { deleteSession, getSession, setSession } from "../../auth.ts";
+import type { AppEnv } from "../../common/factory.ts";
+import { getDb } from "../../database/index.ts";
+import { t } from "../../i18n.ts";
+import type { getUserInfoRoute, loginRoute, logoutRoute } from "./auth.routes.ts";
+import { authenticateUser } from "./auth.service.ts";
 
 export const loginHandler: RouteHandler<typeof loginRoute, AppEnv> = async (c) => {
   const { account, password } = c.req.valid("json");

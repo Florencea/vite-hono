@@ -4,7 +4,7 @@ import { drizzle as drizzleD1 } from "drizzle-orm/d1";
 import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { defineRelations } from "drizzle-orm/relations";
 import type { Context } from "hono";
-import * as schema from "./schema.js";
+import * as schema from "./schema.ts";
 
 const connectionString = process.env.DATABASE_URL || "file:./database.sqlite";
 

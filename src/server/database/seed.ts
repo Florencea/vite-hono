@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { hashPassword } from "../auth.js";
-import { db } from "./index.js";
-import { users } from "./schema.js";
+import { hashPassword } from "../auth.ts";
+import { db } from "./index.ts";
+import { users } from "./schema.ts";
 
 const DEFAULT_ADMIN = {
   account: "admin",

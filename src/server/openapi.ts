@@ -1,5 +1,5 @@
 import { Scalar } from "@scalar/hono-api-reference";
-import { COOKIE_NAME, DOC_ROUTE, DOC_TITLE, VERSION } from "./config.js";
+import { COOKIE_NAME, DOC_ROUTE, DOC_TITLE, VERSION } from "./config.ts";
 
 /**
  * OpenAPI 3.0 configuration specification

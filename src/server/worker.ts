@@ -1,5 +1,5 @@
-import { createCoreApp } from "./core.js";
-import { apiRouter } from "./router.js";
+import { createCoreApp } from "./core.ts";
+import { apiRouter } from "./router.ts";
 
 const app = createCoreApp();
 

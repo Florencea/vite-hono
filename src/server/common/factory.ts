@@ -1,5 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import type { AppContextVariables } from "../context.js";
+import type { AppContextVariables } from "../context.ts";
 
 export type AppEnv = {
   Variables: AppContextVariables;
