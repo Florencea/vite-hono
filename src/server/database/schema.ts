@@ -1,4 +1,3 @@
-import { createId } from "@paralleldrive/cuid2";
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
@@ -7,7 +6,7 @@ export const users = sqliteTable("User", {
   uid: text("uid")
     .notNull()
     .unique()
-    .$defaultFn(() => createId()),
+    .$defaultFn(() => crypto.randomUUID()),
   createdAt: integer("createdAt", { mode: "timestamp" })
     .notNull()
     .default(sql`(strftime('%s', 'now'))`),
