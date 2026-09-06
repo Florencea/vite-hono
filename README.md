@@ -1,16 +1,19 @@
 # Vite Hono
 
-A modern full-stack web application template built with **Hono**, **Vite**, **React**, **TanStack Router/Query**, and **Drizzle ORM**.
+A modern, zero-magic full-stack web application template built with **Hono**, **Vite**, **React**, **TanStack Router/Query**, and **Drizzle ORM**.
 
 ---
 
 ## Features
 
 - **End-to-End Type Safety**: Full TypeScript inference across frontend and backend via Hono RPC and Zod—zero schema duplication.
+- **Three Clean Deployment Topologies**:
+  1. **Fullstack Monolith (Default)**: Single Node / Docker / Cloudflare Worker serving both API and SPA on the same origin (zero CORS).
+  2. **Decoupled Fullstack**: Frontend deployed to CDN/Pages, Backend to Node/Worker—still preserving end-to-end Hono RPC type inference!
+  3. **Pure Backend (Headless API)**: Standalone API service for external teams or mobile apps via OpenAPI and Scalar.
+- **Modern API Reference (Scalar)**: Beautiful, responsive interactive API documentation powered by `@scalar/hono-api-reference` with built-in dark mode and 10+ client code generators.
 - **Full-Stack i18n**: Built-in multi-language support (English / Traditional Chinese) across UI components and backend error messages.
-- **Auto OpenAPI & Typegen**: Interactive Swagger UI with instant client code generation (TypeScript, Java, C#) from API routes.
-- **Solo-Developer Friendly**: Rapid development loop for ERP and internal tools with Vite HMR, TanStack Router/Query, and Ant Design.
-- **Flexible Zero-Lock-in Deployment**: Switch between local SQLite, Docker, or Cloudflare Workers + D1 via single `.env` settings.
+- **Convention-Over-Configuration**: Zero bundler black magic, zero runtime flag traps; deployments adapt automatically based on build artifacts.
 
 ---
 
@@ -39,19 +42,19 @@ npm run dev
 ```
 
 - Web App: `http://localhost:3000/`
-- Swagger UI: `http://localhost:3000/openapi/`
+- Scalar API Reference: `http://localhost:3000/openapi`
+- OpenAPI JSON Spec: `http://localhost:3000/openapi/doc.json`
 
 ---
 
-## OpenAPI & Swagger Documentation
+## OpenAPI & Scalar Documentation
 
-The project includes built-in interactive OpenAPI (Swagger UI) and client type generation powered by `@hono/zod-openapi` and `quicktype-core`.
+The project includes built-in interactive OpenAPI 3.0 documentation powered by `@hono/zod-openapi` and `@scalar/hono-api-reference`.
 
 ### Endpoints
 
-- **Swagger UI**: `http://localhost:3000/openapi/` (visual documentation and API testing)
-- **OpenAPI JSON Spec**: `http://localhost:3000/openapi/doc.json`
-- **Typegen API**: `http://localhost:3000/openapi/typegen/:lang` (supports `typescript`, `java`, `csharp`)
+- **Scalar API Reference**: `http://localhost:3000/openapi` (interactive UI, dark mode, client code snippets, search)
+- **OpenAPI JSON Spec**: `http://localhost:3000/openapi/doc.json` (for external teams to generate SDKs via `openapi-typescript` / `orval`)
 
 ### Defining OpenAPI Routes
 
@@ -84,98 +87,77 @@ router.openapi(helloRoute, (c) => {
 });
 ```
 
-### Customizing Swagger UI & Documentation
+---
 
-- **Module location**: `src/server/openapi/`
-- **API Description**: Edit `src/server/openapi/description.md` (Markdown format, supports linting and preview).
-- **Custom Styles & Fonts**: Tweak `src/server/openapi/assets/custom.css`, `theme.css`, and `cookie.css` (real CSS files formatted with `oxfmt`).
-- **Client Interactions**: Adjust clipboard copy, highlighting, and typegen behaviors in `src/server/openapi/assets/custom.js` (real JS file checked by `oxlint`).
-- **Toggle OpenAPI**: Set `ENABLE_OPENAPI=0` in `.env` to completely disable OpenAPI routes without impacting the client bundle.
+## Deployment Topologies
+
+### 1. Fullstack Monolithic Deployment (Default)
+
+Build both frontend SPA and backend server into a single Node/Docker container or Cloudflare Worker:
+
+```bash
+# Node.js / Docker
+npm run build
+npm start
+
+# Cloudflare Workers + D1
+npm run build
+npm run deploy:cf
+```
+
+### 2. Decoupled Deployment (Frontend on CDN, Backend on Cloud)
+
+- **Frontend**: Run `npm run build:client` and deploy `dist/client` to Cloudflare Pages, Vercel, or S3.
+  - Set `VITE_API_ENDPOINT_RPC="https://api.yourdomain.com/api"`.
+  - Frontend continues to use `hc<AppType>` for full end-to-end type safety!
+- **Backend**: Run `npm run build:server` and deploy `dist/server` to any Node/Docker host.
+  - Set `CORS_ORIGIN="https://your-frontend-domain.com"`.
+
+### 3. Pure Backend (Headless API)
+
+Build only the server without compiling any frontend assets:
+
+```bash
+npm run build:server
+npm start
+```
+
+The server automatically detects that `dist/client/index.html` does not exist and runs as a pure API service responding to `/api` and `/openapi`.
 
 ---
 
 ## Environment Variables (`.env`)
 
-| Variable                     | Default                  | Description                                                            |
-| :--------------------------- | :----------------------- | :--------------------------------------------------------------------- |
-| `VITE_TITLE`                 | `Test Vite Hono`         | Application title shown in browser and OpenAPI doc                     |
-| `VITE_WEB_BASE`              | `/`                      | Base URL path for web routing and assets                               |
-| `VITE_API_OPENAPI_DOC_ROUTE` | `/openapi`               | OpenAPI documentation route path                                       |
-| `VITE_API_ENDPOINT_RPC`      | `/api`                   | Hono RPC endpoint route path                                           |
-| `VITE_OUTDIR`                | `dist`                   | Production build output directory                                      |
-| `ENABLE_CLIENT`              | `1`                      | Enable frontend SPA hosting (`1` = yes, `0` = no)                      |
-| `ENABLE_SERVER`              | `1`                      | Enable backend API server (`1` = yes, `0` = no)                        |
-| `ENABLE_OPENAPI`             | `1`                      | Enable OpenAPI doc and Swagger UI (`/openapi`)                         |
-| `ENABLE_TYPEGEN`             | `1`                      | Enable typegen route (`/openapi/typegen`)                              |
-| `ENABLE_COMPRESSION`         | `1`                      | Enable HTTP compression (`hono/compress`)                              |
-| `PORT`                       | `3000`                   | Server listening port (Node / Docker)                                  |
-| `CORS_ORIGIN`                | `*`                      | Allowed CORS origin (use specific origin when credentials are enabled) |
-| `DATABASE_URL`               | `file:./database.sqlite` | SQLite / LibSQL connection URL                                         |
-| `COOKIE_NAME`                | `TestViteHono`           | Session cookie name                                                    |
-| `COOKIE_SECRET`              | 32+ chars secret         | Cookie encryption & signing secret                                     |
-| `SESSION_TTL`                | `604800`                 | Session TTL in seconds (7 days)                                        |
-
----
-
-## Deployment
-
-### 1. Node.js Server
-
-```bash
-npm run build
-npm start
-```
-
-### 2. Docker Container
-
-Build and run using `package.json` `engines.node` as the single source of truth:
-
-```bash
-# Start container with Docker Compose (auto-injects engines.node)
-npm run docker:up
-
-# Stop container
-npm run docker:down
-
-# Or build Docker image directly
-npm run docker:build
-```
-
-### 3. Cloudflare Workers + D1
-
-```bash
-# 1. Login and create D1 database
-npx wrangler login
-npx wrangler d1 create vite-hono-db
-
-# 2. Update database_id in wrangler.jsonc and set session secret
-npx wrangler secret put COOKIE_SECRET
-
-# 3. Build client assets and deploy to Cloudflare Workers
-npm run build
-npm run deploy:cf
-```
+| Variable         | Default                  | Description                                              |
+| :--------------- | :----------------------- | :------------------------------------------------------- |
+| `DATABASE_URL`   | `file:./database.sqlite` | SQLite / LibSQL database connection URL (Required)       |
+| `COOKIE_SECRET`  | `32+ chars secret`       | Cookie session signing secret (Required in production)   |
+| `PORT`           | `3000`                   | Server listening port (Node / Docker)                    |
+| `CORS_ORIGIN`    | `*`                      | Allowed CORS origin for decoupled deployments            |
+| `ENABLE_OPENAPI` | `1`                      | Enable OpenAPI doc & Scalar UI (`1` = yes, `0` = no)     |
+| `VITE_TITLE`     | `Test Vite Hono`         | Application title displayed in browser and API Reference |
 
 ---
 
 ## Scripts
 
-| Command                | Description                                              |
-| :--------------------- | :------------------------------------------------------- |
-| `npm run dev`          | Start development server with HMR                        |
-| `npm run build`        | Build client and server for production with Vite         |
-| `npm start`            | Start Node.js production server                          |
-| `npm run preview`      | Preview production server locally (requires build first) |
-| `npm run deploy:cf`    | Deploy to Cloudflare Workers (`wrangler deploy`)         |
-| `npm run docker:build` | Build Docker image using `engines.node` version          |
-| `npm run docker:up`    | Start Docker Compose with `engines.node` version         |
-| `npm run docker:down`  | Stop Docker Compose containers                           |
-| `npm run typecheck`    | Run TypeScript typechecking (`tsc -b`)                   |
-| `npm run lint`         | Run Oxlint check                                         |
-| `npm run lint:fix`     | Run Oxlint auto-fix                                      |
-| `npm run format`       | Format code with Oxfmt                                   |
-| `npm run db:push`      | Push schema changes to database via Drizzle Kit          |
-| `npm run db:seed`      | Seed database with initial data                          |
-| `npm run db:studio`    | Launch Drizzle Studio database UI                        |
-| `npm run db:generate`  | Generate migration files with Drizzle Kit                |
-| `npm run db:migrate`   | Apply migrations with Drizzle Kit                        |
+| Command                | Description                                                      |
+| :--------------------- | :--------------------------------------------------------------- |
+| `npm run dev`          | Start development server with Vite HMR                           |
+| `npm run build`        | Fullstack build: builds both frontend SPA and backend SSR server |
+| `npm run build:client` | Frontend-only build: builds `dist/client` SPA                    |
+| `npm run build:server` | Backend-only build: builds `dist/server/app.js`                  |
+| `npm start`            | Start Node.js production server                                  |
+| `npm run deploy:cf`    | Deploy to Cloudflare Workers (`wrangler deploy`)                 |
+| `npm run docker:build` | Build Docker image using `engines.node` version                  |
+| `npm run docker:up`    | Start Docker Compose                                             |
+| `npm run docker:down`  | Stop Docker Compose containers                                   |
+| `npm run typecheck`    | Run TypeScript typechecking (`tsc -b`)                           |
+| `npm run lint`         | Run Oxlint check                                                 |
+| `npm run lint:fix`     | Run Oxlint auto-fix                                              |
+| `npm run format`       | Format code with Oxfmt                                           |
+| `npm run db:push`      | Push schema changes to database via Drizzle Kit                  |
+| `npm run db:seed`      | Seed database with initial data                                  |
+| `npm run db:studio`    | Launch Drizzle Studio database UI                                |
+| `npm run db:generate`  | Generate migration files with Drizzle Kit                        |
+| `npm run db:migrate`   | Apply migrations with Drizzle Kit                                |

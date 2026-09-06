@@ -1,5 +1,5 @@
-# Dynamic Node.js version argument (single source of truth: package.json engines.node)
-ARG NODE_VERSION
+# Dynamic Node.js version argument (defaults to engines.node in package.json)
+ARG NODE_VERSION=24.20.0
 
 # Build stage
 FROM node:${NODE_VERSION}-alpine AS builder
@@ -12,6 +12,9 @@ RUN npm ci
 
 # Copy source files
 COPY . .
+
+# Ensure drizzle directory exists for COPY in runner stage
+RUN mkdir -p /app/drizzle
 
 # Build client and server
 RUN npm run build

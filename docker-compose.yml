@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NODE_VERSION: ${NODE_VERSION}
+        NODE_VERSION: ${NODE_VERSION:-24.20.0}
     image: vite-hono:latest
     container_name: vite-hono-app
     restart: unless-stopped
