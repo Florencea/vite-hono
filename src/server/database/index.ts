@@ -1,31 +1,43 @@
 import { createClient } from "@libsql/client";
 import "dotenv/config";
-import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { drizzle as drizzleD1 } from "drizzle-orm/d1";
+import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { defineRelations } from "drizzle-orm/relations";
 import type { Context } from "hono";
 import * as schema from "./schema.js";
 
 const connectionString = process.env.DATABASE_URL || "file:./database.sqlite";
 
-const client = createClient({
-  url: connectionString,
-});
-
 const relations = defineRelations(schema);
 
-export const db = drizzleLibsql({ client, relations });
+const getLibsqlDb = () => {
+  const client = createClient({
+    url: connectionString,
+  });
+  return drizzleLibsql({ client, relations });
+};
 
-export type Database = typeof db;
+export type Database = ReturnType<typeof getLibsqlDb>;
 
 interface CloudflareEnv {
   DB?: Parameters<typeof drizzleD1>[0];
 }
 
+let _db: Database | undefined;
+
 export function getDb(c?: Context): Database {
   const env = c?.env as CloudflareEnv | undefined;
   if (env?.DB) {
-    return drizzleD1(env.DB, { relations });
+    return drizzleD1(env.DB, { relations }) as unknown as Database;
   }
-  return db;
+  if (!_db) {
+    _db = getLibsqlDb();
+  }
+  return _db;
 }
+
+export const db: Database = new Proxy({} as Database, {
+  get(_target, prop) {
+    return getDb()[prop as keyof Database];
+  },
+});

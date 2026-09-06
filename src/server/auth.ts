@@ -1,4 +1,4 @@
-import { verify as argonVerify } from "argon2";
+import { argon2id, argon2Verify } from "hash-wasm";
 import type { Context, MiddlewareHandler } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
@@ -57,12 +57,35 @@ export const authorizedMiddleware: MiddlewareHandler = async (c, next) => {
   await next();
 };
 
+/**
+ * Hashes a plain password using WebAssembly Argon2id (OWASP recommended standard).
+ * Output format is the standard PHC string: $argon2id$v=19$m=16384,t=2,p=1$...
+ */
+export async function hashPassword(plainPassword: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  return await argon2id({
+    password: plainPassword,
+    salt,
+    parallelism: 1,
+    iterations: 2,
+    memorySize: 16384, // 16 MB memory-hard
+    hashLength: 32,
+    outputType: "encoded",
+  });
+}
+
+/**
+ * Verifies a plain password against a standard Argon2 encoded hash in constant time.
+ */
 export async function verifyPassword(
   hashedPassword: string,
   plainPassword: string,
 ): Promise<boolean> {
   try {
-    return await argonVerify(hashedPassword, plainPassword);
+    return await argon2Verify({
+      password: plainPassword,
+      hash: hashedPassword,
+    });
   } catch {
     return false;
   }

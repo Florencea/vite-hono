@@ -1,5 +1,5 @@
-import argon2 from "argon2";
 import { eq } from "drizzle-orm";
+import { hashPassword } from "../auth.js";
 import { db } from "./index.js";
 import { users } from "./schema.js";
 
@@ -9,7 +9,7 @@ const DEFAULT_ADMIN = {
 };
 
 async function main() {
-  const hashedPassword = await argon2.hash(DEFAULT_ADMIN.password);
+  const hashedPassword = await hashPassword(DEFAULT_ADMIN.password);
   const existing = await db.query.users.findFirst({
     where: { account: DEFAULT_ADMIN.account },
   });
