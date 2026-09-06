@@ -5,8 +5,8 @@ services:
       dockerfile: Dockerfile
       args:
         NODE_VERSION: ${NODE_VERSION}
-    image: vite-t3:latest
-    container_name: vite-t3-app
+    image: vite-hono:latest
+    container_name: vite-hono-app
     restart: unless-stopped
     ports:
       - "${PORT:-3000}:3000"

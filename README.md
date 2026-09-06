@@ -1,4 +1,4 @@
-# Vite T3
+# Vite Hono
 
 A modern full-stack web application template built with **Hono**, **Vite**, **React**, **TanStack Router/Query**, and **Drizzle ORM**.
 
@@ -47,7 +47,7 @@ npm run dev
 
 | Variable                     | Default                  | Description                                                            |
 | :--------------------------- | :----------------------- | :--------------------------------------------------------------------- |
-| `VITE_TITLE`                 | `Test Vite T3`           | Application title shown in browser and OpenAPI doc                     |
+| `VITE_TITLE`                 | `Test Vite Hono`         | Application title shown in browser and OpenAPI doc                     |
 | `VITE_WEB_BASE`              | `/`                      | Base URL path for web routing and assets                               |
 | `VITE_API_OPENAPI_DOC_ROUTE` | `/openapi`               | OpenAPI documentation route path                                       |
 | `VITE_API_ENDPOINT_RPC`      | `/api`                   | Hono RPC endpoint route path                                           |
@@ -60,7 +60,7 @@ npm run dev
 | `PORT`                       | `3000`                   | Server listening port (Node / Docker)                                  |
 | `CORS_ORIGIN`                | `*`                      | Allowed CORS origin (use specific origin when credentials are enabled) |
 | `DATABASE_URL`               | `file:./database.sqlite` | SQLite / LibSQL connection URL                                         |
-| `COOKIE_NAME`                | `TestViteT3`             | Session cookie name                                                    |
+| `COOKIE_NAME`                | `TestViteHono`           | Session cookie name                                                    |
 | `COOKIE_SECRET`              | 32+ chars secret         | Cookie encryption & signing secret                                     |
 | `SESSION_TTL`                | `604800`                 | Session TTL in seconds (7 days)                                        |
 
@@ -95,7 +95,7 @@ npm run docker:build
 ```bash
 # 1. Login and create D1 database
 npx wrangler login
-npx wrangler d1 create vite-t3-db
+npx wrangler d1 create vite-hono-db
 
 # 2. Update database_id in wrangler.jsonc and set session secret
 npx wrangler secret put COOKIE_SECRET

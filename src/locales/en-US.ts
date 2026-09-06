@@ -9,7 +9,7 @@ export default {
     changelocale: "Change System Language",
   },
   header: {
-    title: "Test Vite T3",
+    title: "Test Vite Hono",
     logout: "Logout",
   },
   login: {

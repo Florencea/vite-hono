@@ -144,7 +144,7 @@ export const CORS_ORIGIN = getEnv({ env: "CORS_ORIGIN", defaultValue: "*" });
  */
 export const COOKIE_NAME = getEnv({
   env: "COOKIE_NAME",
-  defaultValue: "TestViteT3",
+  defaultValue: "TestViteHono",
 });
 
 /**
@@ -172,7 +172,7 @@ export const DATABASE_URL = getEnv({
  * OpenAPI doc title
  */
 export const DOC_TITLE = [
-  getEnv({ env: "VITE_TITLE", defaultValue: "Test Vite T3" }),
+  getEnv({ env: "VITE_TITLE", defaultValue: "Test Vite Hono" }),
   "OpenAPI",
 ].join(" ");
 

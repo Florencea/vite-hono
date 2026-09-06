@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "vite-t3",
+  "name": "vite-hono",
   "main": "src/server/worker.ts",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -14,10 +14,10 @@
     "ENABLE_OPENAPI": "1",
     "ENABLE_TYPEGEN": "1",
     "ENABLE_COMPRESSION": "1",
-    "COOKIE_NAME": "TestViteT3",
+    "COOKIE_NAME": "TestViteHono",
     "SESSION_TTL": "604800",
     "CORS_ORIGIN": "*",
-    "VITE_TITLE": "Test Vite T3",
+    "VITE_TITLE": "Test Vite Hono",
     "VITE_WEB_BASE": "/",
     "VITE_API_OPENAPI_DOC_ROUTE": "/openapi",
     "VITE_API_ENDPOINT_RPC": "/api",
@@ -26,7 +26,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "vite-t3-db",
+      "database_name": "vite-hono-db",
       "database_id": "<YOUR_D1_DATABASE_ID>",
     },
   ],
