@@ -10,9 +10,7 @@ export const LOGIN_ROUTE = "/login";
 
 export type LoginInput = InferRequestType<typeof api.auth.login.$post>["json"];
 export type LoginOutput = InferResponseType<typeof api.auth.login.$post>;
-export type UserInfoOutput = InferResponseType<
-  typeof api.auth.getUserInfo.$get
->;
+export type UserInfoOutput = InferResponseType<typeof api.auth.getUserInfo.$get>;
 
 export type RouterInputs = {
   auth: {
@@ -66,9 +64,7 @@ export const useSiteTitle = () => {
     location: { pathname },
   } = useRouterState();
 
-  const currentLabel = MENU_ITEMS.find(
-    (item) => item?.key?.toString() === pathname,
-  );
+  const currentLabel = MENU_ITEMS.find((item) => item?.key?.toString() === pathname);
 
   return currentLabel
     ? `${t(currentLabel.key, { defaultValue: currentLabel.label })} - ${import.meta.env.VITE_TITLE}`

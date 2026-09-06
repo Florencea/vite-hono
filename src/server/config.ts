@@ -26,9 +26,7 @@ const getEnv = ({
 }) => {
   const ENV = process.env[env] ?? defaultValue;
   if (ENV === undefined) {
-    const errorMsg = chalk.red(
-      `No \`${field}\` field found in \`${from}\`, exit`,
-    );
+    const errorMsg = chalk.red(`No \`${field}\` field found in \`${from}\`, exit`);
     console.error(errorMsg);
     exit(1);
   } else {
@@ -53,9 +51,7 @@ const getEnvFlag = ({
   } else if (ENV === "0" || ENV === "false") {
     return false;
   } else {
-    const errorMsg = chalk.red(
-      `Flag \`${field}\` must be \`1\` or \`0\` in \`${from}\`, exit`,
-    );
+    const errorMsg = chalk.red(`Flag \`${field}\` must be \`1\` or \`0\` in \`${from}\`, exit`);
     console.error(errorMsg);
     exit(1);
   }
@@ -129,10 +125,7 @@ export const BASE = getEnv({ env: "VITE_WEB_BASE", defaultValue: "/" });
 /**
  * Client output directory
  */
-export const OUTDIR = join(
-  getEnv({ env: "VITE_OUTDIR", defaultValue: "dist" }),
-  "client",
-);
+export const OUTDIR = join(getEnv({ env: "VITE_OUTDIR", defaultValue: "dist" }), "client");
 
 /**
  * Hono RPC API endpoint route prefix
@@ -166,10 +159,7 @@ export const COOKIE_SECRET = getEnv({
 /**
  * Session TTL in seconds (default 7 days)
  */
-export const SESSION_TTL = parseInt(
-  getEnv({ env: "SESSION_TTL", defaultValue: "604800" }),
-  10,
-);
+export const SESSION_TTL = parseInt(getEnv({ env: "SESSION_TTL", defaultValue: "604800" }), 10);
 
 /**
  * Database connection URL
@@ -263,9 +253,7 @@ const timestamp = chalk.gray(new Date().toLocaleTimeString("en-US"));
 const plugin = chalk.bold.cyan("[hono]");
 const message = chalk.green("Server Ready on");
 const serverUrl = chalk.bold(
-  IS_PRODUCTION
-    ? `port: ${PORT}, base: ${BASE}`
-    : `http://localhost:${PORT}${BASE}`,
+  IS_PRODUCTION ? `port: ${PORT}, base: ${BASE}` : `http://localhost:${PORT}${BASE}`,
 );
 
 /**

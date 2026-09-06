@@ -62,10 +62,7 @@ typegenRouter.post("/:lang", async (c) => {
     });
     return c.json(result.lines);
   } catch (err) {
-    return c.json(
-      { error: err instanceof Error ? err.message : String(err) },
-      500,
-    );
+    return c.json({ error: err instanceof Error ? err.message : String(err) }, 500);
   }
 });
 

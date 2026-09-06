@@ -18,9 +18,7 @@ export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
 }>()({
   beforeLoad: async ({ context, location, search }) => {
-    const data = await context.queryClient.ensureQueryData(
-      userInfoQueryOptions(),
-    );
+    const data = await context.queryClient.ensureQueryData(userInfoQueryOptions());
     const isSuccess = data?.success === true;
     if (!isSuccess && location.pathname !== "/login") {
       // eslint-disable-next-line @typescript-eslint/only-throw-error

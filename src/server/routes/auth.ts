@@ -1,10 +1,5 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import {
-  deleteSession,
-  getSession,
-  setSession,
-  verifyPassword,
-} from "../auth.js";
+import { deleteSession, getSession, setSession, verifyPassword } from "../auth.js";
 import { getDb } from "../database/index.js";
 import { t } from "../i18n.js";
 

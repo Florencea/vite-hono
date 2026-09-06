@@ -63,9 +63,8 @@ const AntdProvider = ({ container, children }: ProviderProps) => {
   const [primaryColor, setPrimaryColor] = useState(() => {
     if (typeof window !== "undefined") {
       return (
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--color-primary")
-          .trim() || undefined
+        getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim() ||
+        undefined
       );
     }
     return undefined;

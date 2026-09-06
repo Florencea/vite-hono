@@ -3,12 +3,7 @@ import type { Context, MiddlewareHandler } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import { sign, verify } from "hono/jwt";
-import {
-  COOKIE_NAME,
-  COOKIE_SECRET,
-  IS_PRODUCTION,
-  SESSION_TTL,
-} from "./config.js";
+import { COOKIE_NAME, COOKIE_SECRET, IS_PRODUCTION, SESSION_TTL } from "./config.js";
 
 export interface SessionData {
   id: number;
@@ -29,20 +24,13 @@ export async function getSession(c: Context): Promise<SessionData | null> {
   }
 }
 
-export async function setSession(
-  c: Context,
-  data: Omit<SessionData, "exp">,
-): Promise<void> {
+export async function setSession(c: Context, data: Omit<SessionData, "exp">): Promise<void> {
   const payload: SessionData = {
     ...data,
     exp: Math.floor(Date.now() / 1000) + SESSION_TTL,
   };
 
-  const token = await sign(
-    payload as unknown as Record<string, unknown>,
-    COOKIE_SECRET,
-    "HS256",
-  );
+  const token = await sign(payload as unknown as Record<string, unknown>, COOKIE_SECRET, "HS256");
 
   setCookie(c, COOKIE_NAME, token, {
     httpOnly: true,

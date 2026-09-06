@@ -182,25 +182,25 @@ const AddCopyBtnsOnExamplePanel = async (mutations) => {
       removeExcludeDivs(panel);
       const EXAMPLE_TEXT = panel.querySelector("pre").innerText;
 
-      addBtn(panel, {
+      await addBtn(panel, {
         title: "Copy Example to clipboard",
         classList: ["copy-to-clipboard", "copy-btn-default"],
         getText: async () => EXAMPLE_TEXT,
       });
 
-      addBtn(panel, {
+      await addBtn(panel, {
         title: "Copy TypeScript Interfaces to clipboard",
         classList: ["copy-to-clipboard", "copy-typescript-btn-default"],
         getText: () => getTypeGenResult("typescript", EXAMPLE_TEXT),
       });
 
-      addBtn(panel, {
+      await addBtn(panel, {
         title: "Copy Java Classes to clipboard",
         classList: ["copy-to-clipboard", "copy-java-btn-default"],
         getText: () => getTypeGenResult("java", EXAMPLE_TEXT),
       });
 
-      addBtn(panel, {
+      await addBtn(panel, {
         title: "Copy C# Classes to clipboard",
         classList: ["copy-to-clipboard", "copy-csharp-btn-default"],
         getText: () => getTypeGenResult("csharp", EXAMPLE_TEXT),
@@ -209,7 +209,7 @@ const AddCopyBtnsOnExamplePanel = async (mutations) => {
   }
 };
 
-highlightMarkdown();
+await highlightMarkdown();
 
 const observer = new MutationObserver(AddCopyBtnsOnExamplePanel);
 const observer2 = new MutationObserver(AddCopyPathBtnOnTitle);

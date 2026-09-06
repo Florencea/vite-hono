@@ -1,9 +1,4 @@
-import {
-  Form,
-  type FormInstance,
-  type FormItemProps,
-  type FormProps,
-} from "antd";
+import { Form, type FormInstance, type FormItemProps, type FormProps } from "antd";
 
 type FormItemPropsT<T> = FormItemProps<T> & {
   name: T;

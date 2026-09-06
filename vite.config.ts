@@ -4,12 +4,7 @@ import react from "@vitejs/plugin-react";
 import { cp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { cwd } from "node:process";
-import {
-  defineConfig,
-  loadEnv,
-  build as viteBuild,
-  type PluginOption,
-} from "vite";
+import { defineConfig, loadEnv, build as viteBuild, type PluginOption } from "vite";
 
 const {
   VITE_WEB_BASE,
@@ -86,18 +81,14 @@ export default defineConfig({
   base: VITE_WEB_BASE,
   build: {
     outDir: enableServer ? join(".", VITE_OUTDIR, "client") : VITE_OUTDIR,
-    chunkSizeWarningLimit: Infinity,
-    reportCompressedSize: false,
+    chunkSizeWarningLimit: 1000,
   },
   plugins: [
     tanstackRouter({
+      target: "react",
       autoCodeSplitting: true,
       routesDirectory: "./src/client/routes",
       generatedRouteTree: "./src/client/routeTree.gen.ts",
-      quoteStyle: "double",
-      semicolons: true,
-      disableLogging: true,
-      tmpDir: "node_modules/.tmp",
     }),
     react(),
     tailwindcss(),

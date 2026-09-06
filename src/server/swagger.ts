@@ -11,9 +11,7 @@ export function renderSwaggerUiHtml({
     .map((url) => `    <link rel="stylesheet" href="${url}" />`)
     .join("\n");
 
-  const jsScripts = options.customJs
-    .map((url) => `    <script src="${url}"></script>`)
-    .join("\n");
+  const jsScripts = options.customJs.map((url) => `    <script src="${url}"></script>`).join("\n");
 
   const swaggerConfig = JSON.stringify({
     url: docUrl,

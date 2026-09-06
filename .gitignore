@@ -24,6 +24,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# tanstack
+.tanstack
+
 # env
 .env
 

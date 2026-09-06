@@ -32,11 +32,7 @@ export const I18nSwitcher = () => {
       trigger={["click"]}
       arrow
     >
-      <Button
-        type="text"
-        className="flex items-center justify-center"
-        title={t("changelocale")}
-      >
+      <Button type="text" className="flex items-center justify-center" title={t("changelocale")}>
         <GlobalOutlined />
       </Button>
     </Dropdown>

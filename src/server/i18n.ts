@@ -33,9 +33,7 @@ type NestedKeyOf<ObjectType extends object> = {
 export type TranslationKey = NestedKeyOf<typeof enUS>;
 
 export function getTranslation(lang: string | undefined, path: string): string {
-  const currentLang = (
-    lang && lang in resources ? lang : DEFAULT_LANGUAGE
-  ) as SupportedLanguage;
+  const currentLang = (lang && lang in resources ? lang : DEFAULT_LANGUAGE) as SupportedLanguage;
   const dict = resources[currentLang] || resources[DEFAULT_LANGUAGE];
 
   const keys = path.split(".");

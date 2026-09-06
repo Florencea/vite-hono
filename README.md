@@ -20,7 +20,7 @@ A modern full-stack web application template built with **Hono**, **Vite**, **Re
 
 ```bash
 # Install dependencies
-npm install
+npm ci
 
 # Copy environment variables
 cp .env.example .env
@@ -97,8 +97,11 @@ npm run docker:build
 npx wrangler login
 npx wrangler d1 create vite-t3-db
 
-# 2. Update database_id in wrangler.jsonc
-# 3. Build and deploy to Cloudflare Workers
+# 2. Update database_id in wrangler.jsonc and set session secret
+npx wrangler secret put COOKIE_SECRET
+
+# 3. Build client assets and deploy to Cloudflare Workers
+npm run build
 npm run deploy:cf
 ```
 
@@ -106,22 +109,22 @@ npm run deploy:cf
 
 ## Scripts
 
-| Command                | Description                                                |
-| :--------------------- | :--------------------------------------------------------- |
-| `npm run dev`          | Start development server with HMR                          |
-| `npm run build`        | Typecheck, lint, and build for production                  |
-| `npm start`            | Start Node.js production server                            |
-| `npm run preview`      | Build and preview production server locally                |
-| `npm run deploy:cf`    | Build and deploy to Cloudflare Workers (`wrangler deploy`) |
-| `npm run docker:build` | Build Docker image using `engines.node` version            |
-| `npm run docker:up`    | Start Docker Compose with `engines.node` version           |
-| `npm run docker:down`  | Stop Docker Compose containers                             |
-| `npm run typecheck`    | Run TypeScript typechecking (`tsc -b`)                     |
-| `npm run lint`         | Run ESLint check                                           |
-| `npm run lint:fix`     | Run ESLint auto-fix                                        |
-| `npm run format`       | Format code with Prettier                                  |
-| `npm run db:push`      | Push schema changes to database via Drizzle Kit            |
-| `npm run db:seed`      | Seed database with initial data                            |
-| `npm run db:studio`    | Launch Drizzle Studio database UI                          |
-| `npm run db:generate`  | Generate migration files with Drizzle Kit                  |
-| `npm run db:migrate`   | Apply migrations with Drizzle Kit                          |
+| Command                | Description                                              |
+| :--------------------- | :------------------------------------------------------- |
+| `npm run dev`          | Start development server with HMR                        |
+| `npm run build`        | Build client and server for production with Vite         |
+| `npm start`            | Start Node.js production server                          |
+| `npm run preview`      | Preview production server locally (requires build first) |
+| `npm run deploy:cf`    | Deploy to Cloudflare Workers (`wrangler deploy`)         |
+| `npm run docker:build` | Build Docker image using `engines.node` version          |
+| `npm run docker:up`    | Start Docker Compose with `engines.node` version         |
+| `npm run docker:down`  | Stop Docker Compose containers                           |
+| `npm run typecheck`    | Run TypeScript typechecking (`tsc -b`)                   |
+| `npm run lint`         | Run Oxlint check                                         |
+| `npm run lint:fix`     | Run Oxlint auto-fix                                      |
+| `npm run format`       | Format code with Oxfmt                                   |
+| `npm run db:push`      | Push schema changes to database via Drizzle Kit          |
+| `npm run db:seed`      | Seed database with initial data                          |
+| `npm run db:studio`    | Launch Drizzle Studio database UI                        |
+| `npm run db:generate`  | Generate migration files with Drizzle Kit                |
+| `npm run db:migrate`   | Apply migrations with Drizzle Kit                        |
