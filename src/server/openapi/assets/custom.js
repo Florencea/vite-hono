@@ -1,3 +1,16 @@
+const syncDarkMode = () => {
+  const isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  if (isDark) {
+    document.documentElement.classList.add("dark-mode");
+  } else {
+    document.documentElement.classList.remove("dark-mode");
+  }
+};
+syncDarkMode();
+if (window.matchMedia) {
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", syncDarkMode);
+}
+
 const waitForElementExist = (selector) => {
   return new Promise((resolve) => {
     if (document.querySelector(selector)) {
@@ -43,7 +56,7 @@ const copyTextToClipboard = (btn, text) => {
   const textArea = document.createElement("textarea");
   textArea.value = text;
   textArea.style.position = "absolute";
-  textArea.style.opacity = 0;
+  textArea.style.opacity = "0";
   textArea.style.left = "-999999px";
   textArea.style.top = "-999999px";
   document.body.appendChild(textArea);
@@ -74,21 +87,16 @@ const AddCopyPathBtnOnTitle = async () => {
   const elms = document.querySelectorAll(".opblock-summary");
   for (const elm of elms) {
     const oldBtn = elm.querySelector("button.copy-btn-path");
-    const originalBtn = elm.querySelector(
-      "div.view-line-link.copy-to-clipboard",
-    );
-    originalBtn.style.display = "none";
+    const originalBtn = elm.querySelector("div.view-line-link.copy-to-clipboard");
+    if (originalBtn) {
+      originalBtn.style.display = "none";
+    }
     if (!oldBtn) {
       const method = elm.querySelector(".opblock-summary-method").innerText;
       const path =
-        elm.querySelector(".opblock-summary-path")?.attributes["data-path"]
-          .value ??
-        elm.querySelector(".opblock-summary-path__deprecated").attributes[
-          "data-path"
-        ].value;
-      const description = elm.querySelector(
-        ".opblock-summary-description",
-      ).innerText;
+        elm.querySelector(".opblock-summary-path")?.attributes["data-path"]?.value ??
+        elm.querySelector(".opblock-summary-path__deprecated")?.attributes["data-path"]?.value;
+      const description = elm.querySelector(".opblock-summary-description").innerText;
       const TEXT = `[${method}] ${path} ${description}`;
       const BTN_ICON = `<svg width="15" height="16"><use href="#copy" xlink:href="#copy"></use></svg>`;
 
@@ -156,10 +164,7 @@ const addBtn = async (panel, options) => {
 const AddCopyBtnsOnExamplePanel = async (mutations) => {
   const mutationTarget = findMutationtarget(mutations);
   if (mutationTarget) {
-    const panelsExample = await getChildElements(
-      mutationTarget,
-      'div[data-name="examplePanel"]',
-    );
+    const panelsExample = await getChildElements(mutationTarget, 'div[data-name="examplePanel"]');
     const panelsResponse = await getChildElements(
       mutationTarget,
       "td.response-col_description .highlight-code",
@@ -209,7 +214,7 @@ const AddCopyBtnsOnExamplePanel = async (mutations) => {
   }
 };
 
-await highlightMarkdown();
+void highlightMarkdown();
 
 const observer = new MutationObserver(AddCopyBtnsOnExamplePanel);
 const observer2 = new MutationObserver(AddCopyPathBtnOnTitle);

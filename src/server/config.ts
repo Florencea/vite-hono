@@ -1,15 +1,14 @@
 import "dotenv/config";
 
-import { readFileSync } from "node:fs";
 import { join, posix } from "node:path";
-import { cwd, exit } from "node:process";
+import { exit } from "node:process";
 
 export interface SwaggerUiCustomOptions {
-  customCssUrl: string[];
-  customJs: string[];
-  swaggerOptions: Record<string, unknown>;
-  customSiteTitle: string;
-  customfavIcon: string;
+  customCssUrl?: string[];
+  customJs?: string[];
+  swaggerOptions?: Record<string, unknown>;
+  customSiteTitle?: string;
+  customfavIcon?: string;
 }
 
 const getEnv = ({
@@ -75,10 +74,8 @@ export const ENABLE_SERVER = getEnvFlag({
 /**
  * Enable openapi doc & swagger ui
  */
-export const ENABLE_OPENAPI = getEnvFlag({
-  env: "ENABLE_OPENAPI",
-  defaultValue: "1",
-});
+export const ENABLE_OPENAPI =
+  (process.env.ENABLE_OPENAPI ?? "1") === "1" || process.env.ENABLE_OPENAPI === "true";
 
 /**
  * Enable typegen endpoint
@@ -190,47 +187,9 @@ export const DOC_ROUTE = posix.join(
 export const DOC_TYPEGEN_ROUTE = posix.join(DOC_ROUTE, "typegen");
 
 /**
- * OpenAPI static file path
- */
-export const DOC_STATIC_ROUTE = posix.join(DOC_ROUTE, "assets");
-
-/**
- * OpenAPI static file system path
- */
-export const DOC_STATIC_PATH = IS_PRODUCTION
-  ? join(OUTDIR, "openapi")
-  : join(cwd(), "public", "openapi");
-
-/**
- * OpenAPI Swagger UI Description
- */
-export const DOC_DESCRIPTION = ENABLE_OPENAPI
-  ? (() => {
-      try {
-        const descPath = IS_PRODUCTION
-          ? join(OUTDIR, "openapi", "DESCRIPTION.md")
-          : join(cwd(), "public", "openapi", "DESCRIPTION.md");
-        return readFileSync(descPath, { encoding: "utf-8" });
-      } catch {
-        return "OpenAPI Documentation";
-      }
-    })()
-  : undefined;
-
-/**
  * OpenAPI config
  */
 export const SWAGGER_UI_OPTIONS: SwaggerUiCustomOptions = {
-  customCssUrl: [
-    posix.join(DOC_STATIC_ROUTE, "theme.css"),
-    posix.join(DOC_STATIC_ROUTE, "fonts.css"),
-    posix.join(DOC_STATIC_ROUTE, "custom.css"),
-    posix.join(DOC_STATIC_ROUTE, "cookie.css"),
-  ],
-  customJs: [
-    posix.join(DOC_STATIC_ROUTE, "highlight.min.js"),
-    posix.join(DOC_STATIC_ROUTE, "custom.js"),
-  ],
   swaggerOptions: {
     docExpansion: "list",
     persistAuthorization: true,

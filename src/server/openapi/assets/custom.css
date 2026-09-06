@@ -1,6 +1,5 @@
 :root {
-  --swagger-code-font-family: JetBrains Mono, Consolas, Liberation Mono, Menlo,
-    monospace;
+  --swagger-code-font-family: "JetBrains Mono", Consolas, Liberation Mono, Menlo, monospace;
   --swagger-code-block-bg: #333;
   --swagger-code-block-color: #c9d1d9;
   --swagger-btn-success-color: #49cc90;

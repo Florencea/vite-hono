@@ -14,8 +14,6 @@ import {
   BASE,
   CORS_ORIGIN,
   DOC_ROUTE,
-  DOC_STATIC_PATH,
-  DOC_STATIC_ROUTE,
   DOC_TYPEGEN_ROUTE,
   ENABLE_CLIENT,
   ENABLE_COMPRESSION,
@@ -29,9 +27,7 @@ import {
   SWAGGER_UI_OPTIONS,
 } from "./config.js";
 import { i18nMiddleware } from "./i18n.js";
-import { openapiConfig } from "./openapi.js";
 import { apiRouter } from "./router.js";
-import { renderSwaggerUiHtml } from "./swagger.js";
 import { typegenRouter } from "./typegen.js";
 
 const app = new OpenAPIHono();
@@ -66,19 +62,11 @@ if (ENABLE_SERVER) {
  * OpenAPI and Typegen routes
  */
 if (ENABLE_OPENAPI) {
+  const { openapiConfig, renderSwaggerUiHtml } = await import("./openapi/index.js");
   const docJsonPath = posix.join(DOC_ROUTE, "doc.json");
 
   // OpenAPI JSON spec endpoint
   app.doc(docJsonPath, openapiConfig);
-
-  // Swagger UI static assets
-  app.use(
-    posix.join(DOC_STATIC_ROUTE, "*"),
-    serveStatic({
-      root: DOC_STATIC_PATH,
-      rewriteRequestPath: (path) => path.replace(DOC_STATIC_ROUTE, ""),
-    }),
-  );
 
   // Swagger UI page (support trailing slash and redirect)
   const renderSwagger = () =>

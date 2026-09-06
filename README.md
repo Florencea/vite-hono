@@ -39,7 +39,58 @@ npm run dev
 ```
 
 - Web App: `http://localhost:3000/`
-- Swagger UI: `http://localhost:3000/openapi`
+- Swagger UI: `http://localhost:3000/openapi/`
+
+---
+
+## OpenAPI & Swagger Documentation
+
+The project includes built-in interactive OpenAPI (Swagger UI) and client type generation powered by `@hono/zod-openapi` and `quicktype-core`.
+
+### Endpoints
+
+- **Swagger UI**: `http://localhost:3000/openapi/` (visual documentation and API testing)
+- **OpenAPI JSON Spec**: `http://localhost:3000/openapi/doc.json`
+- **Typegen API**: `http://localhost:3000/openapi/typegen/:lang` (supports `typescript`, `java`, `csharp`)
+
+### Defining OpenAPI Routes
+
+Define API routes using `createRoute` from `@hono/zod-openapi`:
+
+```ts
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+
+const router = new OpenAPIHono();
+
+const helloRoute = createRoute({
+  method: "get",
+  path: "/hello",
+  tags: ["Greeting"],
+  summary: "Say hello",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.object({ message: z.string() }),
+        },
+      },
+      description: "Successful greeting response",
+    },
+  },
+});
+
+router.openapi(helloRoute, (c) => {
+  return c.json({ message: "Hello World" });
+});
+```
+
+### Customizing Swagger UI & Documentation
+
+- **Module location**: `src/server/openapi/`
+- **API Description**: Edit `src/server/openapi/description.md` (Markdown format, supports linting and preview).
+- **Custom Styles & Fonts**: Tweak `src/server/openapi/assets/custom.css`, `theme.css`, and `cookie.css` (real CSS files formatted with `oxfmt`).
+- **Client Interactions**: Adjust clipboard copy, highlighting, and typegen behaviors in `src/server/openapi/assets/custom.js` (real JS file checked by `oxlint`).
+- **Toggle OpenAPI**: Set `ENABLE_OPENAPI=0` in `.env` to completely disable OpenAPI routes without impacting the client bundle.
 
 ---
 

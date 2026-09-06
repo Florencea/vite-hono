@@ -11,7 +11,7 @@
     "db:seed": "tsx src/server/database/seed.ts",
     "db:studio": "drizzle-kit studio",
     "deploy:cf": "wrangler deploy",
-    "dev": "node --watch --watch-path=src/server --watch-path=src/locales --watch-path=public/openapi --watch-path=.env --watch-path=package.json --import tsx src/server/app.ts",
+    "dev": "node --watch --watch-path=src/server --watch-path=src/locales --watch-path=.env --watch-path=package.json --import tsx src/server/app.ts",
     "docker:build": "docker build --build-arg NODE_VERSION=$npm_package_engines_node -t vite-hono:latest .",
     "docker:down": "docker-compose down",
     "docker:up": "NODE_VERSION=$npm_package_engines_node docker-compose up -d --build",

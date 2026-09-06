@@ -14,9 +14,7 @@ import {
   SWAGGER_UI_OPTIONS,
 } from "./config.js";
 import { i18nMiddleware } from "./i18n.js";
-import { openapiConfig } from "./openapi.js";
 import { apiRouter } from "./router.js";
-import { renderSwaggerUiHtml } from "./swagger.js";
 import { typegenRouter } from "./typegen.js";
 
 const app = new OpenAPIHono();
@@ -34,6 +32,7 @@ if (ENABLE_SERVER) {
 }
 
 if (ENABLE_OPENAPI) {
+  const { openapiConfig, renderSwaggerUiHtml } = await import("./openapi/index.js");
   const docJsonPath = `${DOC_ROUTE}/doc.json`;
 
   app.doc(docJsonPath, openapiConfig);

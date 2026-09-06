@@ -16,5 +16,5 @@
   font-size: 14px;
   opacity: 0.5;
   content: "Protected Route";
-  color: light-dark(#000, #fff)
+  color: light-dark(#000, #fff);
 }
