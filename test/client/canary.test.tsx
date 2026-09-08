@@ -22,11 +22,9 @@ test("E2E Form Contract: Required validation blocks empty submission without net
   // Click submit on empty form
   await submitBtn.click();
 
-  // Antd validation should mark fields with error explanations
-  const errorElements = document.querySelectorAll(
-    ".ant-form-item-explain-error",
-  );
-  expect(errorElements.length).toBeGreaterThanOrEqual(1);
+  // Antd validation should display required error message with auto-waiting
+  const errorMsg = screen.getByText(/Please enter Account|請輸入帳號/i);
+  await expect.element(errorMsg).toBeVisible();
 
   // No login network request should be dispatched by Hono RPC client
   const loginCalls = fetchSpy.mock.calls.filter(([callInput]) => {
