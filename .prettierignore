@@ -1,0 +1,7 @@
+dist
+public
+drizzle
+.wrangler
+.tanstack
+database.sqlite
+src/client/routeTree.gen.ts

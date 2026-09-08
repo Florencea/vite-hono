@@ -56,28 +56,36 @@ export const SESSION_TTL = parseInt(process.env.SESSION_TTL ?? "604800", 10);
 /**
  * Database connection URL
  */
-export const DATABASE_URL = process.env.DATABASE_URL ?? "file:./database.sqlite";
+export const DATABASE_URL =
+  process.env.DATABASE_URL ?? "file:./database.sqlite";
 
 /**
  * OpenAPI doc title
  */
-export const DOC_TITLE = [process.env.VITE_TITLE ?? "Test Vite Hono", "API Reference"].join(" ");
+export const DOC_TITLE = [
+  process.env.VITE_TITLE ?? "Test Vite Hono",
+  "API Reference",
+].join(" ");
 
 /**
  * OpenAPI doc route
  */
-export const DOC_ROUTE = posix.join(BASE, process.env.VITE_API_OPENAPI_DOC_ROUTE ?? "/openapi");
+export const DOC_ROUTE = posix.join(
+  BASE,
+  process.env.VITE_API_OPENAPI_DOC_ROUTE ?? "/openapi",
+);
 
 /**
  * Enable OpenAPI spec and Scalar documentation
  */
 export const ENABLE_OPENAPI =
-  (process.env.ENABLE_OPENAPI ?? "1") === "1" || process.env.ENABLE_OPENAPI === "true";
+  (process.env.ENABLE_OPENAPI ?? "1") === "1" ||
+  process.env.ENABLE_OPENAPI === "true";
 
 const timestamp = new Date().toLocaleTimeString("en-US");
 const serverUrl = IS_PRODUCTION
-  ? `port: ${PORT}, base: ${BASE}`
-  : `http://localhost:${PORT}${BASE}`;
+  ? `port: ${PORT.toString()}, base: ${BASE}`
+  : `http://localhost:${PORT.toString()}${BASE}`;
 
 /**
  * Server ready message

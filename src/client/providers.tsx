@@ -63,8 +63,9 @@ const AntdProvider = ({ container, children }: ProviderProps) => {
   const [primaryColor, setPrimaryColor] = useState(() => {
     if (typeof window !== "undefined") {
       return (
-        getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim() ||
-        undefined
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--color-primary")
+          .trim() || undefined
       );
     }
     return undefined;
@@ -113,14 +114,14 @@ const ApiProvider = ({ children }: Props) => {
       new QueryClient({
         queryCache: new QueryCache({
           onError: (err) => {
-            if (err?.message) {
+            if (err.message) {
               void msg.error(err.message, 4.5);
             }
           },
         }),
         mutationCache: new MutationCache({
           onError: (err) => {
-            if (err?.message) {
+            if (err.message) {
               void msg.error(err.message, 4.5);
             }
           },

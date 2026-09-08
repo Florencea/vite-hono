@@ -52,7 +52,10 @@ if (IS_PRODUCTION) {
   app.use("*", async (c, next) => {
     const url = c.req.path;
     // Skip backend API and OpenAPI routes
-    if (url.startsWith(API_ENDPOINT_RPC) || (ENABLE_OPENAPI && url.startsWith(DOC_ROUTE))) {
+    if (
+      url.startsWith(API_ENDPOINT_RPC) ||
+      (ENABLE_OPENAPI && url.startsWith(DOC_ROUTE))
+    ) {
       return next();
     }
 
@@ -68,7 +71,9 @@ if (IS_PRODUCTION) {
             const templateRaw = readFileSync(templatePath, "utf-8");
             void viteDevServer
               .transformIndexHtml(c.req.url, templateRaw)
-              .then((template) => resolve(c.html(template)))
+              .then((template) => {
+                resolve(c.html(template));
+              })
               .catch((err: unknown) => {
                 reject(err instanceof Error ? err : new Error(String(err)));
               });
@@ -77,7 +82,9 @@ if (IS_PRODUCTION) {
           }
         });
       } else {
-        void next().then(() => resolve(c.res));
+        void next().then(() => {
+          resolve(c.res);
+        });
       }
     });
   });
@@ -109,7 +116,7 @@ const gracefulShutdown = () => {
   }, 1000).unref();
 
   if (server) {
-    server.closeAllConnections?.();
+    server.closeAllConnections();
     server.close(() => {
       process.exit(0);
     });

@@ -12,7 +12,7 @@ export const useUserInfo = () => {
   const menuItems = useMemo(() => {
     return MENU_ITEMS.filter(({ icon }) => Boolean(icon)).map((item) => ({
       ...item,
-      label: `${t(item.key as FileRouteTypes["fullPaths"])}`,
+      label: t(item.key as FileRouteTypes["fullPaths"]),
     }));
   }, [t]);
 

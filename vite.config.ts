@@ -8,14 +8,5 @@ export default defineConfig({
     outDir: "dist/client",
     chunkSizeWarningLimit: 1000,
   },
-  plugins: [
-    tanstackRouter({
-      target: "react",
-      autoCodeSplitting: true,
-      routesDirectory: "./src/client/routes",
-      generatedRouteTree: "./src/client/routeTree.gen.ts",
-    }),
-    react(),
-    tailwindcss(),
-  ],
+  plugins: [tanstackRouter(), react(), tailwindcss()],
 });

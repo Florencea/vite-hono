@@ -1,27 +1,17 @@
 import { TeamOutlined } from "@ant-design/icons";
+import type { QueryClient } from "@tanstack/react-query";
 import { createRouter, useRouterState } from "@tanstack/react-router";
 import type { MenuProps } from "antd";
-import type { InferRequestType, InferResponseType } from "hono/client";
+import type { InferRequestType } from "hono/client";
 import { useTranslation } from "react-i18next";
 import { api } from "../api";
 import { routeTree } from "../routeTree.gen";
 
-export const LOGIN_ROUTE = "/login";
-
-export type LoginInput = InferRequestType<typeof api.auth.login.$post>["json"];
-export type LoginOutput = InferResponseType<typeof api.auth.login.$post>;
-export type UserInfoOutput = InferResponseType<typeof api.auth.getUserInfo.$get>;
+type LoginInput = InferRequestType<typeof api.auth.login.$post>["json"];
 
 export type RouterInputs = {
   auth: {
     login: LoginInput;
-  };
-};
-
-export type RouterOutputs = {
-  auth: {
-    login: LoginOutput;
-    getUserInfo: UserInfoOutput;
   };
 };
 
@@ -48,7 +38,7 @@ export const router = createRouter({
   routeTree: routeTree,
   basepath: import.meta.env.BASE_URL,
   context: {
-    queryClient: undefined!,
+    queryClient: undefined as unknown as QueryClient,
   },
 });
 
@@ -64,7 +54,7 @@ export const useSiteTitle = () => {
     location: { pathname },
   } = useRouterState();
 
-  const currentLabel = MENU_ITEMS.find((item) => item?.key?.toString() === pathname);
+  const currentLabel = MENU_ITEMS.find((item) => item.key === pathname);
 
   return currentLabel
     ? `${t(currentLabel.key, { defaultValue: currentLabel.label })} - ${import.meta.env.VITE_TITLE}`

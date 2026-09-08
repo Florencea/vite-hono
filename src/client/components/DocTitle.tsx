@@ -14,14 +14,15 @@ export const DocTitle = ({
   withAppSuffix = true,
 }: DocTitleProps) => {
   const defaultRouteTitle = useSiteTitle();
-  const baseTitle = typeof title === "number" ? title.toString() : title || defaultRouteTitle;
+  const baseTitle =
+    typeof title === "number" ? title.toString() : (title ?? defaultRouteTitle);
 
   const prefixes: string[] = [];
   if (isDirty) {
     prefixes.push("*");
   }
   if (typeof count === "number" && count > 0) {
-    prefixes.push(`(${count})`);
+    prefixes.push(`(${count.toString()})`);
   }
 
   const prefixStr = prefixes.length > 0 ? `${prefixes.join(" ")} ` : "";

@@ -47,6 +47,3 @@ export function createCoreApp() {
 
   return app;
 }
-
-export type AppType = typeof apiRouter;
-export default createCoreApp;

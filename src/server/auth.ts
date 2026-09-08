@@ -1,9 +1,13 @@
 import { argon2id, argon2Verify } from "hash-wasm";
-import type { Context, MiddlewareHandler } from "hono";
+import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
-import { HTTPException } from "hono/http-exception";
 import { sign, verify } from "hono/jwt";
-import { COOKIE_NAME, COOKIE_SECRET, IS_PRODUCTION, SESSION_TTL } from "./config.ts";
+import {
+  COOKIE_NAME,
+  COOKIE_SECRET,
+  IS_PRODUCTION,
+  SESSION_TTL,
+} from "./config.ts";
 
 export interface SessionData {
   id: number;
@@ -16,21 +20,28 @@ export async function getSession(c: Context): Promise<SessionData | null> {
   if (!token) return null;
 
   try {
-    const payload = await verify(token, COOKIE_SECRET, "HS256");
+    const payload = (await verify(token, COOKIE_SECRET, "HS256")) as unknown;
     if (!payload || typeof payload !== "object") return null;
-    return payload as unknown as SessionData;
+    return payload as SessionData;
   } catch {
     return null;
   }
 }
 
-export async function setSession(c: Context, data: Omit<SessionData, "exp">): Promise<void> {
+export async function setSession(
+  c: Context,
+  data: Omit<SessionData, "exp">,
+): Promise<void> {
   const payload: SessionData = {
     ...data,
     exp: Math.floor(Date.now() / 1000) + SESSION_TTL,
   };
 
-  const token = await sign(payload as unknown as Record<string, unknown>, COOKIE_SECRET, "HS256");
+  const token = await sign(
+    payload as unknown as Record<string, unknown>,
+    COOKIE_SECRET,
+    "HS256",
+  );
 
   setCookie(c, COOKIE_NAME, token, {
     httpOnly: true,
@@ -47,15 +58,6 @@ export function deleteSession(c: Context): void {
     secure: IS_PRODUCTION,
   });
 }
-
-export const authorizedMiddleware: MiddlewareHandler = async (c, next) => {
-  const session = await getSession(c);
-  if (!session?.id) {
-    throw new HTTPException(401, { message: "UNAUTHORIZED" });
-  }
-  c.set("session", session);
-  await next();
-};
 
 /**
  * Hashes a plain password using WebAssembly Argon2id (OWASP recommended standard).

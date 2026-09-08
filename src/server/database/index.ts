@@ -4,9 +4,10 @@ import { drizzle as drizzleD1 } from "drizzle-orm/d1";
 import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { defineRelations } from "drizzle-orm/relations";
 import type { Context } from "hono";
+import { DATABASE_URL } from "../config.ts";
 import * as schema from "./schema.ts";
 
-const connectionString = process.env.DATABASE_URL || "file:./database.sqlite";
+const connectionString = DATABASE_URL;
 
 const relations = defineRelations(schema);
 
@@ -28,16 +29,18 @@ let _db: Database | undefined;
 export function getDb(c?: Context): Database {
   const env = c?.env as CloudflareEnv | undefined;
   if (env?.DB) {
-    return drizzleD1(env.DB, { relations }) as unknown as Database;
+    return drizzleD1(env.DB, { relations });
   }
-  if (!_db) {
-    _db = getLibsqlDb();
-  }
+  _db ??= getLibsqlDb();
   return _db;
 }
 
 export const db: Database = new Proxy({} as Database, {
-  get(_target, prop) {
-    return getDb()[prop as keyof Database];
+  get(_target, prop, receiver) {
+    const targetDb = getDb();
+    const value = Reflect.get(targetDb, prop, receiver) as unknown;
+    return typeof value === "function"
+      ? (value as (...args: unknown[]) => unknown).bind(targetDb)
+      : value;
   },
 });

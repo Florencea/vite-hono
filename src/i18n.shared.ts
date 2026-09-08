@@ -1,7 +1,7 @@
 import enUS from "./locales/en-US";
 import zhTW from "./locales/zh-TW";
 
-export const resources = {
+const resources = {
   "en-US": enUS,
   "zh-TW": zhTW,
 } as const;

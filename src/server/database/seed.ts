@@ -32,7 +32,7 @@ main()
     console.log("Database seed completed.");
     process.exit(0);
   })
-  .catch((e) => {
+  .catch((e: unknown) => {
     console.error(e);
     process.exit(1);
   });

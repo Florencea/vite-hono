@@ -1,4 +1,9 @@
-import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  Link,
+  Outlet,
+  useNavigate,
+  useRouterState,
+} from "@tanstack/react-router";
 import { Layout as AntdLayout, Button, Menu, Typography, theme } from "antd";
 import clsx from "clsx";
 import { useState } from "react";
@@ -33,7 +38,10 @@ export const Layout = () => {
           >
             <Link className="flex items-center gap-3" to="/">
               <img className="h-6 w-6 shrink-0" src={logo} alt="logo" />
-              <Text strong className="shrink-0 text-sm tracking-wide sm:text-base">
+              <Text
+                strong
+                className="shrink-0 text-sm tracking-wide sm:text-base"
+              >
                 {import.meta.env.VITE_TITLE}
               </Text>
             </Link>
@@ -61,7 +69,9 @@ export const Layout = () => {
               collapsedWidth="48"
               collapsible
               collapsed={collapsed}
-              onCollapse={(value) => setCollapsed(value)}
+              onCollapse={(value) => {
+                setCollapsed(value);
+              }}
             >
               <Menu
                 selectedKeys={[routerState.location.pathname]}

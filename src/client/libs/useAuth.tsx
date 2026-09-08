@@ -14,7 +14,7 @@ export const useAuth = () => {
         const errorData = (await res.json().catch(() => ({}))) as {
           error?: string;
         };
-        throw new Error(errorData.error || "Login failed");
+        throw new Error(errorData.error ?? "Login failed");
       }
       return res.json();
     },
@@ -30,7 +30,7 @@ export const useAuth = () => {
         const errorData = (await res.json().catch(() => ({}))) as {
           error?: string;
         };
-        throw new Error(errorData.error || "Logout failed");
+        throw new Error(errorData.error ?? "Logout failed");
       }
       return res.json();
     },
@@ -43,7 +43,9 @@ export const useAuth = () => {
     formProps: {
       layout: "vertical",
       disabled: login.isPending,
-      onFinish: (values) => login.mutate(values),
+      onFinish: (values) => {
+        login.mutate(values);
+      },
     },
     formItemProps: {
       account: {
