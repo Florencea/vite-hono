@@ -1,5 +1,8 @@
 # Vite Hono
 
+[![CI](https://github.com/Florencea/vite-hono/actions/workflows/test.yml/badge.svg)](https://github.com/Florencea/vite-hono/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A modern, end-to-end type-safe full-stack template powered by **React 19**, **Vite**, **Hono**, **Ant Design v6**, **TailwindCSS v4**, **TanStack Router / Query**, and **Drizzle ORM**.
 
 Designed for robust full-stack development with deterministic quality gates, zero runtime black magic, and clear architectural conventions.
