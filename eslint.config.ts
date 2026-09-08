@@ -12,6 +12,7 @@ export default defineConfig([
     "drizzle",
     ".wrangler",
     ".tanstack",
+    ".vitest",
     "database.sqlite",
     "src/client/routeTree.gen.ts",
   ]),
@@ -73,7 +74,19 @@ export default defineConfig([
     },
   },
   {
-    files: ["src/server/**/*.{ts,tsx}", "*.config.ts"],
+    files: ["test/client/**/*.{ts,tsx}"],
+    extends: [reactHooks.configs.flat.recommended],
+    languageOptions: {
+      globals: globals.browser,
+    },
+  },
+  {
+    files: [
+      "src/server/**/*.{ts,tsx}",
+      "test/server/**/*.{ts,tsx}",
+      "test/canary/**/*.{ts,tsx}",
+      "*.config.ts",
+    ],
     languageOptions: {
       globals: globals.node,
     },

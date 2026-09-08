@@ -25,6 +25,7 @@ Designed for robust full-stack development with deterministic quality gates, zer
 | **Routing & State** | TanStack Router (file-based), TanStack Query     |
 | **Backend & API**   | Hono, Hono RPC, `@hono/zod-openapi`, Scalar      |
 | **Database & ORM**  | Drizzle ORM, SQLite / LibSQL / Cloudflare D1     |
+| **Testing**         | Vitest (Chromium Browser Mode + Node in-memory)  |
 | **Code Quality**    | TypeScript (strict), ESLint 10, Prettier 3, Knip |
 
 ---
@@ -57,6 +58,27 @@ npm run dev
 
 ---
 
+## Feature Development Workflow
+
+This template follows an **End-to-End Type-Safe & Test-Driven (TDD)** development flow:
+
+1. **Define OpenAPI Schema**:
+   - Create Zod request/response schemas in `src/server/routes/<feature>/<feature>.schema.ts`.
+2. **Server Handler & In-Memory Test**:
+   - Implement route handlers in `src/server/routes/<feature>/`.
+   - Write integration tests in `test/server/` using Hono's `app.request()` (zero port conflicts, sub-second feedback).
+3. **Mount RPC Route**:
+   - Register route in `src/server/router.ts`. Client RPC types (`AppType`, `api.<feature>`) update automatically.
+4. **Client UI & Form**:
+   - Create routes in `src/client/routes/` and components in `src/client/components/`.
+   - Bind forms to RPC types via `useAntdForm<RouterInputs["<feature>"]>()`.
+5. **Browser Mode Test**:
+   - Write real browser tests in `test/client/` using `renderAppAt()` to verify UI interactions, token styles, and RPC calls.
+6. **Unified Verification Gate**:
+   - Execute `npm run check` to verify types, lints, formatting, dead code, tests, and build.
+
+---
+
 ## Verification Gate (Definition of Done)
 
 Run the unified gate before committing or completing development tasks:
@@ -65,7 +87,7 @@ Run the unified gate before committing or completing development tasks:
 npm run check
 ```
 
-Executes `typecheck` + `lint` + `format:check` + `check:deadcode` (Knip) + `build`. Must pass with 0 errors and 0 warnings.
+Executes `typecheck` + `lint` + `format:check` + `check:deadcode` (Knip) + `test` (Vitest dual-track: Chromium + Node) + `build`. Must pass with 0 errors and 0 warnings.
 
 ---
 
@@ -82,16 +104,20 @@ Executes `typecheck` + `lint` + `format:check` + `check:deadcode` (Knip) + `buil
 
 ## Available Scripts
 
-| Command             | Description                              |
-| :------------------ | :--------------------------------------- |
-| `npm run dev`       | Start development server with Vite HMR   |
-| `npm run check`     | Run full 5-step verification gate        |
-| `npm run build`     | Build both client SPA and server bundles |
-| `npm start`         | Start Node.js production server          |
-| `npm run db:push`   | Push schema changes via Drizzle Kit      |
-| `npm run db:seed`   | Seed database with initial data          |
-| `npm run db:studio` | Launch Drizzle Studio database manager   |
-| `npm run deploy:cf` | Deploy to Cloudflare Workers             |
+| Command               | Description                                          |
+| :-------------------- | :--------------------------------------------------- |
+| `npm run dev`         | Start development server with Vite HMR               |
+| `npm run check`       | Run unified 6-step verification gate                 |
+| `npm run test`        | Run all Vitest tests (client + server)               |
+| `npm run test:client` | Run client tests in headless Chromium (browser mode) |
+| `npm run test:server` | Run server tests in Node.js via in-memory Hono       |
+| `npm run test:setup`  | Install Playwright Chromium binary                   |
+| `npm run build`       | Build both client SPA and server bundles             |
+| `npm start`           | Start Node.js production server                      |
+| `npm run db:push`     | Push schema changes via Drizzle Kit                  |
+| `npm run db:seed`     | Seed database with initial data                      |
+| `npm run db:studio`   | Launch Drizzle Studio database manager               |
+| `npm run deploy:cf`   | Deploy to Cloudflare Workers                         |
 
 ---
 

@@ -21,6 +21,7 @@ import { theme } from "./theme";
 
 interface Props {
   children?: React.ReactNode;
+  queryClient?: QueryClient;
 }
 
 interface ProviderProps extends Props {
@@ -37,7 +38,11 @@ const AppRouterProvider = () => {
   return <RouterProvider router={router} context={{ queryClient }} />;
 };
 
-export const Providers = ({ container }: { container: HTMLElement }) => {
+export const Providers = ({
+  container,
+  children,
+  queryClient,
+}: ProviderProps) => {
   useEffect(() => {
     i18n.on("languageChanged", (lng) => {
       document.documentElement.setAttribute("lang", lng);
@@ -48,9 +53,9 @@ export const Providers = ({ container }: { container: HTMLElement }) => {
   return (
     <StrictMode>
       <I18nextProvider i18n={i18n}>
-        <ApiProvider>
+        <ApiProvider queryClient={queryClient}>
           <AntdProvider container={container}>
-            <AppRouterProvider />
+            {children ?? <AppRouterProvider />}
           </AntdProvider>
         </ApiProvider>
       </I18nextProvider>
@@ -106,10 +111,10 @@ const AntdProvider = ({ container, children }: ProviderProps) => {
   );
 };
 
-const ApiProvider = ({ children }: Props) => {
+const ApiProvider = ({ children, queryClient: customQueryClient }: Props) => {
   const [msg, msgContext] = message.useMessage();
 
-  const [queryClient] = useState(
+  const [defaultQueryClient] = useState(
     () =>
       new QueryClient({
         queryCache: new QueryCache({
@@ -132,6 +137,8 @@ const ApiProvider = ({ children }: Props) => {
         },
       }),
   );
+
+  const queryClient = customQueryClient ?? defaultQueryClient;
 
   return (
     <QueryClientProvider client={queryClient}>

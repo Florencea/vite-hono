@@ -16,7 +16,7 @@ export default {
     login: "Login",
     account: "Account",
     password: "Password",
-    submit: "Sumbit",
+    submit: "Submit",
   },
   routes: {
     "/": "Welcome",
