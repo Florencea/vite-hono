@@ -3,5 +3,6 @@ public
 drizzle
 .wrangler
 .tanstack
+.vitest
 database.sqlite
 src/client/routeTree.gen.ts
