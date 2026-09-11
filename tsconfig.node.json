@@ -24,6 +24,7 @@
     "vitest.config.ts",
     "drizzle.config.ts",
     "eslint.config.ts",
-    "prettier.config.ts"
+    "prettier.config.ts",
+    "scripts/**/*.ts"
   ]
 }

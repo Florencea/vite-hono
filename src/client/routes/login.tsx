@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Button, Card, Form, Input } from "antd";
+import { Button, Card, Flex, Form, Input } from "antd";
 import { z } from "zod";
-import { I18nSwitcher } from "../components/i18n-switcher";
-import { useAuth } from "../libs/useAuth";
-import { useI18n } from "../libs/useI18n";
+import { I18nSwitcher } from "../components/I18nSwitcher.tsx";
+import { useAuth } from "../hooks/useAuth.ts";
+import { useI18n } from "../hooks/useI18n.ts";
 
 const loginSearchSchema = z.object({
   redirect: z.string().optional(),
@@ -17,12 +17,10 @@ export const Route = createFileRoute("/login")({
 function Page() {
   const { t } = useI18n();
   const { loginForm, login } = useAuth();
+
   return (
-    <div className="flex h-full w-full items-center justify-center">
-      <Card
-        title={t("auth.login")}
-        extra={[<I18nSwitcher key="i18nswicher" />]}
-      >
+    <Flex align="center" justify="center" className="h-full w-full">
+      <Card title={t("auth.login")} extra={<I18nSwitcher />}>
         <Form {...loginForm.formProps}>
           <Form.Item {...loginForm.formItemProps.account}>
             <Input autoFocus />
@@ -41,6 +39,6 @@ function Page() {
           </Button>
         </Form>
       </Card>
-    </div>
+    </Flex>
   );
 }

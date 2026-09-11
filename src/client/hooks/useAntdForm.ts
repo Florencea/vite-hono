@@ -22,7 +22,7 @@ interface UseAntdFormRT<T> {
   formItemProps: { [k in keyof T]: FormItemPropsT<k> };
 }
 
-export const useAntdForm = <T,>({
+export const useAntdForm = <T>({
   formProps,
   formItemProps,
 }: UseAntdFormT<T>): UseAntdFormRT<T> => {

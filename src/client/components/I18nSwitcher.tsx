@@ -1,8 +1,8 @@
 import { GlobalOutlined } from "@ant-design/icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, Dropdown, type MenuProps } from "antd";
-import type { SupportedLocale } from "../../locales/registry";
-import { useI18n } from "../libs/useI18n";
+import type { SupportedLocale } from "../../locales/registry.ts";
+import { useI18n } from "../hooks/useI18n.ts";
 
 export const I18nSwitcher = () => {
   const { t, locale, setLocale, supportedLocales } = useI18n();

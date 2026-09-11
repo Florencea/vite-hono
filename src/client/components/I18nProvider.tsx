@@ -20,7 +20,7 @@ import {
   detectInitialLocale,
   I18nContext,
   STORAGE_KEY,
-} from "../libs/useI18n.ts";
+} from "../hooks/useI18n.ts";
 
 export interface I18nProviderProps {
   children: ReactNode;
@@ -39,8 +39,6 @@ export const I18nProvider = ({
     setLocaleState(newLocale);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, newLocale);
-      document.documentElement.lang = newLocale;
-      dayjs.locale(SUPPORTED_LOCALES[newLocale].dayjs);
     }
   }, []);
 
@@ -69,5 +67,5 @@ export const I18nProvider = ({
     [locale, setLocale, t],
   );
 
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+  return <I18nContext value={value}>{children}</I18nContext>;
 };

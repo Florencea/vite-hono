@@ -3,9 +3,9 @@ import type { QueryClient } from "@tanstack/react-query";
 import { createRouter, useRouterState } from "@tanstack/react-router";
 import type { MenuProps } from "antd";
 import type { InferRequestType } from "hono/client";
-import { api } from "../api";
-import { useI18n } from "../libs/useI18n";
-import { routeTree } from "../routeTree.gen";
+import { api } from "../api.ts";
+import { useI18n } from "../hooks/useI18n.ts";
+import { routeTree } from "../routeTree.gen.ts";
 
 type LoginInput = InferRequestType<typeof api.auth.login.$post>["json"];
 

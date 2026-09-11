@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Empty } from "antd";
+import { Empty, Flex } from "antd";
 import logo from "../assets/logo.png";
 
 export const Route = createFileRoute("/")({
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({
 
 function Page() {
   return (
-    <div className="flex h-full w-full items-center justify-center">
+    <Flex align="center" justify="center" className="h-full w-full">
       <Empty
         image={logo}
         styles={{
@@ -21,6 +21,6 @@ function Page() {
         }}
         description={false}
       />
-    </div>
+    </Flex>
   );
 }

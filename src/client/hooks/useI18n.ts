@@ -1,7 +1,7 @@
 import type { Locale } from "antd/es/locale";
 import antdEnUS from "antd/es/locale/en_US";
 import antdZhTW from "antd/es/locale/zh_TW";
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 import {
   DEFAULT_LOCALE,
   SUPPORTED_LOCALES,
@@ -48,7 +48,7 @@ export interface I18nContextValue {
 export const I18nContext = createContext<I18nContextValue | null>(null);
 
 export const useI18n = (): I18nContextValue => {
-  const ctx = useContext(I18nContext);
+  const ctx = use(I18nContext);
   if (!ctx) {
     throw new Error("useI18n must be used within an I18nProvider");
   }

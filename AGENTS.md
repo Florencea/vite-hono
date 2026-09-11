@@ -7,6 +7,7 @@ Guidelines for AI agents and developers working on this repository.
 - **Frontend (`src/client/`)**:
   - **Routes**: Modular routes in `src/client/routes/`. Never edit `src/client/routeTree.gen.ts` (auto-generated).
   - **Components**: Reusable UI elements in `src/client/components/`.
+  - **React Compiler**: Automatic fine-grained memoization is enabled via `@vitejs/plugin-react` (`reactCompilerPreset`) and `@rolldown/plugin-babel`. Do not write manual `useMemo`, `useCallback`, or `React.memo` unless handling non-compiler edge cases. Conforms strictly to `eslint-plugin-react-hooks`'s `recommended-latest` rules.
 - **Backend (`src/server/`)**:
   - **Routes**: Modular OpenAPI handlers in `src/server/routes/`.
   - **Database**: Drizzle schema in `src/server/database/schema.ts`.
@@ -15,6 +16,7 @@ Guidelines for AI agents and developers working on this repository.
   - **Token Bridge**: `src/client/theme.ts` dynamically extracts CSS variables into Ant Design tokens. Never hardcode fallback colors.
   - **No Inline `style`**: Prefer Ant Design layout components (`Layout`, `Flex`, `Space`, `Row`, `Col`, `Card`).
   - **No `!` (important)**: Tailwind is scoped under `#root` with natural specificity over Ant Design.
+  - **Canonical Classes**: Use Tailwind CSS v4 canonical class syntax (e.g. `bg-(--variable)` instead of `bg-[var(--variable)]`). Run `npm run lint:tailwind` to diagnose non-canonical classes and `npm run lint:tailwind:fix` to automatically format them.
 - **Language & i18n**:
   - **Pure TypeScript Schema SSOT**: `src/locales/schema.ts` defines `LocaleSchema` and `TranslationKey`.
   - **Strict Language Parity**: Every supported language (`en-US`, `zh-TW`, and future languages) in `src/locales/` MUST implement `satisfies LocaleSchema`.
@@ -91,9 +93,10 @@ Runs:
 
 1. `typecheck` (`tsc -b` in strict mode)
 2. `lint` (ESLint strict + stylistic type checks)
-3. `format:check` (Prettier style check)
-4. `check:deadcode` (Knip zero-config dead-code audit)
-5. `test` (Vitest dual-track tests: client browser + server in-memory)
-6. `build` (Client SPA + SSR server build)
+3. `lint:tailwind` (Official Tailwind CSS v4 canonical class check via `@tailwindcss/oxide`)
+4. `format:check` (Prettier style check)
+5. `check:deadcode` (Knip zero-config dead-code audit)
+6. `test` (Vitest dual-track tests: client browser + server in-memory)
+7. `build` (Client SPA + SSR server build)
 
 All checks must pass with 0 errors and 0 warnings.

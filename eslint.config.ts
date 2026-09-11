@@ -64,7 +64,7 @@ export default defineConfig([
   {
     files: ["src/client/**/*.{ts,tsx}"],
     extends: [
-      reactHooks.configs.flat.recommended,
+      reactHooks.configs.flat["recommended-latest"],
       reactRefresh.configs.vite({
         extraHOCs: ["createFileRoute", "createRootRoute"],
       }),
@@ -75,7 +75,7 @@ export default defineConfig([
   },
   {
     files: ["test/client/**/*.{ts,tsx}"],
-    extends: [reactHooks.configs.flat.recommended],
+    extends: [reactHooks.configs.flat["recommended-latest"]],
     languageOptions: {
       globals: globals.browser,
     },
@@ -85,6 +85,7 @@ export default defineConfig([
       "src/server/**/*.{ts,tsx}",
       "test/server/**/*.{ts,tsx}",
       "test/canary/**/*.{ts,tsx}",
+      "scripts/**/*.{ts,tsx}",
       "*.config.ts",
     ],
     languageOptions: {

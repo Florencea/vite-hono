@@ -4,39 +4,41 @@ import {
   useNavigate,
   useRouterState,
 } from "@tanstack/react-router";
-import { Layout as AntdLayout, Button, Menu, Typography, theme } from "antd";
+import { Layout as AntdLayout, Button, Flex, Menu, Typography } from "antd";
 import clsx from "clsx";
 import { useState } from "react";
 import logo from "../assets/logo.png";
-import { useAuth } from "../libs/useAuth";
-import { useI18n } from "../libs/useI18n";
-import { useUserInfo } from "../libs/useUserInfo";
-import { DocTitle } from "./DocTitle";
-import { I18nSwitcher } from "./i18n-switcher";
+import { useAuth } from "../hooks/useAuth.ts";
+import { useI18n } from "../hooks/useI18n.ts";
+import { useUserInfo } from "../hooks/useUserInfo.ts";
+import { DocTitle } from "./DocTitle.tsx";
+import { I18nSwitcher } from "./I18nSwitcher.tsx";
 
 const { Header, Sider, Content } = AntdLayout;
 const { Text } = Typography;
 
 export const Layout = () => {
   const { t } = useI18n();
-  const { token } = theme.useToken();
   const routerState = useRouterState();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const { logout } = useAuth();
   const { isLogin, account, menuItems } = useUserInfo();
+
   return (
     <>
       <DocTitle />
       <AntdLayout className="h-svh max-w-svw">
         {isLogin && (
           <Header
-            style={{ background: token.colorBgContainer }}
-            className={clsx("flex items-center justify-between px-3", {
-              "lg:px-4": !collapsed,
-            })}
+            className={clsx(
+              "flex items-center justify-between bg-white px-3 dark:bg-(--ant-color-bg-container)",
+              {
+                "lg:px-4": !collapsed,
+              },
+            )}
           >
-            <Link className="flex items-center gap-3" to="/">
+            <Link className="inline-flex items-center gap-3" to="/">
               <img className="h-6 w-6 shrink-0" src={logo} alt="logo" />
               <Text
                 strong
@@ -45,7 +47,7 @@ export const Layout = () => {
                 {import.meta.env.VITE_TITLE}
               </Text>
             </Link>
-            <div className="flex items-center">
+            <Flex align="center">
               <Text strong className="mr-3">
                 {account}
               </Text>
@@ -58,7 +60,7 @@ export const Layout = () => {
               >
                 {t("common.logout")}
               </Button>
-            </div>
+            </Flex>
           </Header>
         )}
         <AntdLayout hasSider={isLogin}>

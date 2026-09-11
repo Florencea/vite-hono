@@ -9,14 +9,14 @@ import {
 } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { App, ConfigProvider, message } from "antd";
-import { StrictMode, useEffect, useMemo, useState } from "react";
-import { I18nProvider } from "./components/i18n-provider";
-import { router } from "./constants/routes";
-import { antdLocales, useI18n } from "./libs/useI18n";
-import { theme } from "./theme";
+import { StrictMode, useState, type ReactNode } from "react";
+import { I18nProvider } from "./components/I18nProvider.tsx";
+import { router } from "./constants/routes.tsx";
+import { antdLocales, useI18n } from "./hooks/useI18n.ts";
+import { useAntdTheme } from "./theme.ts";
 
 interface Props {
-  children?: React.ReactNode;
+  children?: ReactNode;
   queryClient?: QueryClient;
 }
 
@@ -49,39 +49,7 @@ export const Providers = ({
 
 const AntdProvider = ({ container, children }: ProviderProps) => {
   const { locale } = useI18n();
-  const [primaryColor, setPrimaryColor] = useState(() => {
-    if (typeof window !== "undefined") {
-      return (
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--color-primary")
-          .trim() || undefined
-      );
-    }
-    return undefined;
-  });
-
-  useEffect(() => {
-    const color = getComputedStyle(document.documentElement)
-      .getPropertyValue("--color-primary")
-      .trim();
-    if (color && color !== primaryColor) {
-      requestAnimationFrame(() => {
-        setPrimaryColor(color);
-      });
-    }
-  }, [primaryColor]);
-
-  const dynamicTheme = useMemo(
-    () => ({
-      ...theme,
-      token: {
-        ...theme.token,
-        colorPrimary: primaryColor,
-        colorInfo: primaryColor,
-      },
-    }),
-    [primaryColor],
-  );
+  const dynamicTheme = useAntdTheme();
 
   return (
     <ConfigProvider
