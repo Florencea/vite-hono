@@ -3,7 +3,8 @@ import { eq, sql } from "drizzle-orm";
 import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { defineRelations } from "drizzle-orm/relations";
 import { existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { hashPassword } from "../auth.ts";
 import { db, type Database } from "./index.ts";
 import * as schema from "./schema.ts";
@@ -47,7 +48,7 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
   }
 }
 
-async function main() {
+export async function seedAllDatabases(): Promise<void> {
   console.info("[seed] Seeding primary database...");
   await seedDatabase(db);
 
@@ -73,12 +74,18 @@ async function main() {
   }
 }
 
-main()
-  .then(() => {
-    console.info("[seed] Database seed completed successfully.");
-    process.exit(0);
-  })
-  .catch((e: unknown) => {
-    console.error("[seed] Database seed failed:", e);
-    process.exit(1);
-  });
+const isDirectExecution =
+  Boolean(process.argv[1]) &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectExecution) {
+  seedAllDatabases()
+    .then(() => {
+      console.info("[seed] Database seed completed successfully.");
+      process.exit(0);
+    })
+    .catch((e: unknown) => {
+      console.error("[seed] Database seed failed:", e);
+      process.exit(1);
+    });
+}

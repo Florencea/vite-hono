@@ -13,6 +13,7 @@ export default defineConfig((env) => {
         include: ["react-dom/client"],
       },
       test: {
+        globalSetup: ["./test/global-setup.ts"],
         projects: [
           {
             test: {
