@@ -4,7 +4,6 @@
  */
 export interface LocaleSchema {
   common: {
-    title: string;
     logout: string;
     submit: string;
     changeLanguage: string;

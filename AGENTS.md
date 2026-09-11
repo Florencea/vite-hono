@@ -11,6 +11,10 @@ Guidelines for AI agents and developers working on this repository.
 - **Backend (`src/server/`)**:
   - **Routes**: Modular OpenAPI handlers in `src/server/routes/`.
   - **Database**: Drizzle schema in `src/server/database/schema.ts`.
+  - **Dual-Track Architecture**:
+    - `src/server/core.ts`: Single Source of Truth (SSOT) containing all middleware, OpenAPI setup, and route mounting.
+    - `src/server/worker.ts`: Cloudflare Workers & local dev/preview entry point via `@cloudflare/vite-plugin`.
+    - `src/server/app.ts`: Dedicated Node.js, Bare-Metal, and Docker production runner via `@hono/node-server`.
 - **Styling & SSOT**:
   - **Single Source of Truth**: TailwindCSS v4 `@theme` in `src/client/global.css` defines all tokens.
   - **Token Bridge**: `src/client/theme.ts` dynamically extracts CSS variables into Ant Design tokens. Never hardcode fallback colors.
@@ -31,6 +35,12 @@ Guidelines for AI agents and developers working on this repository.
 - **No Floating Promises**: Always `await` or properly handle Promises.
 - **No Dead Code**: Do not export unused types/functions or leave unused dependencies. Knip checks this.
 - **No Linter Workarounds**: Never weaken `eslint.config.ts`. Fix code directly to satisfy strict rules.
+- **Modern & Idiomatic TypeScript**:
+  - Write concise, idiomatic TypeScript and avoid redundant defensive wrappers (e.g. do NOT use `.filter(Boolean)` in Vite `plugins` array since Vite natively filters falsy plugin entries).
+  - Use modern syntax features: object property shorthands (`{ routeTree }`), interface extension (`interface B extends A`), and clean fallback operators (`||`, `??=`).
+  - Use `Boolean(x)` instead of `!!x` for clarity where explicit booleans are required.
+  - Trust React Compiler for automatic memoization: never add manual `useMemo` or `useCallback` without an explicit, documented edge-case rationale.
+  - **Robust Configuration**: Keep `src/server/config.ts` lean and purposeful. Never wrap fixed architectural constants (e.g. `/api`, `/openapi`, `dist/client`) in pseudo-environment variables (`process.env.VITE_*`). Reserve `process.env` exclusively for genuine runtime settings (e.g. `PORT`, `DATABASE_URL`, `COOKIE_SECRET`, `CORS_ORIGIN`, `ENABLE_OPENAPI`) with strict fail-fast validation (`validateConfig()`) rather than silent default fallbacks.
 - **Explicit String Conversions**: Call `.toString()` on numbers in template literals.
 - **Zero Key Drift & Complete i18n**:
   - Never hardcode user-facing copy or API error messages.

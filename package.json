@@ -15,7 +15,7 @@
     "db:seed": "node src/server/database/seed.ts",
     "db:studio": "drizzle-kit studio",
     "deploy:cf": "wrangler deploy",
-    "dev": "node --watch --watch-path=src/server --watch-path=src/locales --watch-path=.env --watch-path=package.json src/server/app.ts",
+    "dev": "vite",
     "docker:build": "docker build -t vite-hono:latest .",
     "docker:down": "docker compose down",
     "docker:up": "docker compose up -d --build",
@@ -25,6 +25,7 @@
     "lint:fix": "eslint --fix",
     "lint:tailwind": "node scripts/lint-tailwind.ts",
     "lint:tailwind:fix": "node scripts/lint-tailwind.ts --fix",
+    "preview": "vite preview",
     "start": "node dist/server/app.js",
     "test": "vitest run",
     "test:client": "vitest run --project client",
@@ -52,6 +53,7 @@
   },
   "devDependencies": {
     "@ant-design/icons": "6.3.4",
+    "@cloudflare/vite-plugin": "1.54.8",
     "@eslint/js": "10.0.1",
     "@rolldown/plugin-babel": "0.2.4",
     "@tailwindcss/oxide": "4.3.3",
@@ -80,7 +82,7 @@
     "vite": "8.3.0",
     "vitest": "5.0.0",
     "vitest-browser-react": "2.3.0",
-    "wrangler": "4.131.0"
+    "wrangler": "4.131.1"
   },
   "engines": {
     "node": "24.21.0"

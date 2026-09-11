@@ -61,13 +61,13 @@ describe("i18n Schema & Parity Contract", () => {
       ...enUS,
       common: {
         ...enUS.common,
-        title: "Hello {name}!",
+        submit: "Submit {name}!",
       },
     };
-    const rendered = getTranslation(mockDict, "common.title", {
+    const rendered = getTranslation(mockDict, "common.submit", {
       name: "Antigravity",
     });
-    expect(rendered).toBe("Hello Antigravity!");
+    expect(rendered).toBe("Submit Antigravity!");
   });
 });
 

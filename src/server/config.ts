@@ -1,93 +1,86 @@
 import "dotenv/config";
 
-import { join, posix } from "node:path";
+export interface ServerConfig {
+  DATABASE_URL: string;
+  COOKIE_SECRET: string;
+  PORT: number;
+  CORS_ORIGIN: string;
+  ENABLE_OPENAPI: boolean;
+}
 
 /**
- * Server in production mode
+ * Validates all required environment variables for the server.
+ * If any variable is missing or invalid in .env, aborts immediately without applying default values.
  */
-export const IS_PRODUCTION = process.env.NODE_ENV === "production";
+export function validateConfig(
+  env: Record<string, string | undefined> = process.env,
+): ServerConfig {
+  const missing: string[] = [];
 
-/**
- * API version
- */
-export const VERSION = process.env.npm_package_version ?? "1.0.0";
+  const databaseUrl = env.DATABASE_URL?.trim();
+  if (!databaseUrl) {
+    missing.push("DATABASE_URL");
+  }
 
-/**
- * Server port to listen (Node / Docker)
- */
-export const PORT = parseInt(process.env.PORT ?? "3000", 10);
+  const cookieSecret = env.COOKIE_SECRET?.trim();
+  if (!cookieSecret) {
+    missing.push("COOKIE_SECRET");
+  }
 
-/**
- * Server web base URL path
- */
-export const BASE = process.env.VITE_WEB_BASE ?? "/";
+  const portStr = env.PORT?.trim();
+  if (!portStr) {
+    missing.push("PORT");
+  }
 
-/**
- * Client output directory
- */
-export const OUTDIR = join(process.env.VITE_OUTDIR ?? "dist", "client");
+  const corsOrigin = env.CORS_ORIGIN?.trim();
+  if (!corsOrigin) {
+    missing.push("CORS_ORIGIN");
+  }
 
-/**
- * Hono RPC API endpoint route prefix
- */
-export const API_ENDPOINT_RPC = process.env.VITE_API_ENDPOINT_RPC ?? "/api";
+  const enableOpenApiStr = env.ENABLE_OPENAPI?.trim();
+  if (!enableOpenApiStr) {
+    missing.push("ENABLE_OPENAPI");
+  }
 
-/**
- * CORS allowed origin
- */
-export const CORS_ORIGIN = process.env.CORS_ORIGIN ?? "*";
+  if (
+    !databaseUrl ||
+    !cookieSecret ||
+    !portStr ||
+    !corsOrigin ||
+    !enableOpenApiStr
+  ) {
+    throw new Error(
+      `[Config Error] Missing required environment variable(s): ${missing.join(", ")}.\n` +
+        `Please ensure all configuration variables are explicitly defined in your .env file (refer to .env.example).`,
+    );
+  }
 
-/**
- * Session cookie name
- */
-export const COOKIE_NAME = process.env.COOKIE_NAME ?? "TestViteHono";
+  const port = Number.parseInt(portStr, 10);
+  if (Number.isNaN(port) || port <= 0 || port > 65535) {
+    throw new Error(
+      `[Config Error] Invalid PORT: "${portStr}". Must be a valid port number between 1 and 65535.`,
+    );
+  }
 
-/**
- * Session secret key (used by hono/jwt)
- */
-export const COOKIE_SECRET =
-  process.env.COOKIE_SECRET ?? "a long secret at least 32 characters long";
+  if (env.NODE_ENV === "production" && cookieSecret.length < 32) {
+    throw new Error(
+      `[Config Error] COOKIE_SECRET must be at least 32 characters long in production for security.`,
+    );
+  }
 
-/**
- * Session TTL in seconds (default 7 days)
- */
-export const SESSION_TTL = parseInt(process.env.SESSION_TTL ?? "604800", 10);
+  return {
+    DATABASE_URL: databaseUrl,
+    COOKIE_SECRET: cookieSecret,
+    PORT: port,
+    CORS_ORIGIN: corsOrigin,
+    ENABLE_OPENAPI: enableOpenApiStr === "1" || enableOpenApiStr === "true",
+  };
+}
 
-/**
- * Database connection URL
- */
-export const DATABASE_URL =
-  process.env.DATABASE_URL ?? "file:./database.sqlite";
-
-/**
- * OpenAPI doc title
- */
-export const DOC_TITLE = [
-  process.env.VITE_TITLE ?? "Test Vite Hono",
-  "API Reference",
-].join(" ");
-
-/**
- * OpenAPI doc route
- */
-export const DOC_ROUTE = posix.join(
-  BASE,
-  process.env.VITE_API_OPENAPI_DOC_ROUTE ?? "/openapi",
-);
-
-/**
- * Enable OpenAPI spec and Scalar documentation
- */
-export const ENABLE_OPENAPI =
-  (process.env.ENABLE_OPENAPI ?? "1") === "1" ||
-  process.env.ENABLE_OPENAPI === "true";
-
-const timestamp = new Date().toLocaleTimeString("en-US");
-const serverUrl = IS_PRODUCTION
-  ? `port: ${PORT.toString()}, base: ${BASE}`
-  : `http://localhost:${PORT.toString()}${BASE}`;
-
-/**
- * Server ready message
- */
-export const SERVER_READY_MESSAGE = `${timestamp} [hono] Server Ready on ${serverUrl}`;
+export const {
+  DATABASE_URL,
+  COOKIE_SECRET,
+  PORT,
+  CORS_ORIGIN,
+  ENABLE_OPENAPI,
+} = validateConfig();

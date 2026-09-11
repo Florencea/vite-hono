@@ -31,7 +31,6 @@ export const DocTitle = ({
   if (
     title &&
     withAppSuffix &&
-    import.meta.env.VITE_TITLE &&
     !finalTitle.endsWith(import.meta.env.VITE_TITLE)
   ) {
     finalTitle = `${finalTitle} - ${import.meta.env.VITE_TITLE}`;

@@ -11,7 +11,7 @@ Designed for robust full-stack development with deterministic quality gates, zer
 
 ## Highlights
 
-- **Strict Quality Gate**: Single unified command (`npm run check`) enforcing strict TypeScript, ESLint 10, Prettier, Knip dead-code detection, and dual-bundle builds.
+- **Strict Quality Gate**: Single unified command (`npm run check`) enforcing strict TypeScript, ESLint 10, Tailwind CSS v4 canonical classes, Prettier, Knip dead-code detection, dual-track testing (Chromium + Node), and dual-bundle builds.
 - **End-to-End Type Safety**: Shared schema validation and RPC inference via Hono RPC (`hc<AppType>`) and Zod OpenAPI—zero manual SDK generation or contract drift.
 - **Tailwind v4 & Ant Design SSOT**: Design tokens declared in `src/client/global.css` (`@theme`) dynamically bridge into Ant Design tokens without hardcoded fallbacks or `!important` hacks.
 - **Flexible Topologies**: Run as a single fullstack monolith (Node.js / Docker / Cloudflare Workers), decoupled SPA + API, or headless API microservice.
@@ -55,9 +55,11 @@ npm run db:seed
 npm run dev
 ```
 
-- Web App: `http://localhost:3000/`
-- Scalar API Reference: `http://localhost:3000/openapi`
-- OpenAPI JSON Spec: `http://localhost:3000/openapi/doc.json`
+- Web App: `http://localhost:5173/` (native Vite dev server with Cloudflare Workers emulation)
+- Scalar API Reference: `http://localhost:5173/openapi`
+- OpenAPI JSON Spec: `http://localhost:5173/openapi/doc.json`
+
+For Node.js production runner, start with `npm start` (listening on `PORT` specified in `.env`, default `3000`).
 
 ---
 
@@ -90,7 +92,7 @@ Run the unified gate before committing or completing development tasks:
 npm run check
 ```
 
-Executes `typecheck` + `lint` + `format:check` + `check:deadcode` (Knip) + `test` (Vitest dual-track: Chromium + Node) + `build`. Must pass with 0 errors and 0 warnings.
+Executes `typecheck` + `lint` + `lint:tailwind` + `format:check` + `check:deadcode` (Knip) + `test` (Vitest dual-track: Chromium + Node) + `build`. Must pass with 0 errors and 0 warnings.
 
 ---
 
@@ -107,20 +109,24 @@ Executes `typecheck` + `lint` + `format:check` + `check:deadcode` (Knip) + `test
 
 ## Available Scripts
 
-| Command               | Description                                          |
-| :-------------------- | :--------------------------------------------------- |
-| `npm run dev`         | Start development server with Vite HMR               |
-| `npm run check`       | Run unified 6-step verification gate                 |
-| `npm run test`        | Run all Vitest tests (client + server)               |
-| `npm run test:client` | Run client tests in headless Chromium (browser mode) |
-| `npm run test:server` | Run server tests in Node.js via in-memory Hono       |
-| `npm run test:setup`  | Install Playwright Chromium binary                   |
-| `npm run build`       | Build both client SPA and server bundles             |
-| `npm start`           | Start Node.js production server                      |
-| `npm run db:push`     | Push schema changes via Drizzle Kit                  |
-| `npm run db:seed`     | Seed database with initial data                      |
-| `npm run db:studio`   | Launch Drizzle Studio database manager               |
-| `npm run deploy:cf`   | Deploy to Cloudflare Workers                         |
+| Command                     | Description                                                             |
+| :-------------------------- | :---------------------------------------------------------------------- |
+| `npm run dev`               | Start native Vite dev server (with `@cloudflare/vite-plugin` emulation) |
+| `npm run preview`           | Preview production build locally via Vite                               |
+| `npm run check`             | Run unified 7-step verification gate                                    |
+| `npm run test`              | Run all Vitest tests (client + server)                                  |
+| `npm run test:client`       | Run client tests in headless Chromium (browser mode)                    |
+| `npm run test:server`       | Run server tests in Node.js via in-memory Hono                          |
+| `npm run test:setup`        | Install Playwright Chromium binary                                      |
+| `npm run build`             | Build both client SPA (`dist/client`) and server bundle (`dist/server`) |
+| `npm start`                 | Start Node.js production server (`node dist/server/app.js`)             |
+| `npm run lint:tailwind`     | Check Tailwind CSS v4 canonical class syntax                            |
+| `npm run lint:tailwind:fix` | Automatically format Tailwind CSS v4 canonical classes                  |
+| `npm run check:deadcode`    | Audit unused code and dependencies with Knip                            |
+| `npm run db:push`           | Push schema changes via Drizzle Kit                                     |
+| `npm run db:seed`           | Seed database with initial data                                         |
+| `npm run db:studio`         | Launch Drizzle Studio database manager                                  |
+| `npm run deploy:cf`         | Deploy to Cloudflare Workers                                            |
 
 ---
 

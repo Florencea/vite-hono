@@ -1,14 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { compress } from "hono/compress";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
-import {
-  API_ENDPOINT_RPC,
-  CORS_ORIGIN,
-  DOC_ROUTE,
-  ENABLE_OPENAPI,
-  IS_PRODUCTION,
-} from "./config.ts";
+import { CORS_ORIGIN, ENABLE_OPENAPI } from "./config.ts";
 import { i18nMiddleware, t } from "./i18n.ts";
 import { openapiConfig, scalarReference } from "./openapi.ts";
 import { apiRouter } from "./router.ts";
@@ -23,18 +16,15 @@ export function createCoreApp() {
   const app = new OpenAPIHono();
 
   // Middleware
-  if (IS_PRODUCTION) {
-    app.use("*", compress());
-  }
   app.use("*", secureHeaders());
   app.use("*", cors({ origin: CORS_ORIGIN, credentials: true }));
   app.use("*", i18nMiddleware);
 
   // Business API Routes
-  app.route(API_ENDPOINT_RPC, apiRouter);
+  app.route("/api", apiRouter);
 
   // Localized 404 for unhandled API endpoints
-  app.all(`${API_ENDPOINT_RPC}/*`, (c) => {
+  app.all("/api/*", (c) => {
     return c.json({ error: t(c, "errors.common.notFound") }, 404);
   });
 
@@ -45,14 +35,12 @@ export function createCoreApp() {
 
   // OpenAPI Specification and Scalar API Reference
   if (ENABLE_OPENAPI) {
-    const docJsonPath = `${DOC_ROUTE}/doc.json`;
-
     // OpenAPI 3.0 JSON spec endpoint
-    app.doc(docJsonPath, openapiConfig);
+    app.doc("/openapi/doc.json", openapiConfig);
 
     // Scalar interactive API reference UI
-    app.get(DOC_ROUTE, scalarReference);
-    app.get(`${DOC_ROUTE}/`, scalarReference);
+    app.get("/openapi", scalarReference);
+    app.get("/openapi/", scalarReference);
   }
 
   return app;

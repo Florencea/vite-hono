@@ -5,14 +5,8 @@
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
-    "directory": "dist/client",
-    "binding": "ASSETS",
-  },
-  "vars": {
-    "ENABLE_OPENAPI": "1",
-    "CORS_ORIGIN": "*",
-    "VITE_TITLE": "Test Vite Hono",
-    // Note: Set COOKIE_SECRET using `npx wrangler secret put COOKIE_SECRET`
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/openapi", "/openapi/*"],
   },
   "d1_databases": [
     {

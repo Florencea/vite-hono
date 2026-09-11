@@ -1,17 +1,13 @@
 import { hc } from "hono/client";
 import type { AppType } from "../server/router";
 
-const endpoint: string =
-  typeof import.meta.env.VITE_API_ENDPOINT_RPC === "string"
-    ? import.meta.env.VITE_API_ENDPOINT_RPC
-    : "/api";
+const endpoint = "/api";
 
 function getCurrentLanguage(): string {
   if (typeof window !== "undefined") {
     const stored = localStorage.getItem("app_lang");
     if (stored) return stored;
-    const docLang = document.documentElement.lang;
-    return docLang !== "" ? docLang : "en-US";
+    return document.documentElement.lang || "en-US";
   }
   return "en-US";
 }

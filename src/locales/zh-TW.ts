@@ -2,7 +2,6 @@ import type { LocaleSchema } from "./schema.ts";
 
 export default {
   common: {
-    title: "Test Vite Hono",
     logout: "登出",
     submit: "送出",
     changeLanguage: "變更系統語系",

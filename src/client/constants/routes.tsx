@@ -35,7 +35,7 @@ export const MENU_ITEMS = [
 ] satisfies MenuItemsT;
 
 export const router = createRouter({
-  routeTree: routeTree,
+  routeTree,
   basepath: import.meta.env.BASE_URL,
   context: {
     queryClient: undefined as unknown as QueryClient,

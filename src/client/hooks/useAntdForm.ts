@@ -16,10 +16,8 @@ interface UseAntdFormT<T> {
   formItemProps: { [k in keyof T]: FormItemPropsT<k> };
 }
 
-interface UseAntdFormRT<T> {
+interface UseAntdFormRT<T> extends UseAntdFormT<T> {
   formInstance: FormInstance<T>;
-  formProps: FormProps<T>;
-  formItemProps: { [k in keyof T]: FormItemPropsT<k> };
 }
 
 export const useAntdForm = <T>({

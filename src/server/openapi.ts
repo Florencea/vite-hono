@@ -1,5 +1,5 @@
 import { Scalar } from "@scalar/hono-api-reference";
-import { COOKIE_NAME, DOC_ROUTE, DOC_TITLE, VERSION } from "./config.ts";
+import { COOKIE_NAME } from "./auth.ts";
 
 /**
  * OpenAPI 3.0 configuration specification
@@ -7,8 +7,8 @@ import { COOKIE_NAME, DOC_ROUTE, DOC_TITLE, VERSION } from "./config.ts";
 export const openapiConfig = {
   openapi: "3.0.0",
   info: {
-    title: DOC_TITLE,
-    version: VERSION,
+    title: "API Reference",
+    version: "1.0.0",
     description:
       "- All datetime strings use ISO8601 (e.g. `2023-07-30T14:00:30.590Z`)",
   },
@@ -27,8 +27,8 @@ export const openapiConfig = {
  * Scalar API reference middleware handler
  */
 export const scalarReference = Scalar({
-  pageTitle: DOC_TITLE,
+  pageTitle: "API Reference",
   spec: {
-    url: `${DOC_ROUTE}/doc.json`,
+    url: "/openapi/doc.json",
   },
 });

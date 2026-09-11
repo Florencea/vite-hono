@@ -2,12 +2,10 @@ import { argon2id, argon2Verify } from "hash-wasm";
 import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
-import {
-  COOKIE_NAME,
-  COOKIE_SECRET,
-  IS_PRODUCTION,
-  SESSION_TTL,
-} from "./config.ts";
+import { COOKIE_SECRET } from "./config.ts";
+
+export const COOKIE_NAME = "vite_hono_session";
+const SESSION_TTL = 604800;
 
 export interface SessionData {
   id: number;
@@ -43,9 +41,10 @@ export async function setSession(
     "HS256",
   );
 
+  const isProduction = process.env.NODE_ENV === "production";
   setCookie(c, COOKIE_NAME, token, {
     httpOnly: true,
-    secure: IS_PRODUCTION,
+    secure: isProduction,
     sameSite: "Lax",
     path: "/",
     maxAge: SESSION_TTL,
@@ -53,9 +52,10 @@ export async function setSession(
 }
 
 export function deleteSession(c: Context): void {
+  const isProduction = process.env.NODE_ENV === "production";
   deleteCookie(c, COOKIE_NAME, {
     path: "/",
-    secure: IS_PRODUCTION,
+    secure: isProduction,
   });
 }
 

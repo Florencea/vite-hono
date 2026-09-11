@@ -7,14 +7,10 @@ import type { Context } from "hono";
 import { DATABASE_URL } from "../config.ts";
 import * as schema from "./schema.ts";
 
-const connectionString = DATABASE_URL;
-
 const relations = defineRelations(schema);
 
 const getLibsqlDb = () => {
-  const client = createClient({
-    url: connectionString,
-  });
+  const client = createClient({ url: DATABASE_URL });
   return drizzleLibsql({ client, relations });
 };
 
