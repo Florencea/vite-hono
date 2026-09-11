@@ -36,7 +36,7 @@
     "@libsql/client": "0.18.0",
     "@scalar/hono-api-reference": "0.12.1",
     "@tanstack/react-query": "5.102.8",
-    "@tanstack/react-router": "1.170.34",
+    "@tanstack/react-router": "1.170.35",
     "antd": "6.6.3",
     "clsx": "2.1.1",
     "dayjs": "1.11.23",
