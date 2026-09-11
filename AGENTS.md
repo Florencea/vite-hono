@@ -10,11 +10,17 @@ Guidelines for AI agents and developers working on this repository.
   - **React Compiler**: Automatic fine-grained memoization is enabled via `@vitejs/plugin-react` (`reactCompilerPreset`) and `@rolldown/plugin-babel`. Do not write manual `useMemo`, `useCallback`, or `React.memo` unless handling non-compiler edge cases. Conforms strictly to `eslint-plugin-react-hooks`'s `recommended-latest` rules.
 - **Backend (`src/server/`)**:
   - **Routes**: Modular OpenAPI handlers in `src/server/routes/`.
-  - **Database**: Drizzle schema in `src/server/database/schema.ts`.
+  - **Database & Seeding SSOT**:
+    - `src/server/database/schema.ts`: Single Source of Truth (SSOT) for all database tables and relations.
+    - `src/server/database/seed.ts`: SSOT for seed data (`DEFAULT_ADMIN`) and schema verification (`seedDatabase()`). Automatically seeds both primary database (`database.sqlite`) and local Cloudflare D1 (`.wrangler/state/v3/d1/*.sqlite`).
+    - **Code-First Schema Push**: The project follows a code-first workflow (`npm run db:push`, `npm run db:seed`). The `drizzle/` migrations directory is excluded in `.gitignore` to prevent committing generated SQL snapshots.
   - **Dual-Track Architecture**:
-    - `src/server/core.ts`: Single Source of Truth (SSOT) containing all middleware, OpenAPI setup, and route mounting.
+    - `src/server/core.ts`: Single Source of Truth (SSOT) containing all middleware, OpenAPI setup, and route mounting. NEVER contains DDL or database seeding logic.
     - `src/server/worker.ts`: Cloudflare Workers & local dev/preview entry point via `@cloudflare/vite-plugin`.
     - `src/server/app.ts`: Dedicated Node.js, Bare-Metal, and Docker production runner via `@hono/node-server`.
+  - **Authentication & Security**:
+    - Uses pure-TypeScript, zero-dependency `bcrypt-ts` (`hash`, `compare`) in `src/server/auth.ts` for universal runtime compatibility across Node.js 24, Docker, and Cloudflare Workers isolates (`workerd`).
+    - Do NOT use native C++ `bcrypt` (fails in Cloudflare Workers) or `hash-wasm` (violates Cloudflare Workers dynamic WebAssembly compilation security restrictions).
 - **Styling & SSOT**:
   - **Single Source of Truth**: TailwindCSS v4 `@theme` in `src/client/global.css` defines all tokens.
   - **Token Bridge**: `src/client/theme.ts` dynamically extracts CSS variables into Ant Design tokens. Never hardcode fallback colors.

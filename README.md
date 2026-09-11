@@ -12,6 +12,8 @@ Designed for robust full-stack development with deterministic quality gates, zer
 ## Highlights
 
 - **Strict Quality Gate**: Single unified command (`npm run check`) enforcing strict TypeScript, ESLint 10, Tailwind CSS v4 canonical classes, Prettier, Knip dead-code detection, dual-track testing (Chromium + Node), and dual-bundle builds.
+- **Universal Isomorphic Auth**: Pure TypeScript, zero-dependency `bcrypt-ts` authentication seamlessly compatible across Node.js, Docker, and Cloudflare Workers isolates (`workerd`) without native compilation or WebAssembly restrictions.
+- **Fail-Fast Configuration**: Lean `src/server/config.ts` enforcing strict validation on required environment variables (`DATABASE_URL`, `COOKIE_SECRET`, `PORT`, `CORS_ORIGIN`, `ENABLE_OPENAPI`) with zero silent fallback compromises.
 - **End-to-End Type Safety**: Shared schema validation and RPC inference via Hono RPC (`hc<AppType>`) and Zod OpenAPI—zero manual SDK generation or contract drift.
 - **Tailwind v4 & Ant Design SSOT**: Design tokens declared in `src/client/global.css` (`@theme`) dynamically bridge into Ant Design tokens without hardcoded fallbacks or `!important` hacks.
 - **Flexible Topologies**: Run as a single fullstack monolith (Node.js / Docker / Cloudflare Workers), decoupled SPA + API, or headless API microservice.
@@ -22,14 +24,14 @@ Designed for robust full-stack development with deterministic quality gates, zer
 
 ## Tech Stack
 
-| Layer               | Technology                                       |
-| :------------------ | :----------------------------------------------- |
-| **Frontend**        | React 19, Vite, Ant Design v6, TailwindCSS v4    |
-| **Routing & State** | TanStack Router (file-based), TanStack Query     |
-| **Backend & API**   | Hono, Hono RPC, `@hono/zod-openapi`, Scalar      |
-| **Database & ORM**  | Drizzle ORM, SQLite / LibSQL / Cloudflare D1     |
-| **Testing**         | Vitest (Chromium Browser Mode + Node in-memory)  |
-| **Code Quality**    | TypeScript (strict), ESLint 10, Prettier 3, Knip |
+| Layer               | Technology                                               |
+| :------------------ | :------------------------------------------------------- |
+| **Frontend**        | React 19, Vite, Ant Design v6, TailwindCSS v4            |
+| **Routing & State** | TanStack Router (file-based), TanStack Query             |
+| **Backend & API**   | Hono, Hono RPC, `@hono/zod-openapi`, Scalar, `bcrypt-ts` |
+| **Database & ORM**  | Drizzle ORM, SQLite / LibSQL / Cloudflare D1             |
+| **Testing**         | Vitest (Chromium Browser Mode + Node in-memory)          |
+| **Code Quality**    | TypeScript (strict), ESLint 10, Prettier 3, Knip         |
 
 ---
 
@@ -48,6 +50,8 @@ cp .env.example .env
 npm run db:push
 npm run db:seed
 ```
+
+> **Database SSOT**: `src/server/database/schema.ts` serves as the single source of truth for database tables. The project follows a code-first schema push workflow (`npm run db:push`), and `npm run db:seed` automatically seeds both the primary database (`database.sqlite`) and local Cloudflare D1 (`.wrangler/state/v3/d1/`).
 
 ### 2. Run Development Server
 
