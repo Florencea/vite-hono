@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Button, Card, Form, Input } from "antd";
-import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { I18nSwitcher } from "../components/i18n-switcher";
 import { useAuth } from "../libs/useAuth";
+import { useI18n } from "../libs/useI18n";
 
 const loginSearchSchema = z.object({
   redirect: z.string().optional(),
@@ -15,11 +15,14 @@ export const Route = createFileRoute("/login")({
 });
 
 function Page() {
-  const { t } = useTranslation("login");
+  const { t } = useI18n();
   const { loginForm, login } = useAuth();
   return (
     <div className="flex h-full w-full items-center justify-center">
-      <Card title={t("login")} extra={[<I18nSwitcher key="i18nswicher" />]}>
+      <Card
+        title={t("auth.login")}
+        extra={[<I18nSwitcher key="i18nswicher" />]}
+      >
         <Form {...loginForm.formProps}>
           <Form.Item {...loginForm.formItemProps.account}>
             <Input autoFocus />
@@ -34,7 +37,7 @@ function Page() {
             htmlType="submit"
             block
           >
-            {t("submit")}
+            {t("common.submit")}
           </Button>
         </Form>
       </Card>

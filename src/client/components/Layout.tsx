@@ -7,9 +7,9 @@ import {
 import { Layout as AntdLayout, Button, Menu, Typography, theme } from "antd";
 import clsx from "clsx";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import logo from "../assets/logo.png";
 import { useAuth } from "../libs/useAuth";
+import { useI18n } from "../libs/useI18n";
 import { useUserInfo } from "../libs/useUserInfo";
 import { DocTitle } from "./DocTitle";
 import { I18nSwitcher } from "./i18n-switcher";
@@ -18,7 +18,7 @@ const { Header, Sider, Content } = AntdLayout;
 const { Text } = Typography;
 
 export const Layout = () => {
-  const { t } = useTranslation("header");
+  const { t } = useI18n();
   const { token } = theme.useToken();
   const routerState = useRouterState();
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ export const Layout = () => {
                   logout.mutate();
                 }}
               >
-                {t("logout")}
+                {t("common.logout")}
               </Button>
             </div>
           </Header>

@@ -1,11 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { api } from "../api";
 import type { RouterInputs } from "../constants/routes";
 import { useAntdForm } from "./useAntdForm";
+import { useI18n } from "./useI18n";
 
 export const useAuth = () => {
-  const { t } = useTranslation("login");
+  const { t } = useI18n();
 
   const login = useMutation({
     mutationFn: async (input: RouterInputs["auth"]["login"]) => {
@@ -50,12 +50,12 @@ export const useAuth = () => {
     formItemProps: {
       account: {
         name: "account",
-        label: t("account"),
+        label: t("auth.account"),
         rules: [{ required: true }],
       },
       password: {
         name: "password",
-        label: t("password"),
+        label: t("auth.password"),
         rules: [{ required: true }],
       },
     },

@@ -9,7 +9,7 @@ import {
   ENABLE_OPENAPI,
   IS_PRODUCTION,
 } from "./config.ts";
-import { i18nMiddleware } from "./i18n.ts";
+import { i18nMiddleware, t } from "./i18n.ts";
 import { openapiConfig, scalarReference } from "./openapi.ts";
 import { apiRouter } from "./router.ts";
 
@@ -32,6 +32,16 @@ export function createCoreApp() {
 
   // Business API Routes
   app.route(API_ENDPOINT_RPC, apiRouter);
+
+  // Localized 404 for unhandled API endpoints
+  app.all(`${API_ENDPOINT_RPC}/*`, (c) => {
+    return c.json({ error: t(c, "errors.common.notFound") }, 404);
+  });
+
+  // Global localized 500 error handler
+  app.onError((_err, c) => {
+    return c.json({ error: t(c, "errors.common.internalServerError") }, 500);
+  });
 
   // OpenAPI Specification and Scalar API Reference
   if (ENABLE_OPENAPI) {

@@ -16,7 +16,10 @@ Guidelines for AI agents and developers working on this repository.
   - **No Inline `style`**: Prefer Ant Design layout components (`Layout`, `Flex`, `Space`, `Row`, `Col`, `Card`).
   - **No `!` (important)**: Tailwind is scoped under `#root` with natural specificity over Ant Design.
 - **Language & i18n**:
-  - Multi-language support (`zh-TW` and `en-US`) across UI and server.
+  - **Pure TypeScript Schema SSOT**: `src/locales/schema.ts` defines `LocaleSchema` and `TranslationKey`.
+  - **Strict Language Parity**: Every supported language (`en-US`, `zh-TW`, and future languages) in `src/locales/` MUST implement `satisfies LocaleSchema`.
+  - **Central Registry**: `src/locales/registry.ts` manages supported locales and bridges Day.js and Ant Design locales without server bundling bloat.
+  - **Isomorphic Translation API**: Client uses `useI18n()` (`useTranslation`), server uses `t(c, key)` from `src/server/i18n.ts`.
   - Keep code comments in concise English.
 
 ## 2. Strict Coding Standards
@@ -27,6 +30,11 @@ Guidelines for AI agents and developers working on this repository.
 - **No Dead Code**: Do not export unused types/functions or leave unused dependencies. Knip checks this.
 - **No Linter Workarounds**: Never weaken `eslint.config.ts`. Fix code directly to satisfy strict rules.
 - **Explicit String Conversions**: Call `.toString()` on numbers in template literals.
+- **Zero Key Drift & Complete i18n**:
+  - Never hardcode user-facing copy or API error messages.
+  - When creating or modifying screens or APIs, define keys in `src/locales/schema.ts` and implement them across ALL supported language files (`en-US.ts`, `zh-TW.ts`, etc.).
+  - Backend errors (including 400, 401, 403, 404, 500) must return localized error messages using `t(c, "errors.<domain>.<code">)`.
+  - All language files must satisfy `LocaleSchema` so missing keys cause compile-time failures during `tsc -b`.
 
 ## 3. Testing Standards
 
@@ -36,6 +44,9 @@ Guidelines for AI agents and developers working on this repository.
 - **End-to-End Type Safety**:
   - Ensure server Zod schemas (`@hono/zod-openapi`) stay in sync with client RPC (`hc<AppType>`), `RouterInputs`, and Ant Design forms (`useAntdForm`).
   - Use `expectTypeOf` to guard static contracts in `test/canary/e2e-type-contract.test.ts`.
+- **i18n Schema Parity & Contract Testing**:
+  - Guard zero key drift with recursive key completeness assertions in `test/canary/i18n-contract.test.ts`.
+  - Assert that server error responses dynamically resolve translations according to `Accept-Language` headers.
 - **Selector Standards**:
   - Prefer accessible queries (`screen.getByRole`, `screen.getByLabelText`) or explicit `data-testid`.
   - Never query by volatile CSS classes (such as `.ant-btn-primary`).
@@ -48,17 +59,19 @@ Guidelines for AI agents and developers working on this repository.
 
 When implementing a new feature or API, follow this end-to-end type-safe flow:
 
-1. **Backend Schema First (`src/server/routes/<feature>/`)**:
+1. **Backend Schema & i18n First (`src/server/routes/<feature>/` & `src/locales/`)**:
    - Define request/response Zod schemas with `@hono/zod-openapi` in `<feature>.schema.ts`.
    - Register route specification using `createRoute()` in `<feature>.routes.ts`.
+   - If feature defines error responses, add corresponding keys to `src/locales/schema.ts` and populate all dictionaries.
 2. **Server Handler & In-Memory Test (`test/server/`)**:
-   - Implement route handlers in `<feature>.handlers.ts` and export the sub-router in `<feature>/index.ts`.
-   - Write in-memory HTTP integration tests using Hono's `app.request()` in `test/server/` to verify schemas, status codes, and edge cases.
+   - Implement route handlers in `<feature>.handlers.ts` using `t(c, "errors...")` for error states, and export the sub-router in `<feature>/index.ts`.
+   - Write in-memory HTTP integration tests using Hono's `app.request()` in `test/server/` to verify schemas, status codes, localized errors, and edge cases.
 3. **Expose RPC Route (`src/server/router.ts`)**:
    - Mount the sub-router into `apiRouter`. Hono RPC types (`AppType`, `api.<feature>`) infer automatically for client consumption.
-4. **Client UI & Form (`src/client/`)**:
+4. **Client UI, Form & i18n (`src/client/`)**:
    - Define type aliases using `InferRequestType<typeof api.<feature>...>` in `src/client/constants/routes.tsx` (`RouterInputs`).
-   - Connect Ant Design forms with `useAntdForm<RouterInputs["<feature>"]>()`.
+   - Add UI copy keys to `src/locales/schema.ts` and all language files.
+   - Connect Ant Design forms with `useAntdForm<RouterInputs["<feature>"]>()` and `useI18n()`.
    - Build UI components (`src/client/components/`) and TanStack Router pages (`src/client/routes/`).
 5. **Browser Mode Test (`test/client/`)**:
    - Write UI and RPC wire contract tests under `test/client/` using `renderAppAt()`.

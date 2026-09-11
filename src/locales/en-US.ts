@@ -1,26 +1,33 @@
+import type { LocaleSchema } from "./schema.ts";
+
 export default {
-  server: {
-    auth: {
-      "user not found": "User not found",
-      "wrong password": "Wrong password",
-    },
-  },
-  i18nswicher: {
-    changelocale: "Change System Language",
-  },
-  header: {
+  common: {
     title: "Test Vite Hono",
     logout: "Logout",
+    submit: "Submit",
+    changeLanguage: "Change Language",
   },
-  login: {
+  auth: {
     login: "Login",
     account: "Account",
     password: "Password",
-    submit: "Submit",
   },
   routes: {
     "/": "Welcome",
     "/login": "Login",
-    "/user": "User",
+    "/user": "Users",
   },
-};
+  errors: {
+    auth: {
+      userNotFound: "User not found",
+      wrongPassword: "Wrong password",
+      unauthorized: "Unauthorized. Please log in first.",
+      forbidden: "Access forbidden.",
+    },
+    common: {
+      notFound: "Resource not found",
+      internalServerError: "Internal server error",
+      invalidRequest: "Invalid request payload",
+    },
+  },
+} as const satisfies LocaleSchema;

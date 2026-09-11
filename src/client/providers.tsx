@@ -1,4 +1,3 @@
-import "dayjs/locale/zh-tw";
 import "./global.css";
 
 import {
@@ -10,13 +9,10 @@ import {
 } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { App, ConfigProvider, message } from "antd";
-import type { Locale } from "antd/es/locale";
-import enUS from "antd/es/locale/en_US";
-import zhTW from "antd/es/locale/zh_TW";
 import { StrictMode, useEffect, useMemo, useState } from "react";
-import { I18nextProvider, useTranslation } from "react-i18next";
-import i18n from "../i18n";
+import { I18nProvider } from "./components/i18n-provider";
 import { router } from "./constants/routes";
+import { antdLocales, useI18n } from "./libs/useI18n";
 import { theme } from "./theme";
 
 interface Props {
@@ -28,11 +24,6 @@ interface ProviderProps extends Props {
   container: HTMLElement;
 }
 
-const antdLocales: Record<string, Locale> = {
-  "en-US": enUS,
-  "zh-TW": zhTW,
-};
-
 const AppRouterProvider = () => {
   const queryClient = useQueryClient();
   return <RouterProvider router={router} context={{ queryClient }} />;
@@ -43,28 +34,21 @@ export const Providers = ({
   children,
   queryClient,
 }: ProviderProps) => {
-  useEffect(() => {
-    i18n.on("languageChanged", (lng) => {
-      document.documentElement.setAttribute("lang", lng);
-    });
-    window.document.documentElement.lang = i18n.language;
-  }, []);
-
   return (
     <StrictMode>
-      <I18nextProvider i18n={i18n}>
+      <I18nProvider>
         <ApiProvider queryClient={queryClient}>
           <AntdProvider container={container}>
             {children ?? <AppRouterProvider />}
           </AntdProvider>
         </ApiProvider>
-      </I18nextProvider>
+      </I18nProvider>
     </StrictMode>
   );
 };
 
 const AntdProvider = ({ container, children }: ProviderProps) => {
-  const { i18n } = useTranslation();
+  const { locale } = useI18n();
   const [primaryColor, setPrimaryColor] = useState(() => {
     if (typeof window !== "undefined") {
       return (
@@ -102,7 +86,7 @@ const AntdProvider = ({ container, children }: ProviderProps) => {
   return (
     <ConfigProvider
       getPopupContainer={() => container}
-      locale={antdLocales[i18n.language]}
+      locale={antdLocales[locale]}
       theme={dynamicTheme}
       button={{ autoInsertSpace: false }}
     >

@@ -3,8 +3,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import { createRouter, useRouterState } from "@tanstack/react-router";
 import type { MenuProps } from "antd";
 import type { InferRequestType } from "hono/client";
-import { useTranslation } from "react-i18next";
 import { api } from "../api";
+import { useI18n } from "../libs/useI18n";
 import { routeTree } from "../routeTree.gen";
 
 type LoginInput = InferRequestType<typeof api.auth.login.$post>["json"];
@@ -49,14 +49,20 @@ declare module "@tanstack/react-router" {
 }
 
 export const useSiteTitle = () => {
-  const { t } = useTranslation("routes");
+  const { t } = useI18n();
   const {
     location: { pathname },
   } = useRouterState();
 
-  const currentLabel = MENU_ITEMS.find((item) => item.key === pathname);
+  const currentItem = MENU_ITEMS.find((item) => item.key === pathname);
 
-  return currentLabel
-    ? `${t(currentLabel.key, { defaultValue: currentLabel.label })} - ${import.meta.env.VITE_TITLE}`
-    : import.meta.env.VITE_TITLE;
+  if (!currentItem) {
+    return import.meta.env.VITE_TITLE;
+  }
+
+  const translated = t(`routes.${currentItem.key}` as const);
+  const label =
+    translated !== `routes.${currentItem.key}` ? translated : currentItem.label;
+
+  return `${label} - ${import.meta.env.VITE_TITLE}`;
 };

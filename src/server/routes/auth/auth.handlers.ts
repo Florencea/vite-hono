@@ -20,8 +20,8 @@ export const loginHandler: RouteHandler<typeof loginRoute, AppEnv> = async (
   if (!result.success) {
     const errorKey =
       result.reason === "user_not_found"
-        ? "server.auth.user not found"
-        : "server.auth.wrong password";
+        ? ("errors.auth.userNotFound" as const)
+        : ("errors.auth.wrongPassword" as const);
     return c.json({ error: t(c, errorKey) }, 400);
   }
 
@@ -38,7 +38,7 @@ export const logoutHandler: RouteHandler<typeof logoutRoute, AppEnv> = async (
 ) => {
   const session = await getSession(c);
   if (!session?.id) {
-    return c.json({ error: "UNAUTHORIZED" }, 401);
+    return c.json({ error: t(c, "errors.auth.unauthorized") }, 401);
   }
 
   deleteSession(c);
