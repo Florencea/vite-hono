@@ -1,4 +1,4 @@
-import { argon2id, argon2Verify } from "hash-wasm";
+import { compare, hash } from "bcrypt-ts";
 import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
@@ -6,6 +6,7 @@ import { COOKIE_SECRET } from "./config.ts";
 
 export const COOKIE_NAME = "vite_hono_session";
 const SESSION_TTL = 604800;
+const BCRYPT_SALT_ROUNDS = 10;
 
 export interface SessionData {
   id: number;
@@ -60,35 +61,19 @@ export function deleteSession(c: Context): void {
 }
 
 /**
- * Hashes a plain password using WebAssembly Argon2id (OWASP recommended standard).
- * Output format is the standard PHC string: $argon2id$v=19$m=16384,t=2,p=1$...
+ * Hashes a plain password using bcrypt (industry standard).
+ * Uses pure-TS bcrypt-ts for universal compatibility across Node.js, Docker, and Cloudflare Workers.
  */
 export async function hashPassword(plainPassword: string): Promise<string> {
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  return await argon2id({
-    password: plainPassword,
-    salt,
-    parallelism: 1,
-    iterations: 2,
-    memorySize: 16384, // 16 MB memory-hard
-    hashLength: 32,
-    outputType: "encoded",
-  });
+  return await hash(plainPassword, BCRYPT_SALT_ROUNDS);
 }
 
 /**
- * Verifies a plain password against a standard Argon2 encoded hash in constant time.
+ * Verifies a plain password against the stored bcrypt hash in constant time.
  */
 export async function verifyPassword(
   hashedPassword: string,
   plainPassword: string,
 ): Promise<boolean> {
-  try {
-    return await argon2Verify({
-      password: plainPassword,
-      hash: hashedPassword,
-    });
-  } catch {
-    return false;
-  }
+  return await compare(plainPassword, hashedPassword);
 }

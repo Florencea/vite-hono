@@ -13,6 +13,8 @@
       "binding": "DB",
       "database_name": "vite-hono-db",
       "database_id": "<YOUR_D1_DATABASE_ID>",
+      "migrations_dir": "drizzle",
+      "migrations_pattern": "drizzle/*/migration.sql",
     },
   ],
 }
