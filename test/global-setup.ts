@@ -9,19 +9,25 @@ export default async function globalSetup(): Promise<() => void> {
       "database.test.sqlite-journal",
     ]) {
       if (existsSync(file)) {
-        rmSync(file, { force: true });
+        try {
+          rmSync(file, { force: true });
+        } catch {
+          // On Windows, open handles or filesystem latency might prevent removal; safely ignore in teardown
+        }
       }
     }
   };
 
   cleanTestDb();
 
-  const { db } = await import("../src/server/database/index.ts");
+  const { db, closeDb } = await import("../src/server/database/index.ts");
   const { seedDatabase } = await import("../src/server/database/seed.ts");
 
   await seedDatabase(db);
+  closeDb();
 
   return () => {
+    closeDb();
     cleanTestDb();
   };
 }

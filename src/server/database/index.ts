@@ -22,6 +22,13 @@ interface CloudflareEnv {
 
 let _db: Database | undefined;
 
+export function closeDb(): void {
+  if (_db) {
+    _db.$client.close();
+    _db = undefined;
+  }
+}
+
 export function getDb(c?: Context): Database {
   const env = c?.env as CloudflareEnv | undefined;
   if (env?.DB) {
