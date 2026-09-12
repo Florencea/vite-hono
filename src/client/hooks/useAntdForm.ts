@@ -5,32 +5,36 @@ import {
   type FormProps,
 } from "antd";
 
-type FormItemPropsT<T> = FormItemProps<T> & {
-  name: T;
-  label: string;
-  rules: [{ required: boolean }];
+type FormItemConfig<Name = string> = Omit<FormItemProps, "name"> & {
+  name: Name;
 };
 
-interface UseAntdFormT<T> {
-  formProps: FormProps<T>;
-  formItemProps: { [k in keyof T]: FormItemPropsT<k> };
+export interface UseAntdFormOptions<T> {
+  formProps?: FormProps<T>;
+  formItemProps?: { [K in keyof T]?: FormItemConfig<K> };
 }
 
-interface UseAntdFormRT<T> extends UseAntdFormT<T> {
+export interface UseAntdFormReturn<T> {
   formInstance: FormInstance<T>;
+  formProps: FormProps<T>;
+  formItemProps: { [K in keyof T]: FormItemConfig<K> };
 }
 
+/**
+ * Standardized hook for Ant Design forms.
+ * Manages form instance binding, layout props, and typed form item configurations.
+ */
 export const useAntdForm = <T>({
   formProps,
-  formItemProps,
-}: UseAntdFormT<T>): UseAntdFormRT<T> => {
-  const [formInstance] = Form.useForm<T>();
+  formItemProps = {},
+}: UseAntdFormOptions<T>): UseAntdFormReturn<T> => {
+  const [formInstance] = Form.useForm<T>(formProps?.form);
   return {
     formInstance,
     formProps: {
       form: formInstance,
       ...formProps,
     },
-    formItemProps,
+    formItemProps: formItemProps as { [K in keyof T]: FormItemConfig<K> },
   };
 };

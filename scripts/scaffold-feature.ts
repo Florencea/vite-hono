@@ -90,6 +90,7 @@ fs.writeFileSync(
 // 2. Feature Routes
 const routesContent = `import { createRoute } from "@hono/zod-openapi";
 import { ErrorResSchema } from "../../common/schemas.ts";
+import { requirePermission } from "../../middleware/permission.ts";
 import {
   Create${pascalName}ReqSchema,
   ${pascalName}ListResSchema,
@@ -102,6 +103,7 @@ export const list${pascalName}Route = createRoute({
   summary: "List all ${kebabName} items",
   description: "Retrieve list of all ${kebabName} entries",
   tags: ["${pascalName}"],
+  middleware: [requirePermission("${kebabName}:read")] as const,
   responses: {
     200: {
       content: {
@@ -110,6 +112,22 @@ export const list${pascalName}Route = createRoute({
         },
       },
       description: "List of ${kebabName} retrieved successfully",
+    },
+    401: {
+      content: {
+        "application/json": {
+          schema: ErrorResSchema,
+        },
+      },
+      description: "Unauthorized",
+    },
+    403: {
+      content: {
+        "application/json": {
+          schema: ErrorResSchema,
+        },
+      },
+      description: "Forbidden",
     },
   },
 });
@@ -120,6 +138,7 @@ export const create${pascalName}Route = createRoute({
   summary: "Create a new ${kebabName}",
   description: "Create a new ${kebabName} entry",
   tags: ["${pascalName}"],
+  middleware: [requirePermission("${kebabName}:create")] as const,
   request: {
     body: {
       content: {
@@ -146,6 +165,22 @@ export const create${pascalName}Route = createRoute({
         },
       },
       description: "Validation or bad request error",
+    },
+    401: {
+      content: {
+        "application/json": {
+          schema: ErrorResSchema,
+        },
+      },
+      description: "Unauthorized",
+    },
+    403: {
+      content: {
+        "application/json": {
+          schema: ErrorResSchema,
+        },
+      },
+      description: "Forbidden",
     },
   },
 });

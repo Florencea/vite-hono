@@ -1,5 +1,9 @@
 import { createRoute } from "@hono/zod-openapi";
 import { EmptyResSchema, ErrorResSchema } from "../../common/schemas.ts";
+import {
+  authenticatedRoute,
+  publicRoute,
+} from "../../middleware/permission.ts";
 import { LoginReqSchema, UserInfoResSchema } from "./auth.schema.ts";
 
 export const loginRoute = createRoute({
@@ -7,6 +11,7 @@ export const loginRoute = createRoute({
   path: "/login",
   summary: "User login",
   description: "Authenticate user and establish session",
+  middleware: [publicRoute()] as const,
   tags: ["Auth"],
   request: {
     body: {
@@ -43,6 +48,7 @@ export const logoutRoute = createRoute({
   path: "/logout",
   summary: "User logout",
   description: "Destroy session and clear cookie",
+  middleware: [authenticatedRoute()] as const,
   tags: ["Auth"],
   security: [{ cookieAuth: [] }],
   responses: {
@@ -70,6 +76,7 @@ export const getUserInfoRoute = createRoute({
   path: "/getUserInfo",
   summary: "Get user info",
   description: "Retrieve authenticated user details and status",
+  middleware: [publicRoute()] as const,
   tags: ["Auth"],
   responses: {
     200: {

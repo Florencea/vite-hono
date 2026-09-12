@@ -34,6 +34,7 @@ export default defineConfig((env) => {
           {
             test: {
               name: "server",
+              fileParallelism: false,
               include: [
                 "test/server/**/*.{test,spec}.ts",
                 "test/canary/**/*.{test,spec}.ts",

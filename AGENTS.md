@@ -21,7 +21,18 @@ Guidelines for AI agents and developers working on this repository.
 
 - **Frontend (`src/client/`)**:
   - **Routes**: Modular routes in `src/client/routes/`. Never manually edit `src/client/routeTree.gen.ts`. Run `npm run routes:generate` whenever you add, rename, or delete routes.
-  - **Components**: Reusable UI elements in `src/client/components/`.
+  - **Components & Reusability**:
+    - **Single Source of Truth (SSOT) Types**: Derive all client domain and API types directly from backend Hono RPC definitions (`InferRequestType`, `InferResponseType` in `src/client/types/api.ts`) using `Pick<>` and `Omit<>`. Never handwrite duplicate interface contracts.
+    - **Ant Design Props Extension**: Component props must derive directly from Ant Design's standard types (`TableProps`, `ModalProps`, `DrawerProps`, `ButtonProps`) using `Pick`, `Omit`, or `extends` to ensure resilience against upstream library updates.
+    - **Core Component Encapsulation**: Prefer composing from reusable core wrappers:
+      - `<DataTable>`: Standardizes responsive scrolling (`max-content`), default `rowKey="id"`, and clean layout defaults.
+      - `<DataModal>`: Enforces Ant Design 6 `destroyOnHidden` lifecycle and dialog modal defaults.
+      - `<PermissionButton>`: Seamlessly encapsulates RBAC permission checks (`permission`, `permissionMode="hide" | "disable"`) directly with Ant Design's `Button`.
+    - **Standardized Forms with `useAntdForm`**: Use `useAntdForm` for all Ant Design forms to standardize form instance binding, layout props, and typed field rules across the application.
+    - **Headless Feature Hook & Presenter Decoupling**:
+      - **Headless Hook (`src/client/hooks/use<Feature>.ts`)**: Encapsulates all data fetching (`useQuery`), RPC mutations (`useMutation`), cache invalidation (`invalidateQueries`), feedback toasts, dialog/selection state, and form configuration (`useAntdForm`).
+      - **Pure Presentational Views (`src/client/routes/` & `src/client/components/<feature>/`)**: Views must remain purely presentational. NEVER write inline `useMutation`, raw `api` fetch calls, or side-effectful state logic directly in presentational components. Consume the feature hook and bind to core wrappers (`DataTable`, `DataModal`, `PermissionButton`).
+    - **No Unnecessary Effects ("You Might Not Need an Effect")**: Never use `useEffect` to synchronize props to form states (e.g. `form.setFieldsValue`). Follow the official React documentation by passing a declarative `key={record?.id ?? 'new'}` and `initialValues` to the `<Form>`.
   - **React Compiler**: Automatic fine-grained memoization is enabled via `@vitejs/plugin-react` (`reactCompilerPreset`) and `@rolldown/plugin-babel`. Do not write manual `useMemo`, `useCallback`, or `React.memo` unless handling non-compiler edge cases. Conforms strictly to `eslint-plugin-react-hooks`'s `recommended-latest` rules.
 - **Backend (`src/server/`)**:
   - **Routes**: Modular OpenAPI handlers in `src/server/routes/`.
@@ -68,7 +79,12 @@ Guidelines for AI agents and developers working on this repository.
   - Never hardcode user-facing copy or API error messages.
   - When creating or modifying screens or APIs, define keys in `src/locales/schema.ts` and implement them across ALL supported language files (`en-US.ts`, `zh-TW.ts`, etc.).
   - Backend errors (including 400, 401, 403, 404, 500) must return localized error messages using `t(c, "errors.<domain>.<code">)`.
-  - All language files must satisfy `LocaleSchema` so missing keys cause compile-time failures during `tsc -b`.
+- **Mandatory RBAC & Fail-Closed Gate**:
+  - **Zero Unprotected Routes**: Every newly introduced route (API & UI) MUST have explicit access control. Never expose raw, unguarded endpoints. Unprotected routes will fail the Canary Contract Test (`test/canary/rbac-contract.test.ts`).
+  - **Clarification Protocol**: When asked to create a new page, feature, or API, if the user did not explicitly specify permission codes or Data Scope, the Agent MUST:
+    1. Ask the user to define the permission codes (e.g. `<domain>:<resource>:<action>`) and data scope (`ALL`, `DEPT_AND_CHILD`, `DEPT`, `SELF`, `CUSTOM`).
+    2. If developing autonomously or unprompted, apply the Least Privilege Principle (`default-deny` / restricted to `super_admin` with `SELF` scope).
+  - **Route Security Declarations**: Every API route specification in `createRoute` must declare `middleware: [requirePermission("...")]`, `middleware: [authenticatedRoute()]`, or explicitly `middleware: [publicRoute()]`.
 
 ## 3. Testing Standards
 
@@ -81,6 +97,14 @@ Guidelines for AI agents and developers working on this repository.
 - **i18n Schema Parity & Contract Testing**:
   - Guard zero key drift with recursive key completeness assertions in `test/canary/i18n-contract.test.ts`.
   - Assert that server error responses dynamically resolve translations according to `Accept-Language` headers.
+- **Business Process E2E Testing (`test:client`)**:
+  - Every UI feature and CRUD screen MUST have a corresponding browser E2E test file (`test/client/e2e-<feature>.test.tsx`) running in headless Chromium with `@vitest/browser-playwright`.
+  - Must test complete real-world user journeys:
+    - Table initial render, column headers, and hierarchical/tag display.
+    - Create modal/drawer opening, filling form fields, and asserting typed RPC `POST` wire payloads.
+    - Edit modal pre-filling, updating fields, and asserting typed RPC `PUT` wire payloads.
+    - Delete action triggering Ant Design `Popconfirm`, user confirmation, and asserting typed RPC `DELETE` wire requests.
+    - Success feedback toasts, query cache invalidations, and dialog closures.
 - **Selector Standards**:
   - Prefer accessible queries (`screen.getByRole`, `screen.getByLabelText`) or explicit `data-testid`.
   - Never query by volatile CSS classes (such as `.ant-btn-primary`).
@@ -111,15 +135,15 @@ When implementing a new feature or API, follow this end-to-end type-safe flow:
    - Write in-memory HTTP integration tests using Hono's `app.request()` in `test/server/` to verify schemas, status codes, localized errors, and edge cases.
 3. **Expose RPC Route (`src/server/router.ts`)**:
    - Mount the sub-router into `apiRouter`. Hono RPC types (`AppType`, `api.<feature>`) infer automatically for client consumption.
-4. **Client UI, Form & i18n (`src/client/`)**:
-   - Define type aliases using `InferRequestType<typeof api.<feature>...>` in `src/client/constants/routes.tsx` (`RouterInputs`).
+4. **Client SSOT Types, Headless Hook & Presentational UI (`src/client/`)**:
+   - **SSOT Types**: Derive types using `InferRequestType` and `InferResponseType` in `src/client/types/api.ts` with `Pick<>` and `Omit<>`.
+   - **Headless Feature Hook (`src/client/hooks/use<Feature>.ts`)**: Encapsulate all queries, mutations, cache invalidations, feedback toasts, dialog state, and `useAntdForm`.
+   - **Presentational UI & Routes (`src/client/components/<feature>/` & `src/client/routes/`)**: Build pure presentational components and routes consuming the hook, composed from `<DataTable>`, `<DataModal>`, and `<PermissionButton>`.
    - Add UI copy keys to `src/locales/schema.ts` and all language files.
-   - Connect Ant Design forms with `useAntdForm<RouterInputs["<feature>"]>()` and `useI18n()`.
-   - Build UI components (`src/client/components/`) and TanStack Router pages (`src/client/routes/`).
    - Run `npm run routes:generate` to regenerate route tree types.
-5. **Browser Mode Test (`test/client/`)**:
-   - Write UI and RPC wire contract tests under `test/client/` using `renderAppAt()`.
-   - Assert accessible selectors (`getByRole`, `getByTestId`), token bridge styling, and typed RPC payload dispatches.
+5. **Browser Mode Business Flow E2E Test (`test/client/`)**:
+   - Write comprehensive business flow E2E tests under `test/client/e2e-<feature>.test.tsx` using `renderAppAt()`.
+   - Test complete CRUD journeys (Create, Read, Update, Delete with Popconfirm), accessible form selectors, and typed RPC wire contracts.
 6. **Pass Verification Gates**:
    - For fast inner-loop iteration: `npm run check:fast`
    - For final verification: `npm run check`

@@ -1,38 +1,52 @@
-import { TeamOutlined } from "@ant-design/icons";
+import {
+  ApartmentOutlined,
+  SafetyCertificateOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRouter, useRouterState } from "@tanstack/react-router";
-import type { MenuProps } from "antd";
-import type { InferRequestType } from "hono/client";
-import { api } from "../api.ts";
+import type { ReactNode } from "react";
 import { useI18n } from "../hooks/useI18n.ts";
 import { routeTree } from "../routeTree.gen.ts";
+import type { RouterInputs } from "../types/api.ts";
 
-type LoginInput = InferRequestType<typeof api.auth.login.$post>["json"];
+export type { RouterInputs };
 
-export type RouterInputs = {
-  auth: {
-    login: LoginInput;
-  };
-};
-
-type MenuItemsT = Required<MenuProps>["items"];
+export interface MenuItemConfig {
+  label: string;
+  key: string;
+  icon?: ReactNode;
+  permission?: string;
+}
 
 /**
  * Items without an icon will not appear in the sidebar menu
  */
-export const MENU_ITEMS = [
+export const MENU_ITEMS: MenuItemConfig[] = [
   {
     label: "Login",
     key: "/login",
     icon: null,
-    children: [],
+  },
+  {
+    label: "Departments",
+    key: "/departments",
+    icon: <ApartmentOutlined />,
+    permission: "system:dept:read",
+  },
+  {
+    label: "Roles",
+    key: "/roles",
+    icon: <SafetyCertificateOutlined />,
+    permission: "system:role:read",
   },
   {
     label: "Users",
     key: "/user",
     icon: <TeamOutlined />,
+    permission: "system:user:read",
   },
-] satisfies MenuItemsT;
+];
 
 export const router = createRouter({
   routeTree,

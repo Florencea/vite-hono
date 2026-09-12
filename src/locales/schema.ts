@@ -7,6 +7,17 @@ export interface LocaleSchema {
     logout: string;
     submit: string;
     changeLanguage: string;
+    add: string;
+    edit: string;
+    delete: string;
+    cancel: string;
+    save: string;
+    actions: string;
+    confirmDelete: string;
+    search: string;
+    reset: string;
+    status: string;
+    success: string;
   };
   auth: {
     login: string;
@@ -17,6 +28,54 @@ export interface LocaleSchema {
     "/": string;
     "/login": string;
     "/user": string;
+    "/departments": string;
+    "/roles": string;
+    "/403": string;
+  };
+  dept: {
+    name: string;
+    parent: string;
+    root: string;
+    sort: string;
+    leader: string;
+    create: string;
+    edit: string;
+  };
+  role: {
+    code: string;
+    name: string;
+    description: string;
+    dataScope: string;
+    permissions: string;
+    customDepts: string;
+    create: string;
+    edit: string;
+    scopes: {
+      ALL: string;
+      DEPT_AND_CHILD: string;
+      DEPT: string;
+      SELF: string;
+      CUSTOM: string;
+    };
+  };
+  user: {
+    account: string;
+    name: string;
+    employeeNo: string;
+    title: string;
+    password: string;
+    department: string;
+    roles: string;
+    create: string;
+    edit: string;
+    statusActive: string;
+    statusInactive: string;
+    statusSuspended: string;
+  };
+  forbidden: {
+    title: string;
+    description: string;
+    backHome: string;
   };
   errors: {
     auth: {
@@ -24,6 +83,20 @@ export interface LocaleSchema {
       wrongPassword: string;
       unauthorized: string;
       forbidden: string;
+    };
+    dept: {
+      notFound: string;
+      hasChildren: string;
+      hasUsers: string;
+    };
+    role: {
+      notFound: string;
+      codeExists: string;
+      systemRoleProtected: string;
+    };
+    user: {
+      notFound: string;
+      accountExists: string;
     };
     common: {
       notFound: string;
