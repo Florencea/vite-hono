@@ -321,3 +321,63 @@ test("E2E User Flow: deletes custom user record with Popconfirm while admin is p
   expect(tracker.getDispatched().method).toBe("DELETE");
   expect(tracker.getDispatched().url).toContain("/api/users/2");
 });
+
+test("E2E User Flow: modal refreshes form state on open, edit, and cancel", async () => {
+  mockUserEnvironment();
+  const screen = await renderAppAt("/user");
+
+  // 1. Open Create modal, fill account and name, then cancel
+  const createBtn = screen.getByRole("button", {
+    name: /Create User|新增人員/i,
+  });
+  await createBtn.click();
+
+  const modal = screen.getByRole("dialog");
+  await expect.element(modal).toBeVisible();
+
+  const accountInput = screen.getByLabelText(/Account|帳號/i);
+  await accountInput.fill("temp_account");
+
+  const nameInput = screen.getByLabelText(/^Name$|^姓名$/i);
+  await nameInput.fill("暫存姓名");
+
+  // Click Cancel button
+  const cancelBtn = modal.getByRole("button", { name: /Cancel|取 消/i });
+  await cancelBtn.click();
+  await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
+
+  // 2. Re-open Create modal -> inputs must be clean / refreshed!
+  await createBtn.click();
+  const reOpenedModal = screen.getByRole("dialog");
+  await expect.element(reOpenedModal).toBeVisible();
+  const refreshedAccountInput = screen.getByLabelText(/Account|帳號/i);
+  const refreshedNameInput = screen.getByLabelText(/^Name$|^姓名$/i);
+  await expect.element(refreshedAccountInput).toHaveValue("");
+  await expect.element(refreshedNameInput).toHaveValue("");
+
+  // Close modal
+  await reOpenedModal.getByRole("button", { name: /Cancel|取 消/i }).click();
+  await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
+
+  // 3. Open Edit modal for user 2 (emp_alice), change title, then cancel
+  const editButtons = screen
+    .getByRole("main")
+    .getByRole("button", { name: /Edit|編輯/i });
+  await editButtons.all()[1].click();
+  const editModal = screen.getByRole("dialog");
+  await expect.element(editModal).toBeVisible();
+
+  const editTitleInput = screen.getByLabelText(/^Title$|^職稱$/i);
+  await expect.element(editTitleInput).toHaveValue("工程師");
+  await editTitleInput.fill("修改但不保存");
+
+  await editModal.getByRole("button", { name: /Cancel|取 消/i }).click();
+  await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
+
+  // 4. Re-open Edit modal for same user -> must be refreshed to original "工程師"!
+  await editButtons.all()[1].click();
+  const reOpenedEditModal = screen.getByRole("dialog");
+  await expect.element(reOpenedEditModal).toBeVisible();
+  const reOpenedTitleInput = screen.getByLabelText(/^Title$|^職稱$/i);
+  await expect.element(reOpenedTitleInput).toHaveValue("工程師");
+});

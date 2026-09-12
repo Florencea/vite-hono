@@ -202,3 +202,58 @@ test("E2E Department Flow: deletes department with Popconfirm confirmation", asy
   expect(tracker.getDispatched().method).toBe("DELETE");
   expect(tracker.getDispatched().url).toContain("/api/departments/1");
 });
+
+test("E2E Department Flow: modal refreshes form state on open, edit, and cancel", async () => {
+  mockDepartmentEnvironment();
+  const screen = await renderAppAt("/departments");
+
+  // 1. Open Create modal, type something, then cancel
+  const createBtn = screen.getByRole("button", {
+    name: /Create Department|新增部門/i,
+  });
+  await createBtn.click();
+
+  const modal = screen.getByRole("dialog");
+  await expect.element(modal).toBeVisible();
+
+  const nameInput = screen.getByLabelText(/Department Name|部門名稱/i);
+  await nameInput.fill("臨時測試部門");
+
+  // Click Cancel button
+  const cancelBtn = modal.getByRole("button", { name: /Cancel|取 消/i });
+  await cancelBtn.click();
+  await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
+
+  // 2. Re-open Create modal -> name input must be clean / refreshed!
+  await createBtn.click();
+  const reOpenedModal = screen.getByRole("dialog");
+  await expect.element(reOpenedModal).toBeVisible();
+  const refreshedInput = screen.getByLabelText(/Department Name|部門名稱/i);
+  await expect.element(refreshedInput).toHaveValue("");
+
+  // Close modal
+  await reOpenedModal.getByRole("button", { name: /Cancel|取 消/i }).click();
+  await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
+
+  // 3. Open Edit modal for existing department, change name, then cancel
+  const editButtons = screen
+    .getByRole("main")
+    .getByRole("button", { name: /Edit|編輯/i });
+  await editButtons.first().click();
+  const editModal = screen.getByRole("dialog");
+  await expect.element(editModal).toBeVisible();
+
+  const editNameInput = screen.getByLabelText(/Department Name|部門名稱/i);
+  await expect.element(editNameInput).toHaveValue("總部");
+  await editNameInput.fill("修改但不保存");
+
+  await editModal.getByRole("button", { name: /Cancel|取 消/i }).click();
+  await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
+
+  // 4. Re-open Edit modal for same department -> must be refreshed to original "總部"!
+  await editButtons.first().click();
+  const reOpenedEditModal = screen.getByRole("dialog");
+  await expect.element(reOpenedEditModal).toBeVisible();
+  const reOpenedInput = screen.getByLabelText(/Department Name|部門名稱/i);
+  await expect.element(reOpenedInput).toHaveValue("總部");
+});

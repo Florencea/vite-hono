@@ -27,12 +27,15 @@ Guidelines for AI agents and developers working on this repository.
     - **Core Component Encapsulation**: Prefer composing from reusable core wrappers:
       - `<DataTable>`: Standardizes responsive scrolling (`max-content`), default `rowKey="id"`, and clean layout defaults.
       - `<DataModal>`: Enforces Ant Design 6 `destroyOnHidden` lifecycle and dialog modal defaults.
+      - `<DataDrawer>`: Enforces Ant Design 6 `destroyOnHidden` lifecycle and drawer defaults.
       - `<PermissionButton>`: Seamlessly encapsulates RBAC permission checks (`permission`, `permissionMode="hide" | "disable"`) directly with Ant Design's `Button`.
-    - **Standardized Forms with `useAntdForm`**: Use `useAntdForm` for all Ant Design forms to standardize form instance binding, layout props, and typed field rules across the application.
+    - **Standardized Forms with `useAntdForm`**: Use `useAntdForm` for all Ant Design forms to standardize form instance binding, layout props (`preserve: false` by default), and typed field rules across the application.
     - **Headless Feature Hook & Presenter Decoupling**:
       - **Headless Hook (`src/client/hooks/use<Feature>.ts`)**: Encapsulates all data fetching (`useQuery`), RPC mutations (`useMutation`), cache invalidation (`invalidateQueries`), feedback toasts, dialog/selection state, and form configuration (`useAntdForm`).
-      - **Pure Presentational Views (`src/client/routes/` & `src/client/components/<feature>/`)**: Views must remain purely presentational. NEVER write inline `useMutation`, raw `api` fetch calls, or side-effectful state logic directly in presentational components. Consume the feature hook and bind to core wrappers (`DataTable`, `DataModal`, `PermissionButton`).
-    - **No Unnecessary Effects ("You Might Not Need an Effect")**: Never use `useEffect` to synchronize props to form states (e.g. `form.setFieldsValue`). Follow the official React documentation by passing a declarative `key={record?.id ?? 'new'}` and `initialValues` to the `<Form>`.
+      - **Pure Presentational Views (`src/client/routes/` & `src/client/components/<feature>/`)**: Views must remain purely presentational. NEVER write inline `useMutation`, raw `api` fetch calls, or side-effectful state logic directly in presentational components. Consume the feature hook and bind to core wrappers (`DataTable`, `DataModal`, `DataDrawer`, `PermissionButton`).
+    - **No Unnecessary Effects ("You Might Not Need an Effect") & Dialog Lifecycle Refresh**:
+      - Never use `useEffect` to synchronize props to form states (e.g. `form.setFieldsValue`). Follow the official React documentation by passing a declarative `key={`${record?.id ?? 'new'}-${formRevision}`}` and dynamic `initialValues` to the `<Form>`.
+      - Feature hooks maintain a `formRevision` counter incremented upon opening create/edit dialogs, ensuring stale dirty edits are discarded and fresh record values remount cleanly with zero Ant Design warnings.
   - **React Compiler**: Automatic fine-grained memoization is enabled via `@vitejs/plugin-react` (`reactCompilerPreset`) and `@rolldown/plugin-babel`. Do not write manual `useMemo`, `useCallback`, or `React.memo` unless handling non-compiler edge cases. Conforms strictly to `eslint-plugin-react-hooks`'s `recommended-latest` rules.
 - **Backend (`src/server/`)**:
   - **Routes**: Modular OpenAPI handlers in `src/server/routes/`.

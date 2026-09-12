@@ -254,3 +254,63 @@ test("E2E Role Flow: deletes custom role with confirmation while system role is 
   expect(tracker.getDispatched().method).toBe("DELETE");
   expect(tracker.getDispatched().url).toContain("/api/roles/2");
 });
+
+test("E2E Role Flow: drawer refreshes form state on open, edit, and cancel", async () => {
+  mockRoleEnvironment();
+  const screen = await renderAppAt("/roles");
+
+  // 1. Open Create drawer, fill role code and name, then cancel
+  const createBtn = screen.getByRole("button", {
+    name: /Create Role|新增角色/i,
+  });
+  await createBtn.click();
+
+  const drawer = screen.getByRole("dialog");
+  await expect.element(drawer).toBeVisible();
+
+  const codeInput = screen.getByLabelText(/Role Code|角色標識/i);
+  await codeInput.fill("temporary_role");
+
+  const nameInput = screen.getByLabelText(/Role Name|角色名稱/i);
+  await nameInput.fill("臨時角色");
+
+  // Click Cancel button in drawer
+  const cancelBtn = drawer.getByRole("button", { name: /Cancel|取 消/i });
+  await cancelBtn.click();
+  await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
+
+  // 2. Re-open Create drawer -> code and name inputs must be clean / refreshed!
+  await createBtn.click();
+  const reOpenedDrawer = screen.getByRole("dialog");
+  await expect.element(reOpenedDrawer).toBeVisible();
+  const refreshedCodeInput = screen.getByLabelText(/Role Code|角色標識/i);
+  const refreshedNameInput = screen.getByLabelText(/Role Name|角色名稱/i);
+  await expect.element(refreshedCodeInput).toHaveValue("");
+  await expect.element(refreshedNameInput).toHaveValue("");
+
+  // Close drawer
+  await reOpenedDrawer.getByRole("button", { name: /Cancel|取 消/i }).click();
+  await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
+
+  // 3. Open Edit drawer for role 1, change name, then cancel
+  const editButtons = screen
+    .getByRole("main")
+    .getByRole("button", { name: /Edit|編輯/i });
+  await editButtons.first().click();
+  const editDrawer = screen.getByRole("dialog");
+  await expect.element(editDrawer).toBeVisible();
+
+  const editRoleNameInput = screen.getByLabelText(/Role Name|角色名稱/i);
+  await expect.element(editRoleNameInput).toHaveValue("超級管理員");
+  await editRoleNameInput.fill("修改但不保存");
+
+  await editDrawer.getByRole("button", { name: /Cancel|取 消/i }).click();
+  await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
+
+  // 4. Re-open Edit drawer -> must be refreshed to original "超級管理員"!
+  await editButtons.first().click();
+  const reOpenedEditDrawer = screen.getByRole("dialog");
+  await expect.element(reOpenedEditDrawer).toBeVisible();
+  const reOpenedInput = screen.getByLabelText(/Role Name|角色名稱/i);
+  await expect.element(reOpenedInput).toHaveValue("超級管理員");
+});

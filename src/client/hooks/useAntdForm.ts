@@ -33,6 +33,7 @@ export const useAntdForm = <T>({
     formInstance,
     formProps: {
       form: formInstance,
+      preserve: false,
       ...formProps,
     },
     formItemProps: formItemProps as { [K in keyof T]: FormItemConfig<K> },

@@ -1,6 +1,5 @@
 import {
   Button,
-  Drawer,
   type DrawerProps,
   Flex,
   Form,
@@ -19,6 +18,7 @@ import type {
   PermissionItem,
   RoleItem,
 } from "../../types/api.ts";
+import { DataDrawer } from "../common/DataDrawer.tsx";
 
 export interface RoleDrawerProps extends Pick<DrawerProps, "open"> {
   role: RoleItem | null;
@@ -86,12 +86,11 @@ export function RoleDrawer({
   }));
 
   return (
-    <Drawer
+    <DataDrawer
       open={open}
       title={isEdit ? t("role.edit") : t("role.create")}
       onClose={onClose}
       size="large"
-      destroyOnHidden
       extra={
         <Space>
           <Button onClick={onClose}>{t("common.cancel")}</Button>
@@ -143,6 +142,6 @@ export function RoleDrawer({
           <PermissionTreeInput treeData={permissionTreeData} />
         </Form.Item>
       </Form>
-    </Drawer>
+    </DataDrawer>
   );
 }

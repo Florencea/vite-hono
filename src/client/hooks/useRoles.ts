@@ -126,13 +126,15 @@ export function useRoles() {
     },
     onSuccess: () => {
       void message.success(t("common.success"));
-      setDrawerOpen(false);
+      closeDrawer();
       void queryClient.invalidateQueries({ queryKey: ["roles", "list"] });
     },
     onError: (err) => {
       void message.error(err.message);
     },
   });
+
+  const [formRevision, setFormRevision] = useState(0);
 
   const initialValues: RoleFormValues = {
     code: selectedRole?.code ?? "",
@@ -144,7 +146,7 @@ export function useRoles() {
     permissionIds: selectedRole?.permissionIds ?? [],
   };
 
-  const formKey = selectedRole ? selectedRole.id.toString() : "new";
+  const formKey = `${selectedRole ? selectedRole.id.toString() : "new"}-${formRevision.toString()}`;
 
   const roleForm = useAntdForm<RoleFormValues>({
     formProps: {
@@ -192,11 +194,13 @@ export function useRoles() {
 
   const openCreateDrawer = () => {
     setSelectedRole(null);
+    setFormRevision((r) => r + 1);
     setDrawerOpen(true);
   };
 
   const openEditDrawer = (role: RoleItem) => {
     setSelectedRole(role);
+    setFormRevision((r) => r + 1);
     setDrawerOpen(true);
   };
 

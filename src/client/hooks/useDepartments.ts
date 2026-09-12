@@ -120,13 +120,15 @@ export function useDepartments() {
     },
     onSuccess: () => {
       void message.success(t("common.success"));
-      setModalOpen(false);
+      closeModal();
       void queryClient.invalidateQueries({ queryKey: ["departments", "list"] });
     },
     onError: (err) => {
       void message.error(err.message);
     },
   });
+
+  const [formRevision, setFormRevision] = useState(0);
 
   const initialValues: DepartmentFormValues = {
     name: selectedDept?.name ?? "",
@@ -136,9 +138,7 @@ export function useDepartments() {
     sort: selectedDept?.sort ?? 1,
   };
 
-  const formKey = selectedDept
-    ? selectedDept.id.toString()
-    : `new-${(parentPresetId ?? 0).toString()}`;
+  const formKey = `${selectedDept ? selectedDept.id.toString() : `new-${(parentPresetId ?? 0).toString()}`}-${formRevision.toString()}`;
 
   const deptForm = useAntdForm<DepartmentFormValues>({
     formProps: {
@@ -168,18 +168,21 @@ export function useDepartments() {
   const openCreateModal = () => {
     setSelectedDept(null);
     setParentPresetId(null);
+    setFormRevision((r) => r + 1);
     setModalOpen(true);
   };
 
   const openAddChildModal = (parent: DepartmentItem) => {
     setSelectedDept(null);
     setParentPresetId(parent.id);
+    setFormRevision((r) => r + 1);
     setModalOpen(true);
   };
 
   const openEditModal = (dept: DepartmentItem) => {
     setSelectedDept(dept);
     setParentPresetId(null);
+    setFormRevision((r) => r + 1);
     setModalOpen(true);
   };
 

@@ -138,7 +138,7 @@ export function useUsers() {
     },
     onSuccess: () => {
       void message.success(t("common.success"));
-      setModalOpen(false);
+      closeModal();
       void queryClient.invalidateQueries({ queryKey: ["users", "list"] });
     },
     onError: (err) => {
@@ -146,6 +146,7 @@ export function useUsers() {
     },
   });
 
+  const [formRevision, setFormRevision] = useState(0);
   const isEdit = Boolean(selectedUser);
 
   const initialValues: UserFormValues = {
@@ -155,11 +156,11 @@ export function useUsers() {
     employeeNo: selectedUser?.employeeNo ?? "",
     title: selectedUser?.title ?? "",
     status: selectedUser?.status ?? "active",
-    departmentId: selectedUser?.departmentId ?? 0,
+    departmentId: selectedUser?.departmentId ?? null,
     roleIds: selectedUser?.roleIds ?? [],
   };
 
-  const formKey = selectedUser ? selectedUser.id.toString() : "new";
+  const formKey = `${selectedUser ? selectedUser.id.toString() : "new"}-${formRevision.toString()}`;
 
   const userForm = useAntdForm<UserFormValues>({
     formProps: {
@@ -209,11 +210,13 @@ export function useUsers() {
 
   const openCreateModal = () => {
     setSelectedUser(null);
+    setFormRevision((r) => r + 1);
     setModalOpen(true);
   };
 
   const openEditModal = (user: UserItem) => {
     setSelectedUser(user);
+    setFormRevision((r) => r + 1);
     setModalOpen(true);
   };
 
