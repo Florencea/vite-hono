@@ -1,5 +1,10 @@
 import { createClient } from "@libsql/client";
-import { eq, sql } from "drizzle-orm";
+import { is, SQL, sql, eq } from "drizzle-orm";
+import {
+  getTableConfig,
+  SQLiteDialect,
+  SQLiteTable,
+} from "drizzle-orm/sqlite-core";
 import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { defineRelations } from "drizzle-orm/relations";
 import { existsSync, readdirSync } from "node:fs";
@@ -16,19 +21,55 @@ export const DEFAULT_ADMIN = {
 } as const;
 
 const relations = defineRelations(schema);
+const dialect = new SQLiteDialect();
+
+export function generateCreateTableSql(table: SQLiteTable): string {
+  const config = getTableConfig(table);
+  const colDefs: string[] = [];
+
+  for (const col of config.columns) {
+    const parts = [`"${col.name}"`, col.getSQLType()];
+    if (col.primary) {
+      const isAutoIncrement =
+        "autoIncrement" in col && Boolean(col.autoIncrement);
+      parts.push(isAutoIncrement ? "PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY");
+    }
+    if (col.notNull) {
+      parts.push("NOT NULL");
+    }
+    if (col.isUnique) {
+      parts.push("UNIQUE");
+    }
+    if (col.default !== undefined) {
+      if (col.default instanceof SQL) {
+        parts.push(`DEFAULT ${dialect.sqlToQuery(col.default).sql}`);
+      } else if (typeof col.default === "string") {
+        parts.push(`DEFAULT '${col.default.replace(/'/g, "''")}'`);
+      } else if (
+        typeof col.default === "number" ||
+        typeof col.default === "boolean"
+      ) {
+        parts.push(`DEFAULT ${col.default.toString()}`);
+      }
+    }
+    colDefs.push(parts.join(" "));
+  }
+
+  return `CREATE TABLE IF NOT EXISTS "${config.name}" (\n  ${colDefs.join(",\n  ")}\n);`;
+}
+
+export async function syncDatabaseSchema(targetDb: Database): Promise<void> {
+  for (const val of Object.values(schema)) {
+    if (is(val, SQLiteTable)) {
+      const ddl = generateCreateTableSql(val);
+      await targetDb.run(sql.raw(ddl));
+    }
+  }
+}
 
 export async function seedDatabase(targetDb: Database): Promise<void> {
-  // Ensure User table schema exists
-  await targetDb.run(
-    sql`CREATE TABLE IF NOT EXISTS User (
-      id integer PRIMARY KEY AUTOINCREMENT,
-      uid text NOT NULL UNIQUE,
-      createdAt integer DEFAULT (strftime('%s', 'now')) NOT NULL,
-      updatedAt integer DEFAULT (strftime('%s', 'now')) NOT NULL,
-      account text NOT NULL UNIQUE,
-      password text NOT NULL
-    );`,
-  );
+  // Ensure all tables defined in schema.ts exist dynamically
+  await syncDatabaseSchema(targetDb);
 
   const hashedPassword = await hashPassword(DEFAULT_ADMIN.password);
   const existing = await targetDb.query.users.findFirst({

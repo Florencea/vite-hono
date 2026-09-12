@@ -2,17 +2,33 @@
 
 Guidelines for AI agents and developers working on this repository.
 
+### Quick Architecture Map
+
+| Layer                 | Path                                           | Responsibility                                                                |
+| :-------------------- | :--------------------------------------------- | :---------------------------------------------------------------------------- |
+| **Frontend Routes**   | `src/client/routes/`                           | TanStack file-based routes (run `npm run routes:generate` to regenerate tree) |
+| **Frontend UI**       | `src/client/components/`                       | Ant Design + Tailwind CSS v4 components                                       |
+| **Theme & Tokens**    | `src/client/global.css`, `src/client/theme.ts` | SSOT Tailwind `@theme` bridged into Antd tokens                               |
+| **Translations**      | `src/locales/`                                 | `schema.ts` (SSOT), `en-US.ts`, `zh-TW.ts` (strict parity)                    |
+| **Backend Routes**    | `src/server/routes/`                           | Modular OpenAPI schemas, route specs, handlers                                |
+| **API Router**        | `src/server/router.ts`                         | Sub-router mounts & RPC `AppType` inference                                   |
+| **Database Schema**   | `src/server/database/schema.ts`                | Single Source of Truth (SSOT) for tables and relations                        |
+| **Database Seed**     | `src/server/database/seed.ts`                  | Dynamic schema DDL sync (`syncDatabaseSchema`) & seed                         |
+| **Testing**           | `test/`                                        | Vitest browser (`test/client`) & in-memory (`test/server`, `test/canary`)     |
+| **Tooling & Scripts** | `scripts/`                                     | `scaffold-feature.ts`, `generate-routes.ts`, `lint-tailwind.ts`               |
+
 ## 1. Architectural Conventions
 
 - **Frontend (`src/client/`)**:
-  - **Routes**: Modular routes in `src/client/routes/`. Never edit `src/client/routeTree.gen.ts` (auto-generated).
+  - **Routes**: Modular routes in `src/client/routes/`. Never manually edit `src/client/routeTree.gen.ts`. Run `npm run routes:generate` whenever you add, rename, or delete routes.
   - **Components**: Reusable UI elements in `src/client/components/`.
   - **React Compiler**: Automatic fine-grained memoization is enabled via `@vitejs/plugin-react` (`reactCompilerPreset`) and `@rolldown/plugin-babel`. Do not write manual `useMemo`, `useCallback`, or `React.memo` unless handling non-compiler edge cases. Conforms strictly to `eslint-plugin-react-hooks`'s `recommended-latest` rules.
 - **Backend (`src/server/`)**:
   - **Routes**: Modular OpenAPI handlers in `src/server/routes/`.
   - **Database & Seeding SSOT**:
     - `src/server/database/schema.ts`: Single Source of Truth (SSOT) for all database tables and relations.
-    - `src/server/database/seed.ts`: SSOT for seed data (`DEFAULT_ADMIN`) and schema verification (`seedDatabase()`). Automatically seeds both primary database (`database.sqlite`) and local Cloudflare D1 (`.wrangler/state/v3/d1/*.sqlite`).
+    - `src/server/database/seed.ts`: SSOT for seed data (`DEFAULT_ADMIN`) and dynamic schema verification (`syncDatabaseSchema()`, `seedDatabase()`). Dynamically derives table DDL from `schema.ts` without hardcoded SQL statements. Automatically seeds both primary database (`database.sqlite`) and local Cloudflare D1 (`.wrangler/state/v3/d1/*.sqlite`).
+    - **Test Database Isolation**: All automated tests run against an isolated ephemeral database (`database.test.sqlite`) that is automatically cleaned on teardown, preventing mutation of the local development database.
     - **Code-First Schema Push**: The project follows a code-first workflow (`npm run db:push`, `npm run db:seed`). The `drizzle/` migrations directory is excluded in `.gitignore` to prevent committing generated SQL snapshots.
   - **Dual-Track Architecture**:
     - `src/server/core.ts`: Single Source of Truth (SSOT) containing all middleware, OpenAPI setup, and route mounting. NEVER contains DDL or database seeding logic.
@@ -77,6 +93,15 @@ Guidelines for AI agents and developers working on this repository.
 
 When implementing a new feature or API, follow this end-to-end type-safe flow:
 
+> [!TIP]
+> **Rapid Agent Scaffolding**: You can bootstrap the entire backend slice, tests, and i18n keys in seconds:
+>
+> ```bash
+> npm run scaffold:feature <feature-name>
+> ```
+>
+> This creates compliant route schemas, routes, handlers, sub-router, contract tests, and registers the feature in `router.ts` and `locales/` with zero key drift.
+
 1. **Backend Schema & i18n First (`src/server/routes/<feature>/` & `src/locales/`)**:
    - Define request/response Zod schemas with `@hono/zod-openapi` in `<feature>.schema.ts`.
    - Register route specification using `createRoute()` in `<feature>.routes.ts`.
@@ -91,15 +116,35 @@ When implementing a new feature or API, follow this end-to-end type-safe flow:
    - Add UI copy keys to `src/locales/schema.ts` and all language files.
    - Connect Ant Design forms with `useAntdForm<RouterInputs["<feature>"]>()` and `useI18n()`.
    - Build UI components (`src/client/components/`) and TanStack Router pages (`src/client/routes/`).
+   - Run `npm run routes:generate` to regenerate route tree types.
 5. **Browser Mode Test (`test/client/`)**:
    - Write UI and RPC wire contract tests under `test/client/` using `renderAppAt()`.
    - Assert accessible selectors (`getByRole`, `getByTestId`), token bridge styling, and typed RPC payload dispatches.
-6. **Pass Unified Verification Gate**:
-   - Run `npm run check` and ensure 0 errors and 0 warnings.
+6. **Pass Verification Gates**:
+   - For fast inner-loop iteration: `npm run check:fast`
+   - For final verification: `npm run check`
 
 ## 5. Verification Gate (Definition of Done)
 
-Before completing any task or commit, execute the unified verification gate:
+The project employs a two-tier verification gate strategy for optimal developer and agent ergonomics:
+
+### Inner Loop: Fast Feedback (`check:fast`)
+
+Use during active coding, iterative refactoring, and debugging (~1.5s execution time):
+
+```bash
+npm run check:fast
+```
+
+Runs:
+
+1. `typecheck` (`tsc -b` in strict mode)
+2. `lint` (ESLint strict-type-checked)
+3. `test:server` (In-memory server & canary contract tests on isolated test database)
+
+### Outer Loop: Unified Verification Gate (`check`)
+
+Before completing any task, PR, or commit, execute the full Definition of Done:
 
 ```bash
 npm run check

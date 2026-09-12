@@ -13,6 +13,9 @@ export default defineConfig((env) => {
         include: ["react-dom/client"],
       },
       test: {
+        env: {
+          DATABASE_URL: "file:./database.test.sqlite",
+        },
         globalSetup: ["./test/global-setup.ts"],
         projects: [
           {

@@ -37,6 +37,7 @@ dist-ssr
 *.sqlite
 *.sqlite-journal
 database.sqlite
+database.test.sqlite*
 drizzle
 
 # cloudflare
