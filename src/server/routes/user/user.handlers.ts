@@ -69,7 +69,10 @@ export const deleteUserHandler: RouteHandler<
 
   const res = await deleteUser(db, id);
   if (!res.success) {
-    return c.json({ error: t(c, "errors.user.notFound") }, 404);
+    if (res.reason === "not_found") {
+      return c.json({ error: t(c, "errors.user.notFound") }, 404);
+    }
+    return c.json({ error: t(c, "errors.user.cannotDeleteAdmin") }, 400);
   }
 
   return c.json({}, 200);

@@ -137,6 +137,7 @@ export const users = sqliteTable("User", {
   status: text("status", { enum: userStatusEnum }).notNull().default("active"),
   departmentId: integer("departmentId"),
   reportsToId: integer("reportsToId"),
+  isSystem: integer("isSystem", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("createdAt", { mode: "timestamp" })
     .notNull()
     .default(sql`(strftime('%s', 'now'))`),

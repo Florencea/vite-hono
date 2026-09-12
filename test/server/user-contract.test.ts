@@ -129,3 +129,32 @@ test("User Contract: Data Scope Filtering (SELF vs ALL)", async () => {
   };
   expect(adminListJson.items.length).toBeGreaterThan(1);
 });
+
+test("User Contract: System admin cannot be deleted", async () => {
+  const adminCookie = await loginAs("admin", "string");
+
+  const listRes = await app.request("/api/users", {
+    method: "GET",
+    headers: { Cookie: adminCookie },
+  });
+  const listJson = (await listRes.json()) as {
+    items: { id: number; account: string; isSystem: boolean }[];
+  };
+  const adminUser = listJson.items.find((u) => u.account === "admin");
+  expect(adminUser).toBeDefined();
+  if (!adminUser) {
+    throw new Error("Admin user not found");
+  }
+  expect(adminUser.isSystem).toBe(true);
+
+  const deleteAdminRes = await app.request(
+    `/api/users/${adminUser.id.toString()}`,
+    {
+      method: "DELETE",
+      headers: { Cookie: adminCookie },
+    },
+  );
+  expect(deleteAdminRes.status).toBe(400);
+  const deleteJson = (await deleteAdminRes.json()) as { error: string };
+  expect(deleteJson.error).toBeTruthy();
+});

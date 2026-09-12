@@ -37,7 +37,15 @@ export function UserTable({
       title: t("user.account"),
       dataIndex: "account",
       key: "account",
-      width: 140,
+      width: 160,
+      render: (account: string, record) => (
+        <Space>
+          <span>{account}</span>
+          {record.isSystem || record.account === "admin" ? (
+            <Tag color="gold">System</Tag>
+          ) : null}
+        </Space>
+      ),
     },
     {
       title: t("user.name"),
@@ -110,18 +118,20 @@ export function UserTable({
           >
             {t("common.edit")}
           </PermissionButton>
-          <PermissionGate permission="system:user:delete">
-            <Popconfirm
-              title={t("common.confirmDelete")}
-              onConfirm={() => {
-                onDelete(record.id);
-              }}
-            >
-              <Button type="link" danger size="small">
-                {t("common.delete")}
-              </Button>
-            </Popconfirm>
-          </PermissionGate>
+          {!record.isSystem && record.account !== "admin" && (
+            <PermissionGate permission="system:user:delete">
+              <Popconfirm
+                title={t("common.confirmDelete")}
+                onConfirm={() => {
+                  onDelete(record.id);
+                }}
+              >
+                <Button type="link" danger size="small">
+                  {t("common.delete")}
+                </Button>
+              </Popconfirm>
+            </PermissionGate>
+          )}
         </Space>
       ),
     },

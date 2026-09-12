@@ -15,6 +15,21 @@ function mockUserEnvironment() {
   const users = [
     {
       id: 1,
+      uid: "u-admin",
+      account: "admin",
+      name: "系統管理員",
+      employeeNo: "ADM001",
+      title: "超級管理員",
+      status: "active" as const,
+      departmentId: 1,
+      reportsToId: null,
+      roleIds: [1],
+      isSystem: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 2,
       uid: "u-001",
       account: "emp_alice",
       name: "愛麗絲",
@@ -23,7 +38,10 @@ function mockUserEnvironment() {
       status: "active" as const,
       departmentId: 1,
       reportsToId: null,
-      roleIds: [1],
+      roleIds: [2],
+      isSystem: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
   ];
 
@@ -41,16 +59,81 @@ function mockUserEnvironment() {
   const roles = [
     {
       id: 1,
+      code: "super_admin",
+      name: "超級管理員",
+      description: "全系統管理",
+      dataScope: "ALL" as const,
+      sort: 1,
+      isSystem: true,
+    },
+    {
+      id: 2,
       code: "developer",
       name: "研發工程師",
       description: "研發職能",
       dataScope: "SELF" as const,
-      sort: 1,
+      sort: 2,
       isSystem: false,
-      permissionIds: [],
-      departmentIds: [],
     },
   ];
+
+  const permissions = [
+    {
+      id: 1,
+      code: "system:user:read",
+      name: "查看使用者",
+      type: "menu" as const,
+      parentId: null,
+      sort: 1,
+    },
+    {
+      id: 2,
+      code: "system:user:create",
+      name: "新增使用者",
+      type: "button" as const,
+      parentId: 1,
+      sort: 2,
+    },
+    {
+      id: 3,
+      code: "system:user:update",
+      name: "編輯使用者",
+      type: "button" as const,
+      parentId: 1,
+      sort: 3,
+    },
+    {
+      id: 4,
+      code: "system:user:delete",
+      name: "刪除使用者",
+      type: "button" as const,
+      parentId: 1,
+      sort: 4,
+    },
+  ];
+
+  const currentUser = {
+    success: true,
+    id: 1,
+    uid: "u-admin",
+    account: "admin",
+    name: "系統管理員",
+    employeeNo: "ADM001",
+    title: "管理員",
+    status: "active" as const,
+    departmentId: 1,
+    reportsToId: null,
+    roleIds: [1],
+    isSystem: true,
+    roles: ["super_admin"],
+    permissions: [
+      "system:user:read",
+      "system:user:create",
+      "system:user:update",
+      "system:user:delete",
+    ],
+    dataScopes: ["ALL"],
+  };
 
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url =
@@ -60,33 +143,10 @@ function mockUserEnvironment() {
           ? input.toString()
           : input.url;
 
-    const method = init?.method ?? "GET";
+    const method = init?.method?.toUpperCase() ?? "GET";
 
     if (url.includes("/api/auth/getUserInfo")) {
-      return new Response(
-        JSON.stringify({
-          success: true,
-          id: 1,
-          account: "admin",
-          name: "系統管理員",
-          employeeNo: "EMP000",
-          title: "管理員",
-          departmentId: 1,
-          roles: ["super_admin"],
-          permissions: [
-            "system:user:read",
-            "system:user:create",
-            "system:user:update",
-            "system:user:delete",
-          ],
-          dataScopes: ["ALL"],
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
-    }
-
-    if (url.includes("/api/users") && method === "GET") {
-      return new Response(JSON.stringify({ items: users }), {
+      return new Response(JSON.stringify(currentUser), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
@@ -94,6 +154,13 @@ function mockUserEnvironment() {
 
     if (url.includes("/api/departments")) {
       return new Response(JSON.stringify({ items: departments }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (url.includes("/api/permissions")) {
+      return new Response(JSON.stringify({ items: permissions }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
@@ -120,6 +187,13 @@ function mockUserEnvironment() {
         }
       }
       return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (url.includes("/api/users") && method === "GET") {
+      return new Response(JSON.stringify({ items: users }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
@@ -201,11 +275,11 @@ test("E2E User Flow: edits existing user job title and profile", async () => {
   const accountText = screen.getByText("emp_alice");
   await expect.element(accountText).toBeInTheDocument();
 
-  // Click edit button
+  // Click edit button for emp_alice (second user row)
   const editButtons = screen
     .getByRole("main")
     .getByRole("button", { name: /Edit|編輯/i });
-  await editButtons.first().click();
+  await editButtons.all()[1].click();
 
   const modal = screen.getByRole("dialog");
   await expect.element(modal).toBeVisible();
@@ -217,22 +291,25 @@ test("E2E User Flow: edits existing user job title and profile", async () => {
   await submitBtn.click();
 
   expect(tracker.getDispatched().method).toBe("PUT");
-  expect(tracker.getDispatched().url).toContain("/api/users/1");
+  expect(tracker.getDispatched().url).toContain("/api/users/2");
   expect(tracker.getDispatched().payload).toMatchObject({
     title: "技術總監",
   });
 });
 
-test("E2E User Flow: deletes user record with Popconfirm confirmation", async () => {
+test("E2E User Flow: deletes custom user record with Popconfirm while admin is protected", async () => {
   const tracker = mockUserEnvironment();
   const screen = await renderAppAt("/user");
 
   const accountText = screen.getByText("emp_alice");
   await expect.element(accountText).toBeInTheDocument();
 
+  // Admin user must not have a delete button, only emp_alice has one
   const deleteButtons = screen
     .getByRole("main")
     .getByRole("button", { name: /Delete|刪除/i });
+  expect(deleteButtons.all()).toHaveLength(1);
+
   await deleteButtons.first().click();
 
   // Popconfirm tooltip
@@ -242,5 +319,5 @@ test("E2E User Flow: deletes user record with Popconfirm confirmation", async ()
   await confirmBtn.click();
 
   expect(tracker.getDispatched().method).toBe("DELETE");
-  expect(tracker.getDispatched().url).toContain("/api/users/1");
+  expect(tracker.getDispatched().url).toContain("/api/users/2");
 });

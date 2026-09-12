@@ -122,6 +122,10 @@ export const deleteUserRoute = createRoute({
       content: { "application/json": { schema: EmptyResSchema } },
       description: "Deleted successfully",
     },
+    400: {
+      content: { "application/json": { schema: ErrorResSchema } },
+      description: "Bad request",
+    },
     401: {
       content: { "application/json": { schema: ErrorResSchema } },
       description: "Unauthorized",

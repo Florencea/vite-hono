@@ -354,6 +354,7 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
         password: hashedPassword,
         name: "系統管理員",
         departmentId: rootDeptId,
+        isSystem: true,
         updatedAt: new Date(),
       })
       .where(eq(schema.users.account, DEFAULT_ADMIN.account));
@@ -365,6 +366,7 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
         password: hashedPassword,
         name: "系統管理員",
         departmentId: rootDeptId,
+        isSystem: true,
       })
       .returning({ id: schema.users.id });
     adminUserId = insertedUser[0]?.id;

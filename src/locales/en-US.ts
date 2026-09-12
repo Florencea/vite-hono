@@ -95,6 +95,7 @@ export default {
     user: {
       notFound: "User not found",
       accountExists: "Account already exists",
+      cannotDeleteAdmin: "The super administrator account cannot be deleted",
     },
     common: {
       notFound: "Resource not found",

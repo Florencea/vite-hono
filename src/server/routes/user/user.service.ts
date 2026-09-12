@@ -156,6 +156,12 @@ export async function deleteUser(db: Database, id: number) {
   if (!existing) {
     return { success: false as const, reason: "not_found" as const };
   }
+  if (existing.account === "admin" || existing.isSystem) {
+    return {
+      success: false as const,
+      reason: "system_user_protected" as const,
+    };
+  }
 
   await db.delete(users).where(eq(users.id, id));
   return { success: true as const };

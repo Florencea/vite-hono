@@ -33,6 +33,10 @@ export const UserResSchema = z.object({
   roleIds: z
     .array(z.number())
     .openapi({ description: "Assigned role IDs", example: [1] }),
+  isSystem: z
+    .boolean()
+    .default(false)
+    .openapi({ description: "System default user", example: false }),
   createdAt: z.date().openapi({ description: "Created timestamp" }),
   updatedAt: z.date().openapi({ description: "Updated timestamp" }),
 });

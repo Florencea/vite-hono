@@ -95,6 +95,7 @@ export default {
     user: {
       notFound: "找不到該使用者",
       accountExists: "該帳號已存在",
+      cannotDeleteAdmin: "最高管理員帳號不可刪除",
     },
     common: {
       notFound: "找不到資源",

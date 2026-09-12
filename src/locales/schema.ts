@@ -97,6 +97,7 @@ export interface LocaleSchema {
     user: {
       notFound: string;
       accountExists: string;
+      cannotDeleteAdmin: string;
     };
     common: {
       notFound: string;
