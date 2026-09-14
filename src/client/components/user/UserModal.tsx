@@ -45,7 +45,7 @@ export function UserModal({
 
   return (
     <DataModal
-      open={open}
+      open={Boolean(open)}
       title={isEdit ? t("user.edit") : t("user.create")}
       onCancel={onCancel}
       onOk={onOk}

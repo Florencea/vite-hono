@@ -279,7 +279,9 @@ test("E2E User Flow: edits existing user job title and profile", async () => {
   const editButtons = screen
     .getByRole("main")
     .getByRole("button", { name: /Edit|編輯/i });
-  await editButtons.all()[1].click();
+  const targetEditButton = editButtons.all()[1];
+  if (!targetEditButton) throw new Error("Target edit button not found");
+  await targetEditButton.click();
 
   const modal = screen.getByRole("dialog");
   await expect.element(modal).toBeVisible();
@@ -363,7 +365,9 @@ test("E2E User Flow: modal refreshes form state on open, edit, and cancel", asyn
   const editButtons = screen
     .getByRole("main")
     .getByRole("button", { name: /Edit|編輯/i });
-  await editButtons.all()[1].click();
+  const editBtn = editButtons.all()[1];
+  if (!editBtn) throw new Error("Edit button not found");
+  await editBtn.click();
   const editModal = screen.getByRole("dialog");
   await expect.element(editModal).toBeVisible();
 
@@ -375,7 +379,9 @@ test("E2E User Flow: modal refreshes form state on open, edit, and cancel", asyn
   await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
 
   // 4. Re-open Edit modal for same user -> must be refreshed to original "工程師"!
-  await editButtons.all()[1].click();
+  const reOpenBtn = editButtons.all()[1];
+  if (!reOpenBtn) throw new Error("Reopen edit button not found");
+  await reOpenBtn.click();
   const reOpenedEditModal = screen.getByRole("dialog");
   await expect.element(reOpenedEditModal).toBeVisible();
   const reOpenedTitleInput = screen.getByLabelText(/^Title$|^職稱$/i);

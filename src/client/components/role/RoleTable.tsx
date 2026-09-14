@@ -102,7 +102,7 @@ export function RoleTable({ data, loading, onEdit, onDelete }: RoleTableProps) {
     <DataTable<RoleItem>
       columns={columns}
       dataSource={data}
-      loading={loading}
+      loading={Boolean(loading)}
     />
   );
 }

@@ -87,7 +87,7 @@ export function RoleDrawer({
 
   return (
     <DataDrawer
-      open={open}
+      open={Boolean(open)}
       title={isEdit ? t("role.edit") : t("role.create")}
       onClose={onClose}
       size="large"

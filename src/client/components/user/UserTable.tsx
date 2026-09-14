@@ -13,7 +13,7 @@ export interface UserTableProps extends Pick<TableProps<UserItem>, "loading"> {
   onDelete: (id: number) => void;
 }
 
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<UserItem["status"], string> = {
   active: "success",
   inactive: "default",
   suspended: "error",
@@ -141,7 +141,7 @@ export function UserTable({
     <DataTable<UserItem>
       columns={columns}
       dataSource={data}
-      loading={loading}
+      loading={Boolean(loading)}
     />
   );
 }

@@ -17,7 +17,7 @@ import { useAntdTheme } from "./theme.ts";
 
 interface Props {
   children?: ReactNode;
-  queryClient?: QueryClient;
+  queryClient?: QueryClient | undefined;
 }
 
 interface ProviderProps extends Props {

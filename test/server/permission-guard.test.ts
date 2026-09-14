@@ -15,7 +15,8 @@ async function loginAs(
   });
   const cookieHeader = res.headers.get("set-cookie");
   const tokenMatch = /vite_hono_session=([^;]+)/.exec(cookieHeader ?? "");
-  return tokenMatch ? `vite_hono_session=${tokenMatch[1]}` : "";
+  const token = tokenMatch?.[1];
+  return token ? `vite_hono_session=${token}` : "";
 }
 
 test("Permission Guard: Unauthenticated requests to protected endpoints return 401 Unauthorized", async () => {
@@ -70,6 +71,9 @@ test("Permission Guard: Employee role without system:dept:create returns 403 For
     .returning();
 
   const employeeUser = insertedUser[0];
+  if (!employeeUser) {
+    throw new Error("Employee user not found");
+  }
   if (!employeeRole) {
     throw new Error("Employee role not found");
   }

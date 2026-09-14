@@ -1,6 +1,6 @@
 # Vite Hono
 
-[![CI](https://github.com/Florencea/vite-hono/actions/workflows/test.yml/badge.svg)](https://github.com/Florencea/vite-hono/actions/workflows/test.yml)
+[![CI](https://github.com/Florencea/vite-hono/actions/workflows/ci.yml/badge.svg)](https://github.com/Florencea/vite-hono/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A modern, end-to-end type-safe full-stack template powered by **React 19**, **Vite**, **Hono**, **Ant Design v6**, **TailwindCSS v4**, **TanStack Router / Query**, and **Drizzle ORM**.
@@ -113,24 +113,32 @@ Executes `typecheck` + `lint` + `lint:tailwind` + `format:check` + `check:deadco
 
 ## Available Scripts
 
-| Command                     | Description                                                             |
-| :-------------------------- | :---------------------------------------------------------------------- |
-| `npm run dev`               | Start native Vite dev server (with `@cloudflare/vite-plugin` emulation) |
-| `npm run preview`           | Preview production build locally via Vite                               |
-| `npm run check`             | Run unified 7-step verification gate                                    |
-| `npm run test`              | Run all Vitest tests (client + server)                                  |
-| `npm run test:client`       | Run client tests in headless Chromium (browser mode)                    |
-| `npm run test:server`       | Run server tests in Node.js via in-memory Hono                          |
-| `npm run test:setup`        | Install Playwright Chromium binary                                      |
-| `npm run build`             | Build both client SPA (`dist/client`) and server bundle (`dist/server`) |
-| `npm start`                 | Start Node.js production server (`node dist/server/app.js`)             |
-| `npm run lint:tailwind`     | Check Tailwind CSS v4 canonical class syntax                            |
-| `npm run lint:tailwind:fix` | Automatically format Tailwind CSS v4 canonical classes                  |
-| `npm run check:deadcode`    | Audit unused code and dependencies with Knip                            |
-| `npm run db:push`           | Push schema changes via Drizzle Kit                                     |
-| `npm run db:seed`           | Seed database with initial data                                         |
-| `npm run db:studio`         | Launch Drizzle Studio database manager                                  |
-| `npm run deploy:cf`         | Deploy to Cloudflare Workers                                            |
+| Command                      | Description                                                               |
+| :--------------------------- | :------------------------------------------------------------------------ |
+| `npm run dev`                | Start native Vite dev server (with `@cloudflare/vite-plugin` emulation)   |
+| `npm run preview`            | Preview production build locally via Vite                                 |
+| `npm run check`              | Run unified 7-step verification gate                                      |
+| `npm run check:fast`         | Human developer fast feedback loop (`typecheck` + `lint` + `test:server`) |
+| `npm run agent:verify:inner` | Agent fail-fast static verification (`typecheck` + `lint`)                |
+| `npm run agent:verify:unit`  | Agent unit verification (`inner` + server unit tests)                     |
+| `npm run agent:verify:gate`  | Agent comprehensive gate (`unit` + `build` + client E2E tests)            |
+| `npm run agent:typecheck`    | TypeScript strict type check with raw output                              |
+| `npm run agent:lint`         | ESLint and Tailwind class verification with zero warnings tolerance       |
+| `npm run agent:test:unit`    | Server in-memory unit tests in flat TAP format                            |
+| `npm run agent:test:e2e`     | Client browser E2E tests in headless Chromium in flat TAP format          |
+| `npm run test`               | Run all Vitest tests (client + server)                                    |
+| `npm run test:client`        | Run client tests in headless Chromium (browser mode)                      |
+| `npm run test:server`        | Run server tests in Node.js via in-memory Hono                            |
+| `npm run test:setup`         | Install Playwright Chromium binary                                        |
+| `npm run build`              | Build both client SPA (`dist/client`) and server bundle (`dist/server`)   |
+| `npm start`                  | Start Node.js production server (`node dist/server/app.js`)               |
+| `npm run lint:tailwind`      | Check Tailwind CSS v4 canonical class syntax                              |
+| `npm run lint:tailwind:fix`  | Automatically format Tailwind CSS v4 canonical classes                    |
+| `npm run check:deadcode`     | Audit unused code and dependencies with Knip                              |
+| `npm run db:push`            | Push schema changes via Drizzle Kit                                       |
+| `npm run db:seed`            | Seed database with initial data                                           |
+| `npm run db:studio`          | Launch Drizzle Studio database manager                                    |
+| `npm run deploy:cf`          | Deploy to Cloudflare Workers                                              |
 
 ---
 

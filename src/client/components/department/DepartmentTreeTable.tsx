@@ -95,7 +95,7 @@ export function DepartmentTreeTable({
     <DataTable<DepartmentNode>
       columns={columns}
       dataSource={data}
-      loading={loading}
+      loading={Boolean(loading)}
       expandable={{ defaultExpandAllRows: true }}
     />
   );

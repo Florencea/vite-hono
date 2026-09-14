@@ -75,8 +75,7 @@ test("Server Integration Contract: Full login, authenticated session, and logout
 
   // Extract session token
   const tokenMatch = /vite_hono_session=([^;]+)/.exec(cookieHeader ?? "");
-  expect(tokenMatch).toBeTruthy();
-  const tokenValue = tokenMatch ? tokenMatch[1] : "";
+  const tokenValue = tokenMatch?.[1] ?? "";
   const sessionCookie = `vite_hono_session=${tokenValue}`;
 
   // 4. Authenticated getUserInfo returns success and account

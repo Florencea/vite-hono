@@ -415,9 +415,10 @@ export async function seedAllDatabases(): Promise<void> {
   }
 }
 
+const scriptArg = process.argv[1];
 const isDirectExecution =
-  Boolean(process.argv[1]) &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+  scriptArg !== undefined &&
+  resolve(scriptArg) === fileURLToPath(import.meta.url);
 
 if (isDirectExecution) {
   seedAllDatabases()

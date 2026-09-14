@@ -77,6 +77,10 @@ Guidelines for AI agents and developers working on this repository.
   - Use `Boolean(x)` instead of `!!x` for clarity where explicit booleans are required.
   - Trust React Compiler for automatic memoization: never add manual `useMemo` or `useCallback` without an explicit, documented edge-case rationale.
   - **Robust Configuration**: Keep `src/server/config.ts` lean and purposeful. Never wrap fixed architectural constants (e.g. `/api`, `/openapi`, `dist/client`) in pseudo-environment variables (`process.env.VITE_*`). Reserve `process.env` exclusively for genuine runtime settings (e.g. `PORT`, `DATABASE_URL`, `COOKIE_SECRET`, `CORS_ORIGIN`, `ENABLE_OPENAPI`) with strict fail-fast validation (`validateConfig()`) rather than silent default fallbacks.
+- **Boundary Defense & Strict Optional Types**: The project enforces `"noUncheckedIndexedAccess": true` and `"exactOptionalPropertyTypes": true`.
+  - Array and Record index access evaluates to `T | undefined`. Explicitly narrow or guard values before consumption (e.g. `if (!record) throw new Error(...)` or `items[0]?.prop`). Non-null assertions (`!`) and `@ts-ignore` are strictly forbidden.
+  - Optional properties (`prop?: T`) do not permit `{ prop: undefined }`. Use explicit boolean conversion (`open={Boolean(open)}`), default values, or conditional object spreading (`...(val !== undefined ? { val } : {})`).
+- **Strict React Hooks Dependencies**: `react-hooks/exhaustive-deps` is enforced as `error`. All external variables referenced inside hook callbacks must be declared in dependency arrays without inline disables.
 - **Explicit String Conversions**: Call `.toString()` on numbers in template literals.
 - **Zero Key Drift & Complete i18n**:
   - Never hardcode user-facing copy or API error messages.
@@ -148,26 +152,46 @@ When implementing a new feature or API, follow this end-to-end type-safe flow:
    - Write comprehensive business flow E2E tests under `test/client/e2e-<feature>.test.tsx` using `renderAppAt()`.
    - Test complete CRUD journeys (Create, Read, Update, Delete with Popconfirm), accessible form selectors, and typed RPC wire contracts.
 6. **Pass Verification Gates**:
-   - For fast inner-loop iteration: `npm run check:fast`
+   - For micro-iteration & fast feedback: `npm run agent:verify:inner`
+   - For module completion: `npm run agent:verify:unit`
+   - For pre-submission gate: `npm run agent:verify:gate`
    - For final verification: `npm run check`
 
 ## 5. Verification Gate (Definition of Done)
 
-The project employs a two-tier verification gate strategy for optimal developer and agent ergonomics:
+The project employs a dual-track verification strategy distinguishing Human DX and Agent DX:
 
-### Inner Loop: Fast Feedback (`check:fast`)
+### Human Developer Fast Feedback (`check:fast`)
 
-Use during active coding, iterative refactoring, and debugging (~1.5s execution time):
+Reserved exclusively for human developers working interactively in the terminal with colored output, progress indicators, and formatted stack traces (~1.5s):
 
 ```bash
 npm run check:fast
 ```
 
-Runs:
+> [!CAUTION]
+> **Agents Must NOT Run `check:fast`**:
+> Automated AI coding agents and CI environments MUST NEVER execute `npm run check:fast`. Agents must strictly follow the `agent:verify:*` ladder below to guarantee deterministic zero-noise output (`--no-color`), non-interactive reporting (`--reporter=tap-flat`), and zero tolerance for warnings and inline escapes (`--no-inline-config`, `--max-warnings 0`).
 
-1. `typecheck` (`tsc -b` in strict mode)
-2. `lint` (ESLint strict-type-checked)
-3. `test:server` (In-memory server & canary contract tests on isolated test database)
+### Agent Execution Workflow & Fail-Fast Ladder
+
+For automated AI coding agents and script environments, use specialized non-interactive verification commands with clean outputs, zero terminal color escape noise, and zero tolerance for warnings:
+
+1. **Micro-iteration & Active Editing (`agent:verify:inner`)**:
+   ```bash
+   npm run agent:verify:inner
+   ```
+   Runs `agent:typecheck` (`tsc -b --pretty false`) and `agent:lint` (`eslint --no-color --no-inline-config --max-warnings 0` + `lint:tailwind`).
+2. **Module Completion (`agent:verify:unit`)**:
+   ```bash
+   npm run agent:verify:unit
+   ```
+   Runs `agent:verify:inner` followed by `agent:test:unit` (`vitest run --project server --reporter=tap-flat --no-color`).
+3. **Pre-Submission & Gate Verification (`agent:verify:gate`)**:
+   ```bash
+   npm run agent:verify:gate
+   ```
+   Runs `agent:verify:unit` followed by production dual bundle build (`npm run build`) and client E2E tests in headless Chromium (`agent:test:e2e`).
 
 ### Outer Loop: Unified Verification Gate (`check`)
 

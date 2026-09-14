@@ -65,6 +65,9 @@ export async function createUser(db: Database, input: CreateInput) {
     .returning();
 
   const user = inserted[0];
+  if (!user) {
+    throw new Error("Failed to insert user");
+  }
 
   if (input.roleIds.length > 0) {
     for (const rid of input.roleIds) {

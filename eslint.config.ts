@@ -15,6 +15,8 @@ export default defineConfig([
     ".vitest",
     "database.sqlite",
     "src/client/routeTree.gen.ts",
+    "test-results",
+    "playwright-report",
   ]),
   {
     files: ["**/*.{ts,tsx}"],
@@ -48,6 +50,8 @@ export default defineConfig([
       ],
       // Allow both type aliases and interfaces
       "@typescript-eslint/consistent-type-definitions": "off",
+      // Disallow any type explicitly
+      "@typescript-eslint/no-explicit-any": "error",
       // Ban @ts-ignore and require description for @ts-expect-error
       "@typescript-eslint/ban-ts-comment": [
         "error",
@@ -72,12 +76,18 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      "react-hooks/exhaustive-deps": "error",
+    },
   },
   {
     files: ["test/client/**/*.{ts,tsx}"],
     extends: [reactHooks.configs.flat["recommended-latest"]],
     languageOptions: {
       globals: globals.browser,
+    },
+    rules: {
+      "react-hooks/exhaustive-deps": "error",
     },
   },
   {

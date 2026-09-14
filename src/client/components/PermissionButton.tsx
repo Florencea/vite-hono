@@ -26,5 +26,7 @@ export function PermissionButton({
     return null;
   }
 
-  return <Button {...props} disabled={disabled} />;
+  return (
+    <Button {...props} {...(disabled !== undefined ? { disabled } : {})} />
+  );
 }

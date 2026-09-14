@@ -63,6 +63,9 @@ export async function createRole(db: Database, input: CreateInput) {
     .returning();
 
   const role = inserted[0];
+  if (!role) {
+    throw new Error("Failed to insert role");
+  }
 
   // Insert assigned permissions
   if (input.permissionIds.length > 0) {

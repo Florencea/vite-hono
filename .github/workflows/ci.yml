@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CI: "true"
+  NO_COLOR: "1"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  lint:
+    name: Typecheck & Lint (Node from package.json on ubuntu-24.04)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+          check-latest: true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify formatting
+        run: npm run format:check
+
+      - name: Run typecheck
+        run: npm run agent:typecheck
+
+      - name: Run lint
+        run: npm run agent:lint
+
+      - name: Check dead code
+        run: npm run check:deadcode
+
+  unit-test:
+    name: Unit Test (Node ${{ matrix.node }} on ${{ matrix.os }})
+    needs: [lint]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - 22
+          - 24
+          - 26
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - macos-26
+          - windows-2025
+    env:
+      NPM_CONFIG_ENGINE_STRICT: "false"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          check-latest: true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Initialize database
+        run: npm run db:seed
+
+      - name: Run unit tests
+        run: npm run agent:test:unit
+
+  e2e-and-build:
+    name: E2E & Build (Node ${{ matrix.node }} on ${{ matrix.os }})
+    needs: [lint]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - 22
+          - 24
+          - 26
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - macos-26
+          - windows-2025
+    env:
+      NPM_CONFIG_ENGINE_STRICT: "false"
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          check-latest: true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build client and server
+        env:
+          NODE_ENV: production
+        run: npm run build
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(npx playwright --version | awk '{print $2}')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ steps.playwright-version.outputs.version }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-playwright-
+
+      - name: Setup test environment
+        run: npm run test:setup
+
+      - name: Initialize database
+        run: npm run db:seed
+
+      - name: Run E2E tests
+        run: npm run agent:test:e2e
+
+      - name: Upload E2E artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-artifacts-${{ runner.os }}-${{ runner.arch }}-node-${{ matrix.node }}
+          path: |
+            test-results/
+            playwright-report/
+            .vitest/
+          if-no-files-found: ignore

@@ -12,7 +12,8 @@ async function loginAs(
   });
   const cookieHeader = res.headers.get("set-cookie");
   const tokenMatch = /vite_hono_session=([^;]+)/.exec(cookieHeader ?? "");
-  return tokenMatch ? `vite_hono_session=${tokenMatch[1]}` : "";
+  const token = tokenMatch?.[1];
+  return token ? `vite_hono_session=${token}` : "";
 }
 
 test("User Contract: CRUD lifecycle and Role/Department assignment", async () => {
@@ -117,7 +118,7 @@ test("User Contract: Data Scope Filtering (SELF vs ALL)", async () => {
     items: { account: string }[];
   };
   expect(empListJson.items.length).toBe(1);
-  expect(empListJson.items[0].account).toBe("self_scope_employee");
+  expect(empListJson.items[0]?.account).toBe("self_scope_employee");
 
   // Admin queries /api/users -> sees all users
   const adminListRes = await app.request("/api/users", {

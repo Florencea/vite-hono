@@ -41,6 +41,9 @@ export async function createDepartment(db: Database, input: CreateInput) {
     .returning();
 
   const dept = inserted[0];
+  if (!dept) {
+    throw new Error("Failed to insert department");
+  }
 
   const finalPath = parentPath
     ? `${parentPath}${dept.id.toString()}/`

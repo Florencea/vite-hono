@@ -40,7 +40,7 @@ export function DepartmentModal({
 
   return (
     <DataModal
-      open={open}
+      open={Boolean(open)}
       title={isEdit ? t("dept.edit") : t("dept.create")}
       onCancel={onCancel}
       onOk={onOk}

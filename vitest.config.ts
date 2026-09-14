@@ -13,6 +13,8 @@ export default defineConfig((env) => {
         include: ["react-dom/client"],
       },
       test: {
+        allowOnly: !process.env.CI,
+        silent: "passed-only",
         env: {
           DATABASE_URL: "file:./database.test.sqlite",
         },
