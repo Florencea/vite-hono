@@ -205,7 +205,7 @@ Runs:
 
 1. `typecheck` (`tsc -b` in strict mode)
 2. `lint` (ESLint strict + stylistic type checks)
-3. `lint:tailwind` (Official Tailwind CSS v4 canonical class check via `@tailwindcss/oxide`)
+3. `lint:tailwind` (Official Tailwind CSS v4 diagnostic & canonical class check via headless `@tailwindcss/language-server`)
 4. `format:check` (Prettier style check)
 5. `check:deadcode` (Knip zero-config dead-code audit)
 6. `test` (Vitest dual-track tests: client browser + server in-memory)
