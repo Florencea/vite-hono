@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@ant-design/icons": "6.3.4",
-    "@cloudflare/vite-plugin": "1.54.8",
+    "@cloudflare/vite-plugin": "1.54.9",
     "@eslint/js": "10.0.1",
     "@rolldown/plugin-babel": "0.2.4",
     "@tailwindcss/language-server": "0.16.0",
