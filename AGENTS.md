@@ -4,19 +4,19 @@ Guidelines for AI agents and developers working on this repository.
 
 ### Quick Architecture Map
 
-| Layer                 | Path                                           | Responsibility                                                                |
-| :-------------------- | :--------------------------------------------- | :---------------------------------------------------------------------------- |
-| **Frontend Routes**   | `src/client/routes/`                           | TanStack file-based routes (run `npm run routes:generate` to regenerate tree) |
-| **Frontend UI**       | `src/client/components/`                       | Ant Design + Tailwind CSS v4 components                                       |
-| **Theme & Tokens**    | `src/client/global.css`, `src/client/theme.ts` | SSOT Tailwind `@theme` bridged into Antd tokens                               |
-| **Translations**      | `src/locales/`                                 | `schema.ts` (SSOT), `en-US.ts`, `zh-TW.ts` (strict parity)                    |
-| **Backend Routes**    | `src/server/routes/`                           | Modular OpenAPI schemas, route specs, handlers                                |
-| **API Router**        | `src/server/router.ts`                         | Sub-router mounts & RPC `AppType` inference                                   |
-| **Database Schema**   | `src/server/database/schema.ts`                | Single Source of Truth (SSOT) for tables and relations                        |
-| **Database Seed**     | `src/server/database/seed.ts`                  | Dynamic schema DDL sync (`syncDatabaseSchema`) & seed                         |
-| **Testing**           | `test/`                                        | Vitest browser (`test/client`) & in-memory (`test/server`, `test/canary`)     |
-| **Tooling & Scripts** | `scripts/`                                     | `scaffold-feature.ts`, `generate-routes.ts`, `lint-tailwind.ts`               |
-| **CI/CD Pipelines**   | `.github/workflows/`                           | Tiered gatekeeper (`ci.yml`) & upstream canary (`node-canary.yml`)            |
+| Layer                 | Path                                           | Responsibility                                                                                 |
+| :-------------------- | :--------------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| **Frontend Routes**   | `src/client/routes/`                           | TanStack file-based routes (run `npm run routes:generate` to regenerate tree)                  |
+| **Frontend UI**       | `src/client/components/`                       | Ant Design + Tailwind CSS v4 components                                                        |
+| **Theme & Tokens**    | `src/client/global.css`, `src/client/theme.ts` | SSOT Tailwind `@theme` bridged into Antd tokens                                                |
+| **Translations**      | `src/locales/`                                 | `schema.ts` (SSOT), `en-US.ts`, `zh-TW.ts` (strict parity)                                     |
+| **Backend Routes**    | `src/server/routes/`                           | Modular OpenAPI schemas, route specs, handlers                                                 |
+| **API Router**        | `src/server/router.ts`                         | Sub-router mounts & RPC `AppType` inference                                                    |
+| **Database Schema**   | `src/server/database/schema.ts`                | Single Source of Truth (SSOT) for tables and relations                                         |
+| **Database Seed**     | `src/server/database/seed.ts`                  | Dynamic schema DDL sync (`syncDatabaseSchema`) & seed                                          |
+| **Testing**           | `test/`                                        | Vitest browser (`test/client`) & in-memory (`test/server`, `test/canary`)                      |
+| **Tooling & Scripts** | `scripts/`                                     | `scaffold-feature.ts`, `generate-routes.ts`, `lint-tailwind.ts`                                |
+| **CI/CD Pipelines**   | `.github/workflows/`                           | Tiered gatekeeper (`ci.yml`) & upstream canary (`node-canary.yml`) (verified via `actionlint`) |
 
 ## 1. Architectural Conventions
 
@@ -194,6 +194,9 @@ For automated AI coding agents and script environments, use specialized non-inte
    ```
    Runs `agent:verify:unit` followed by production dual bundle build (`npm run build`) and client E2E tests in headless Chromium (`agent:test:e2e`).
 
+> [!IMPORTANT]
+> **CI Workflow Verification**: Whenever `.github/workflows/` files are added or modified, agents must run `npm run agent:lint:ci` (`actionlint -no-color`) and ensure **0 errors and 0 warnings** before staging.
+
 ### Outer Loop: Unified Verification Gate (`check`)
 
 Before completing any task, PR, or commit, execute the full Definition of Done:
@@ -234,6 +237,10 @@ The repository enforces a two-tiered gate and proactive runtime monitoring strat
   - Bypasses repository engine constraints (`--engine-strict=false`) and runs non-blocking build/unit tests (`continue-on-error: true`) to surface upstream breaking changes proactively.
 - **Cache & Artifact Collision Defense**:
   - Cache and test report directories (`.cache`, `test-results`, `playwright-report`) are strictly excluded in `.gitignore`, `.prettierignore`, and `eslint.config.ts` (`globalIgnores`) to prevent false-positive failures during verification gates.
+- **Shift-Left Local CI Workflow Verification (`actionlint`)**:
+  - Whenever `.github/workflows/` files are added or modified, running `actionlint` locally with **0 errors and 0 warnings** is a strict requirement before staging.
+  - Local command: `npm run lint:ci` (or non-interactive agent equivalent: `npm run agent:lint:ci` / `actionlint -no-color`).
+  - **Strict Offline/Local Scope**: `actionlint` is strictly a local shift-left verification guardrail and MUST NOT be embedded into remote GitHub Actions CI workflows. Remote CI environments focus on runtime build and test execution, while local static analysis catches syntax errors, runner expression typos, and shellcheck issues before pushing.
 
 ## 6. Git Workflow & Commit Restrictions
 

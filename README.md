@@ -126,6 +126,16 @@ Runs on `push` and `pull_request` targeting `main`:
 - **Target**: Tests against the upcoming Node.js release line (Node 26) moving toward Active LTS on a single `ubuntu-latest` runner.
 - **Resilience**: Bypasses local engine restrictions (`--engine-strict=false`) and runs non-blocking builds and unit tests (`continue-on-error: true`) to surface regressions early without disrupting repository pass badges.
 
+### 3. Shift-Left Local Verification (`actionlint`)
+
+Whenever modifying workflow files in `.github/workflows/`, validate them locally prior to staging:
+
+```bash
+npm run lint:ci
+```
+
+Runs static analysis and ShellCheck via `actionlint`. Remote CI workflows remain dedicated to build and test execution.
+
 ---
 
 ## Deployment Topologies
