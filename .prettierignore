@@ -3,6 +3,9 @@ public
 drizzle
 .wrangler
 .tanstack
+.cache
 .vitest
+test-results
+playwright-report
 database.sqlite
 src/client/routeTree.gen.ts

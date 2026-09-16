@@ -1,6 +1,7 @@
 # Vite Hono
 
 [![CI](https://github.com/Florencea/vite-hono/actions/workflows/ci.yml/badge.svg)](https://github.com/Florencea/vite-hono/actions/workflows/ci.yml)
+[![Node.js Canary](https://github.com/Florencea/vite-hono/actions/workflows/node-canary.yml/badge.svg)](https://github.com/Florencea/vite-hono/actions/workflows/node-canary.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A modern, end-to-end type-safe full-stack template powered by **React 19**, **Vite**, **Hono**, **Ant Design v6**, **TailwindCSS v4**, **TanStack Router / Query**, and **Drizzle ORM**.
@@ -97,6 +98,33 @@ npm run check
 ```
 
 Executes `typecheck` + `lint` + `lint:tailwind` + `format:check` + `check:deadcode` (Knip) + `test` (Vitest dual-track: Chromium + Node) + `build`. Must pass with 0 errors and 0 warnings.
+
+---
+
+## CI/CD Pipeline Architecture
+
+The repository enforces a high-efficiency tiered gate and proactive runtime monitoring strategy via GitHub Actions:
+
+### 1. Daily CI Gate (`.github/workflows/ci.yml`)
+
+Runs on `push` and `pull_request` targeting `main`:
+
+- **Tier 1 (`gatekeeper`)**: Executed on `ubuntu-latest` against the authoritative Node runtime specified in `package.json` (`engines.node`). Runs clean dependency installation, Playwright browser caching, database seeding, and the complete verification gate:
+  - Formatting check (`npm run format:check`)
+  - Strict typechecking (`npm run agent:typecheck`)
+  - ESLint with zero-warning tolerance & Tailwind v4 canonical linting (`npm run agent:lint`)
+  - Dead-code analysis (`npm run check:deadcode`)
+  - Server unit & contract tests (`npm run agent:test:unit`)
+  - Dual-target production build (`npm run build`)
+  - Real browser E2E test journeys in headless Chromium (`npm run agent:test:e2e`)
+  - Conditional artifact upload (`test-results/`, `playwright-report/`, `.vitest/`) on test failures.
+- **Tier 2 (`platform-compat`)**: Executes on `windows-latest` and `macos-latest` only after `gatekeeper` succeeds (`needs: [gatekeeper]`). Validates native compiler bindings (e.g. Rolldown, LightningCSS) and OS path separators via production builds and lightweight server unit tests without duplicating static analysis or heavy browser runners.
+
+### 2. Proactive Upstream Canary (`.github/workflows/node-canary.yml`)
+
+- **Schedule**: Runs weekly via cron (`0 3 * * 1`) and via manual dispatch (`workflow_dispatch`).
+- **Target**: Tests against the upcoming Node.js release line (Node 26) moving toward Active LTS on a single `ubuntu-latest` runner.
+- **Resilience**: Bypasses local engine restrictions (`--engine-strict=false`) and runs non-blocking builds and unit tests (`continue-on-error: true`) to surface regressions early without disrupting repository pass badges.
 
 ---
 

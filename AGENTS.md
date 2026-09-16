@@ -16,6 +16,7 @@ Guidelines for AI agents and developers working on this repository.
 | **Database Seed**     | `src/server/database/seed.ts`                  | Dynamic schema DDL sync (`syncDatabaseSchema`) & seed                         |
 | **Testing**           | `test/`                                        | Vitest browser (`test/client`) & in-memory (`test/server`, `test/canary`)     |
 | **Tooling & Scripts** | `scripts/`                                     | `scaffold-feature.ts`, `generate-routes.ts`, `lint-tailwind.ts`               |
+| **CI/CD Pipelines**   | `.github/workflows/`                           | Tiered gatekeeper (`ci.yml`) & upstream canary (`node-canary.yml`)            |
 
 ## 1. Architectural Conventions
 
@@ -212,6 +213,27 @@ Runs:
 7. `build` (Client SPA + SSR server build)
 
 All checks must pass with 0 errors and 0 warnings.
+
+### CI/CD Pipeline Architecture & Automated Verification
+
+The repository enforces a two-tiered gate and proactive runtime monitoring strategy:
+
+- **Tier 1 (`gatekeeper` in `.github/workflows/ci.yml`)**:
+  - Runs on `ubuntu-latest` against the authoritative Node runtime dynamically resolved from `package.json` (`engines.node`).
+  - Pre-fetches and caches Playwright Chromium (`.cache/ms-playwright`).
+  - Enforces the full verification gate: formatting check, strict typechecking, zero-warning ESLint & Tailwind v4 validation, Knip dead-code audit, in-memory server unit/contract tests, dual production build, and headless Chromium E2E testing.
+  - Automatically captures failure artifacts (`test-results/`, `playwright-report/`, `.vitest/`) via `actions/upload-artifact@v7`.
+- **Tier 2 (`platform-compat` in `.github/workflows/ci.yml`)**:
+  - Dependent on Tier 1 passing (`needs: [gatekeeper]`).
+  - Runs matrix on `windows-latest` and `macos-latest`.
+  - Executes production build and lightweight server unit tests to verify native binary bindings (Rolldown, LightningCSS) and cross-platform path separators (`\` vs `/`).
+  - Omits pure JS/TS static analysis and heavy browser E2E suites to conserve runner resources.
+- **Proactive Upstream Canary (`.github/workflows/node-canary.yml`)**:
+  - Scheduled weekly (`0 3 * * 1`) and manually dispatchable (`workflow_dispatch`).
+  - Targets the upcoming Node.js release line (Node 26) on `ubuntu-latest`.
+  - Bypasses repository engine constraints (`--engine-strict=false`) and runs non-blocking build/unit tests (`continue-on-error: true`) to surface upstream breaking changes proactively.
+- **Cache & Artifact Collision Defense**:
+  - Cache and test report directories (`.cache`, `test-results`, `playwright-report`) are strictly excluded in `.gitignore`, `.prettierignore`, and `eslint.config.ts` (`globalIgnores`) to prevent false-positive failures during verification gates.
 
 ## 6. Git Workflow & Commit Restrictions
 

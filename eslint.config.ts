@@ -12,6 +12,7 @@ export default defineConfig([
     "drizzle",
     ".wrangler",
     ".tanstack",
+    ".cache",
     ".vitest",
     "database.sqlite",
     "src/client/routeTree.gen.ts",

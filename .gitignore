@@ -27,8 +27,11 @@ dist-ssr
 # tanstack
 .tanstack
 
-# testing
+# cache & testing
+.cache
 .vitest
+test-results
+playwright-report
 
 # env
 .env
