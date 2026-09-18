@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@ant-design/icons": "6.3.4",
-    "@cloudflare/vite-plugin": "1.55.0",
+    "@cloudflare/vite-plugin": "1.56.0",
     "@eslint/js": "10.0.1",
     "@rolldown/plugin-babel": "0.2.4",
     "@tailwindcss/language-server": "0.16.0",
@@ -85,11 +85,11 @@
     "@vitest/browser-playwright": "5.0.1",
     "babel-plugin-react-compiler": "1.0.0",
     "drizzle-kit": "1.0.0-rc.5-ab785fc",
-    "eslint": "10.10.0",
+    "eslint": "10.11.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.7",
     "globals": "17.12.0",
-    "knip": "6.36.0",
+    "knip": "6.37.0",
     "playwright": "1.63.0",
     "prettier": "3.9.8",
     "prettier-plugin-packagejson": "3.0.2",
@@ -101,7 +101,7 @@
     "vitest": "5.0.1",
     "vitest-browser-react": "2.3.0",
     "vscode-languageserver-protocol": "3.18.3",
-    "wrangler": "4.134.0"
+    "wrangler": "4.135.0"
   },
   "engines": {
     "node": "24.21.0"
