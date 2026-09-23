@@ -76,8 +76,11 @@ Guidelines for AI agents and developers working on this repository.
   - Write concise, idiomatic TypeScript and avoid redundant defensive wrappers (e.g. do NOT use `.filter(Boolean)` in Vite `plugins` array since Vite natively filters falsy plugin entries).
   - Use modern syntax features: object property shorthands (`{ routeTree }`), interface extension (`interface B extends A`), and clean fallback operators (`||`, `??=`).
   - Use `Boolean(x)` instead of `!!x` for clarity where explicit booleans are required.
-  - Trust React Compiler for automatic memoization: never add manual `useMemo` or `useCallback` without an explicit, documented edge-case rationale.
-  - **Robust Configuration**: Keep `src/server/config.ts` lean and purposeful. Never wrap fixed architectural constants (e.g. `/api`, `/openapi`, `dist/client`) in pseudo-environment variables (`process.env.VITE_*`). Reserve `process.env` exclusively for genuine runtime settings (e.g. `PORT`, `DATABASE_URL`, `COOKIE_SECRET`, `CORS_ORIGIN`, `ENABLE_OPENAPI`) with strict fail-fast validation (`validateConfig()`) rather than silent default fallbacks.
+  - **Zero-Config Runtime & Robust Configuration**:
+    - The repository adheres to a 100% Zero-Config architecture for local development and automated testing—never require `.env` to build, run tests, or boot the dev server.
+    - Application constants (e.g. title, brand) MUST be defined in `src/client/config.ts` (SSOT) and injected isomorphically; NEVER use pseudo-environment variables (`import.meta.env.VITE_*` or `process.env.VITE_*`).
+    - Keep `src/server/config.ts` lean and purposeful, providing safe defaults for all standard server settings (`PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `ENABLE_OPENAPI`).
+    - Session cookie signing secrets are auto-generated and persisted in the `SystemSetting` database table (`getCookieSecret()`); manual `COOKIE_SECRET` environment variables remain an optional override.
 - **Boundary Defense & Strict Optional Types**: The project enforces `"noUncheckedIndexedAccess": true` and `"exactOptionalPropertyTypes": true`.
   - Array and Record index access evaluates to `T | undefined`. Explicitly narrow or guard values before consumption (e.g. `if (!record) throw new Error(...)` or `items[0]?.prop`). Non-null assertions (`!`) and `@ts-ignore` are strictly forbidden.
   - Optional properties (`prop?: T`) do not permit `{ prop: undefined }`. Use explicit boolean conversion (`open={Boolean(open)}`), default values, or conditional object spreading (`...(val !== undefined ? { val } : {})`).

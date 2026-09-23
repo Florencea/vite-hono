@@ -1,5 +1,4 @@
 import { createClient } from "@libsql/client";
-import "dotenv/config";
 import { drizzle as drizzleD1 } from "drizzle-orm/d1";
 import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { defineRelations } from "drizzle-orm/relations";

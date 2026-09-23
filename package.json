@@ -61,7 +61,6 @@
     "bcrypt-ts": "9.0.2",
     "clsx": "2.1.1",
     "dayjs": "1.11.23",
-    "dotenv": "17.4.2",
     "drizzle-orm": "1.0.0-rc.5-ab785fc",
     "hono": "4.13.8",
     "react": "19.3.0",

@@ -178,3 +178,22 @@ export const userRoles = sqliteTable(
 
 export type UserRole = typeof userRoles.$inferSelect;
 export type NewUserRole = typeof userRoles.$inferInsert;
+
+// ==========================================
+// 8. System Settings & Auto-generated Secrets
+// ==========================================
+export const systemSettings = sqliteTable("SystemSetting", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  description: text("description"),
+  createdAt: integer("createdAt", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(strftime('%s', 'now'))`),
+  updatedAt: integer("updatedAt", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(strftime('%s', 'now'))`)
+    .$onUpdate(() => new Date()),
+});
+
+export type SystemSetting = typeof systemSettings.$inferSelect;
+export type NewSystemSetting = typeof systemSettings.$inferInsert;

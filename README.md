@@ -13,9 +13,7 @@ Designed for robust full-stack development with deterministic quality gates, zer
 ## Highlights
 
 - **Strict Quality Gate**: Single unified command (`npm run check`) enforcing strict TypeScript, ESLint 10, Tailwind CSS v4 canonical classes, Prettier, Knip dead-code detection, dual-track testing (Chromium + Node), and dual-bundle builds.
-- **Universal Isomorphic Auth**: Pure TypeScript, zero-dependency `bcrypt-ts` authentication seamlessly compatible across Node.js, Docker, and Cloudflare Workers isolates (`workerd`) without native compilation or WebAssembly restrictions.
-- **Fail-Fast Configuration**: Lean `src/server/config.ts` enforcing strict validation on required environment variables (`DATABASE_URL`, `COOKIE_SECRET`, `PORT`, `CORS_ORIGIN`, `ENABLE_OPENAPI`) with zero silent fallback compromises.
-- **End-to-End Type Safety**: Shared schema validation and RPC inference via Hono RPC (`hc<AppType>`) and Zod OpenAPI—zero manual SDK generation or contract drift.
+- **Zero-Config Architecture**: 100% out-of-the-box runtime with sensible defaults and zero `.env` requirement for local development and testing. Application specifications are isomorphic SSOT in `src/client/config.ts`, and JWT session cookie secrets are auto-generated and persisted in the database.
 - **Tailwind v4 & Ant Design SSOT**: Design tokens declared in `src/client/global.css` (`@theme`) dynamically bridge into Ant Design tokens without hardcoded fallbacks or `!important` hacks.
 - **Flexible Topologies**: Run as a single fullstack monolith (Node.js / Docker / Cloudflare Workers), decoupled SPA + API, or headless API microservice.
 - **Interactive OpenAPI & Scalar**: Auto-generated interactive API reference with dark mode and multi-language client code snippets at `/openapi`.
@@ -44,9 +42,6 @@ Designed for robust full-stack development with deterministic quality gates, zer
 # Install dependencies
 npm ci
 
-# Copy environment variables
-cp .env.example .env
-
 # Push schema and seed initial data (admin / string)
 npm run db:push
 npm run db:seed
@@ -64,7 +59,7 @@ npm run dev
 - Scalar API Reference: `http://localhost:5173/openapi`
 - OpenAPI JSON Spec: `http://localhost:5173/openapi/doc.json`
 
-For Node.js production runner, start with `npm start` (listening on `PORT` specified in `.env`, default `3000`).
+For Node.js production runner, start with `npm start` (listening on `PORT`, default `3000`).
 
 ---
 

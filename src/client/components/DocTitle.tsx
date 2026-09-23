@@ -1,3 +1,4 @@
+import { APP_TITLE } from "../config.ts";
 import { useSiteTitle } from "../constants/routes";
 
 export interface DocTitleProps {
@@ -28,12 +29,8 @@ export const DocTitle = ({
   const prefixStr = prefixes.length > 0 ? `${prefixes.join(" ")} ` : "";
   let finalTitle = `${prefixStr}${baseTitle}`;
 
-  if (
-    title &&
-    withAppSuffix &&
-    !finalTitle.endsWith(import.meta.env.VITE_TITLE)
-  ) {
-    finalTitle = `${finalTitle} - ${import.meta.env.VITE_TITLE}`;
+  if (title && withAppSuffix && !finalTitle.endsWith(APP_TITLE)) {
+    finalTitle = `${finalTitle} - ${APP_TITLE}`;
   }
 
   return <title>{finalTitle}</title>;

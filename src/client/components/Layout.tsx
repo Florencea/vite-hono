@@ -8,6 +8,7 @@ import { Layout as AntdLayout, Button, Flex, Menu, Typography } from "antd";
 import clsx from "clsx";
 import { useState } from "react";
 import logo from "../assets/logo.png";
+import { APP_TITLE } from "../config.ts";
 import { useAuth } from "../hooks/useAuth.ts";
 import { useI18n } from "../hooks/useI18n.ts";
 import { useUserInfo } from "../hooks/useUserInfo.ts";
@@ -44,7 +45,7 @@ export const Layout = () => {
                 strong
                 className="shrink-0 text-sm tracking-wide sm:text-base"
               >
-                {import.meta.env.VITE_TITLE}
+                {APP_TITLE}
               </Text>
             </Link>
             <Flex align="center">

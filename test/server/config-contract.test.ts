@@ -1,79 +1,73 @@
 import { describe, expect, test } from "vitest";
+import { getCookieSecret } from "../../src/server/auth.ts";
 import { validateConfig } from "../../src/server/config.ts";
 
-const validEnv = {
-  DATABASE_URL: "file:./database.sqlite",
-  COOKIE_SECRET: "a-secret-that-is-at-least-32-chars-long",
-  PORT: "3000",
-  CORS_ORIGIN: "*",
-  ENABLE_OPENAPI: "1",
-};
-
-describe("Server Config Environment Contract", () => {
-  test("validateConfig succeeds when all required variables are present", () => {
-    const config = validateConfig(validEnv);
+describe("Server Config Zero-Config Contract", () => {
+  test("validateConfig succeeds with zero environment variables and applies safe defaults", () => {
+    const config = validateConfig({});
 
     expect(config.DATABASE_URL).toBe("file:./database.sqlite");
     expect(config.COOKIE_SECRET).toBe(
-      "a-secret-that-is-at-least-32-chars-long",
+      "dev-insecure-cookie-secret-min-32-chars-long",
     );
     expect(config.PORT).toBe(3000);
     expect(config.CORS_ORIGIN).toBe("*");
     expect(config.ENABLE_OPENAPI).toBe(true);
   });
 
-  test("validateConfig aborts immediately when DATABASE_URL is missing", () => {
-    expect(() =>
-      validateConfig({ ...validEnv, DATABASE_URL: undefined }),
-    ).toThrow(/Missing required environment variable\(s\): DATABASE_URL/);
-  });
+  test("validateConfig allows custom environment overrides", () => {
+    const config = validateConfig({
+      DATABASE_URL: "file:./custom.sqlite",
+      COOKIE_SECRET: "custom-secret-that-is-at-least-32-chars-long",
+      PORT: "8080",
+      CORS_ORIGIN: "https://example.com",
+      ENABLE_OPENAPI: "0",
+    });
 
-  test("validateConfig aborts immediately when COOKIE_SECRET is missing", () => {
-    expect(() =>
-      validateConfig({ ...validEnv, COOKIE_SECRET: undefined }),
-    ).toThrow(/Missing required environment variable\(s\): COOKIE_SECRET/);
-  });
-
-  test("validateConfig aborts immediately when PORT is missing", () => {
-    expect(() => validateConfig({ ...validEnv, PORT: undefined })).toThrow(
-      /Missing required environment variable\(s\): PORT/,
+    expect(config.DATABASE_URL).toBe("file:./custom.sqlite");
+    expect(config.COOKIE_SECRET).toBe(
+      "custom-secret-that-is-at-least-32-chars-long",
     );
-  });
-
-  test("validateConfig aborts immediately when CORS_ORIGIN is missing", () => {
-    expect(() =>
-      validateConfig({ ...validEnv, CORS_ORIGIN: undefined }),
-    ).toThrow(/Missing required environment variable\(s\): CORS_ORIGIN/);
-  });
-
-  test("validateConfig aborts immediately when ENABLE_OPENAPI is missing", () => {
-    expect(() =>
-      validateConfig({ ...validEnv, ENABLE_OPENAPI: undefined }),
-    ).toThrow(/Missing required environment variable\(s\): ENABLE_OPENAPI/);
-  });
-
-  test("validateConfig lists all missing variables when multiple are absent", () => {
-    expect(() => validateConfig({})).toThrow(
-      /Missing required environment variable\(s\): DATABASE_URL, COOKIE_SECRET, PORT, CORS_ORIGIN, ENABLE_OPENAPI/,
-    );
+    expect(config.PORT).toBe(8080);
+    expect(config.CORS_ORIGIN).toBe("https://example.com");
+    expect(config.ENABLE_OPENAPI).toBe(false);
   });
 
   test("validateConfig aborts when PORT is not a valid number", () => {
     expect(() =>
       validateConfig({
-        ...validEnv,
         PORT: "invalid-port",
       }),
     ).toThrow(/Invalid PORT: "invalid-port"/);
-  });
 
-  test("validateConfig aborts in production when COOKIE_SECRET is shorter than 32 characters", () => {
     expect(() =>
       validateConfig({
-        ...validEnv,
+        PORT: "0",
+      }),
+    ).toThrow(/Invalid PORT: "0"/);
+
+    expect(() =>
+      validateConfig({
+        PORT: "70000",
+      }),
+    ).toThrow(/Invalid PORT: "70000"/);
+  });
+
+  test("validateConfig aborts in production when COOKIE_SECRET is explicitly provided but shorter than 32 characters", () => {
+    expect(() =>
+      validateConfig({
         NODE_ENV: "production",
         COOKIE_SECRET: "too-short",
       }),
     ).toThrow(/COOKIE_SECRET must be at least 32 characters/);
+  });
+
+  test("getCookieSecret returns a secure 32+ char secret and persists identically", async () => {
+    const secret1 = await getCookieSecret();
+    expect(typeof secret1).toBe("string");
+    expect(secret1.length).toBeGreaterThanOrEqual(32);
+
+    const secret2 = await getCookieSecret();
+    expect(secret2).toBe(secret1);
   });
 });
