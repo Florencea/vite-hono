@@ -5,5 +5,4 @@ dist
 database.sqlite
 .env
 .env.*
-!.env.example
 *.log
