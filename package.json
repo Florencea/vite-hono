@@ -54,22 +54,22 @@
     "@hono/node-server": "2.1.1",
     "@hono/zod-openapi": "1.6.3",
     "@libsql/client": "0.18.0",
-    "@scalar/hono-api-reference": "0.12.4",
+    "@scalar/hono-api-reference": "0.12.5",
     "@tanstack/react-query": "5.103.2",
-    "@tanstack/react-router": "1.170.38",
+    "@tanstack/react-router": "1.170.39",
     "antd": "6.6.5",
     "bcrypt-ts": "9.0.2",
     "clsx": "2.1.1",
     "dayjs": "1.11.23",
     "drizzle-orm": "1.0.0-rc.5-ab785fc",
-    "hono": "4.13.8",
+    "hono": "4.13.9",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "4.6.5"
   },
   "devDependencies": {
     "@ant-design/icons": "6.3.4",
-    "@cloudflare/vite-plugin": "1.57.3",
+    "@cloudflare/vite-plugin": "1.60.1",
     "@eslint/js": "10.0.1",
     "@rolldown/plugin-babel": "0.2.4",
     "@tailwindcss/language-server": "0.16.0",
@@ -96,11 +96,11 @@
     "tailwindcss": "4.3.3",
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "typescript-eslint": "8.70.1",
-    "vite": "8.3.0",
+    "vite": "8.3.1",
     "vitest": "5.0.1",
     "vitest-browser-react": "2.3.0",
     "vscode-languageserver-protocol": "3.18.3",
-    "wrangler": "4.136.3"
+    "wrangler": "4.140.0"
   },
   "engines": {
     "node": "24.21.0"
