@@ -8,6 +8,7 @@ This project uses Vite+ to manage development tools. Always use `vp` (or `vpr` s
 - `vp install`: Install dependencies
 - `vp update`: Update dependencies
 - `vp test`: Run Vitest tests
+- `vp build`: Build production bundles (client, server, worker)
 - `vp check`: Run linter, typecheck, format checks
 - `vp fmt`: Run formatter
 - `vp lint`: Run linter

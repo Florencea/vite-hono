@@ -11,7 +11,7 @@ export default defineConfig(({ mode, isSsrBuild }) => {
 
   return {
     build: {
-      outDir: isSsrBuild ? "dist/server" : "dist/client",
+      outDir: isSsrBuild ? "dist/server" : "dist",
       chunkSizeWarningLimit: 1000,
     },
     lint: {
@@ -54,6 +54,28 @@ export default defineConfig(({ mode, isSsrBuild }) => {
     },
     staged: {
       "*.{ts,tsx}": "vp check --fix",
+    },
+    environments: {
+      server: {
+        build: {
+          outDir: "dist/server",
+          ssr: true,
+          rollupOptions: {
+            input: {
+              app: "src/server/app.ts",
+            },
+          },
+        },
+      },
+    },
+    builder: {
+      async buildApp(builder) {
+        await Promise.all(
+          Object.values(builder.environments)
+            .filter((environment) => !environment.isBuilt)
+            .map((environment) => builder.build(environment)),
+        );
+      },
     },
     plugins: [
       {
