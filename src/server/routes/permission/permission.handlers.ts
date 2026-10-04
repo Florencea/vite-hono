@@ -5,10 +5,9 @@ import { getDb } from "../../database/index.ts";
 import { permissions } from "../../database/schema.ts";
 import type { listPermissionsRoute } from "./permission.routes.ts";
 
-export const listPermissionsHandler: RouteHandler<
-  typeof listPermissionsRoute,
-  AppEnv
-> = async (c) => {
+export const listPermissionsHandler: RouteHandler<typeof listPermissionsRoute, AppEnv> = async (
+  c,
+) => {
   const db = getDb(c);
   const items = await db
     .select()

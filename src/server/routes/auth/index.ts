@@ -1,9 +1,5 @@
 import { createRouter } from "../../common/factory.ts";
-import {
-  getUserInfoHandler,
-  loginHandler,
-  logoutHandler,
-} from "./auth.handlers.ts";
+import { getUserInfoHandler, loginHandler, logoutHandler } from "./auth.handlers.ts";
 import { getUserInfoRoute, loginRoute, logoutRoute } from "./auth.routes.ts";
 
 export const authRouter = createRouter()

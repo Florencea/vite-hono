@@ -1,4 +1,5 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test } from "vite-plus/test";
+import { JsonRecordSchema } from "../../src/server/common/schemas.ts";
 import { renderAppAt } from "./test-utils";
 
 const originalFetch = window.fetch.bind(window);
@@ -42,11 +43,7 @@ function mockDepartmentEnvironment(options?: {
 
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url =
-      typeof input === "string"
-        ? input
-        : input instanceof URL
-          ? input.toString()
-          : input.url;
+      typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
     const method = init?.method ?? "GET";
 
@@ -88,7 +85,8 @@ function mockDepartmentEnvironment(options?: {
       dispatchedMethod = method;
       if (init?.body && typeof init.body === "string") {
         try {
-          dispatchedPayload = JSON.parse(init.body) as Record<string, unknown>;
+          const raw: unknown = JSON.parse(init.body);
+          dispatchedPayload = JsonRecordSchema.safeParse(raw).data ?? null;
         } catch {
           dispatchedPayload = null;
         }
@@ -162,9 +160,7 @@ test("E2E Department Flow: edits existing department", async () => {
   const screen = await renderAppAt("/departments");
 
   // Click Edit on the second department row
-  const editButtons = screen
-    .getByRole("main")
-    .getByRole("button", { name: /Edit|編輯/i });
+  const editButtons = screen.getByRole("main").getByRole("button", { name: /Edit|編輯/i });
   // Click the first edit button
   await editButtons.first().click();
 
@@ -188,9 +184,7 @@ test("E2E Department Flow: deletes department with Popconfirm confirmation", asy
   const tracker = mockDepartmentEnvironment();
   const screen = await renderAppAt("/departments");
 
-  const deleteButtons = screen
-    .getByRole("main")
-    .getByRole("button", { name: /Delete|刪除/i });
+  const deleteButtons = screen.getByRole("main").getByRole("button", { name: /Delete|刪除/i });
   await deleteButtons.first().click();
 
   // Popconfirm appears
@@ -236,9 +230,7 @@ test("E2E Department Flow: modal refreshes form state on open, edit, and cancel"
   await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
 
   // 3. Open Edit modal for existing department, change name, then cancel
-  const editButtons = screen
-    .getByRole("main")
-    .getByRole("button", { name: /Edit|編輯/i });
+  const editButtons = screen.getByRole("main").getByRole("button", { name: /Edit|編輯/i });
   await editButtons.first().click();
   const editModal = screen.getByRole("dialog");
   await expect.element(editModal).toBeVisible();

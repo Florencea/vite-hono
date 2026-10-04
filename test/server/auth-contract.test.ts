@@ -1,5 +1,7 @@
-import { expect, test } from "vitest";
+import { expect, test } from "vite-plus/test";
 import app from "../../src/server/app";
+import { ErrorResSchema } from "../../src/server/common/schemas";
+import { UserInfoResSchema } from "../../src/server/routes/auth/auth.schema";
 
 test("Server Schema Contract: POST /api/auth/login validates required fields and types", async () => {
   // Empty payload fails Zod schema validation
@@ -32,10 +34,7 @@ test("Server API Contract: GET /api/auth/getUserInfo returns schema-compliant st
     method: "GET",
   });
   expect(res.status).toBe(200);
-  const json = (await res.json()) as {
-    success: boolean;
-    account: string | null;
-  };
+  const json = UserInfoResSchema.parse(await res.json());
   expect(json.success).toBe(false);
   expect(json.account).toBeNull();
 });
@@ -48,7 +47,7 @@ test("Server Integration Contract: Full login, authenticated session, and logout
     body: JSON.stringify({ account: "unknown_user", password: "any" }),
   });
   expect(notFoundRes.status).toBe(400);
-  const notFoundJson = (await notFoundRes.json()) as { error: string };
+  const notFoundJson = ErrorResSchema.parse(await notFoundRes.json());
   expect(notFoundJson.error).toBeTruthy();
 
   // 2. Wrong password returns 400
@@ -58,9 +57,7 @@ test("Server Integration Contract: Full login, authenticated session, and logout
     body: JSON.stringify({ account: "admin", password: "wrong_password" }),
   });
   expect(wrongPasswordRes.status).toBe(400);
-  const wrongPasswordJson = (await wrongPasswordRes.json()) as {
-    error: string;
-  };
+  const wrongPasswordJson = ErrorResSchema.parse(await wrongPasswordRes.json());
   expect(wrongPasswordJson.error).toBeTruthy();
 
   // 3. Successful login returns 200 and set-cookie
@@ -84,10 +81,7 @@ test("Server Integration Contract: Full login, authenticated session, and logout
     headers: { Cookie: sessionCookie },
   });
   expect(authUserRes.status).toBe(200);
-  const authUserJson = (await authUserRes.json()) as {
-    success: boolean;
-    account: string | null;
-  };
+  const authUserJson = UserInfoResSchema.parse(await authUserRes.json());
   expect(authUserJson.success).toBe(true);
   expect(authUserJson.account).toBe("admin");
 

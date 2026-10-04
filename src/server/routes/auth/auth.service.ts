@@ -2,12 +2,7 @@ import { eq, inArray } from "drizzle-orm";
 import { verifyPassword } from "../../auth.ts";
 import type { AuthUserDetail } from "../../context.ts";
 import type { Database } from "../../database/index.ts";
-import {
-  permissions,
-  rolePermissions,
-  roles,
-  userRoles,
-} from "../../database/schema.ts";
+import { permissions, rolePermissions, roles, userRoles } from "../../database/schema.ts";
 
 export type AuthenticateResult =
   | { success: true; user: { id: number; account: string } }
@@ -57,18 +52,14 @@ export async function getAuthUserDetail(
   const roleIds = uRoleRows.map((r) => r.roleId);
 
   const rolesList =
-    roleIds.length > 0
-      ? await db.select().from(roles).where(inArray(roles.id, roleIds))
-      : [];
+    roleIds.length > 0 ? await db.select().from(roles).where(inArray(roles.id, roleIds)) : [];
   const roleCodes = rolesList.map((r) => r.code);
 
   let permissionCodes: string[] = [];
   let dataScopes = rolesList.map((r) => r.dataScope);
 
   if (roleCodes.includes("super_admin")) {
-    const allPerms = await db
-      .select({ code: permissions.code })
-      .from(permissions);
+    const allPerms = await db.select({ code: permissions.code }).from(permissions);
     permissionCodes = allPerms.map((p) => p.code);
     dataScopes = ["ALL"];
   } else if (roleIds.length > 0) {

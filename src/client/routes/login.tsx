@@ -1,16 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Button, Card, Flex, Form, Input } from "antd";
-import { z } from "zod";
+import { LoginSearchSchema } from "../../server/routes/auth/auth.schema.ts";
 import { I18nSwitcher } from "../components/I18nSwitcher.tsx";
 import { useAuth } from "../hooks/useAuth.ts";
 import { useI18n } from "../hooks/useI18n.ts";
 
-const loginSearchSchema = z.object({
-  redirect: z.string().optional(),
-});
-
 export const Route = createFileRoute("/login")({
-  validateSearch: (search) => loginSearchSchema.parse(search),
+  validateSearch: (search) => LoginSearchSchema.parse(search),
   component: Page,
 });
 

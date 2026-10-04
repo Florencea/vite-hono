@@ -47,9 +47,7 @@ export function RoleTable({ data, loading, onEdit, onDelete }: RoleTableProps) {
       key: "dataScope",
       width: 180,
       render: (scope: RoleItem["dataScope"]) => (
-        <Tag color={SCOPE_COLORS[scope] ?? "default"}>
-          {t(`role.scopes.${scope}` as const)}
-        </Tag>
+        <Tag color={SCOPE_COLORS[scope] ?? "default"}>{t(`role.scopes.${scope}` as const)}</Tag>
       ),
     },
     {
@@ -98,11 +96,5 @@ export function RoleTable({ data, loading, onEdit, onDelete }: RoleTableProps) {
     },
   ];
 
-  return (
-    <DataTable<RoleItem>
-      columns={columns}
-      dataSource={data}
-      loading={Boolean(loading)}
-    />
-  );
+  return <DataTable<RoleItem> columns={columns} dataSource={data} loading={Boolean(loading)} />;
 }

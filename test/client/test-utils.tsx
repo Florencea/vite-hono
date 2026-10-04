@@ -1,11 +1,6 @@
-import type { QueryClient } from "@tanstack/react-query";
-import { useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import type { AnyRouter } from "@tanstack/react-router";
-import {
-  createMemoryHistory,
-  createRouter,
-  RouterProvider,
-} from "@tanstack/react-router";
+import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { render as browserRender } from "vitest-browser-react";
 import { Providers } from "../../src/client/providers";
 import { routeTree } from "../../src/client/routeTree.gen";
@@ -32,16 +27,23 @@ export async function renderAppAt(initialUrl = "/") {
     initialEntries: [initialUrl],
   });
 
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
   const router = createRouter({
     routeTree,
     history,
     context: {
-      queryClient: undefined as unknown as QueryClient,
+      queryClient,
     },
   });
 
   const screen = await browserRender(
-    <Providers container={container}>
+    <Providers container={container} queryClient={queryClient}>
       <TestRouterProvider router={router} />
     </Providers>,
     { container },

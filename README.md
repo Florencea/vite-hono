@@ -1,36 +1,20 @@
-# Vite Hono
+# vite-hono
 
-[![CI](https://github.com/Florencea/vite-hono/actions/workflows/ci.yml/badge.svg)](https://github.com/Florencea/vite-hono/actions/workflows/ci.yml)
-[![Node.js Canary](https://github.com/Florencea/vite-hono/actions/workflows/node-canary.yml/badge.svg)](https://github.com/Florencea/vite-hono/actions/workflows/node-canary.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-
-A modern, end-to-end type-safe full-stack template powered by **React 19**, **Vite**, **Hono**, **Ant Design v6**, **TailwindCSS v4**, **TanStack Router / Query**, and **Drizzle ORM**.
-
-Designed for robust full-stack development with deterministic quality gates, zero runtime black magic, and clear architectural conventions.
+Enterprise-grade, full-stack web template combining **Hono** backend and **React 19 + Ant Design 6** frontend into a single type-safe codebase, powered by **Vite+** (`vp`).
 
 ---
 
 ## Highlights
 
-- **Strict Quality Gate**: Single unified command (`npm run check`) enforcing strict TypeScript, ESLint 10, Tailwind CSS v4 canonical classes, Prettier, Knip dead-code detection, dual-track testing (Chromium + Node), and dual-bundle builds.
-- **Zero-Config Architecture**: 100% out-of-the-box runtime with sensible defaults and zero `.env` requirement for local development and testing. Application specifications are isomorphic SSOT in `src/client/config.ts`, and JWT session cookie secrets are auto-generated and persisted in the database.
-- **Tailwind v4 & Ant Design SSOT**: Design tokens declared in `src/client/global.css` (`@theme`) dynamically bridge into Ant Design tokens without hardcoded fallbacks or `!important` hacks.
-- **Flexible Topologies**: Run as a single fullstack monolith (Node.js / Docker / Cloudflare Workers), decoupled SPA + API, or headless API microservice.
-- **Interactive OpenAPI & Scalar**: Auto-generated interactive API reference with dark mode and multi-language client code snippets at `/openapi`.
-- **Full-Stack i18n**: Out-of-the-box internationalization (`en-US` and `zh-TW`) across UI components and API error responses.
-
----
-
-## Tech Stack
-
-| Layer               | Technology                                               |
-| :------------------ | :------------------------------------------------------- |
-| **Frontend**        | React 19, Vite, Ant Design v6, TailwindCSS v4            |
-| **Routing & State** | TanStack Router (file-based), TanStack Query             |
-| **Backend & API**   | Hono, Hono RPC, `@hono/zod-openapi`, Scalar, `bcrypt-ts` |
-| **Database & ORM**  | Drizzle ORM, SQLite / LibSQL / Cloudflare D1             |
-| **Testing**         | Vitest (Chromium Browser Mode + Node in-memory)          |
-| **Code Quality**    | TypeScript (strict), ESLint 10, Prettier 3, Knip         |
+- **Vite+ (`vp`) Unified Toolchain**: Sub-second static checks with Oxlint (`vp lint`), Oxfmt (`vp fmt`), and integrated Vitest 5 (`vp test`).
+- **End-to-End Type Safety**: Server schemas (`@hono/zod-openapi`) infer client RPC (`hc<AppType>`), TanStack Router, and Ant Design forms (`useAntdForm`) without manual interfaces.
+- **Strict Single Source of Truth (SSOT)**:
+  - **Tokens**: TailwindCSS v4 `@theme` bridged into Ant Design v6 theme variables.
+  - **Database**: Drizzle ORM schema with code-first schema push (`vpr db:push`) and automatic dual-target database seeding (`vpr db:seed`).
+  - **i18n**: Type-safe isomorphic translations (`LocaleSchema`) with recursive parity contract tests between `en-US` and `zh-TW`.
+- **RBAC & Zero Unprotected Routes**: Fail-closed gatekeeper ensuring every route declares permissions, authentication, or explicit public access.
+- **Dual-Track Testing**: Vitest browser mode running in headless Chromium (`@vitest/browser-playwright`) for UI flows, and in-memory Hono (`app.request()`) for server contract tests.
+- **Strict Quality Gate**: Unified verification (`vpr check` or `vp check`) enforcing strict TypeScript, Oxlint, Tailwind CSS v4 canonical classes, Knip dead-code detection, dual-track testing, and dual-bundle builds.
 
 ---
 
@@ -39,27 +23,27 @@ Designed for robust full-stack development with deterministic quality gates, zer
 ### 1. Setup & Database
 
 ```bash
-# Install dependencies
-npm ci
+# Install dependencies via Vite+
+vp install
 
-# Push schema and seed initial data (admin / string)
-npm run db:push
-npm run db:seed
+# Push schema and seed initial data
+vpr db:push
+vpr db:seed
 ```
 
-> **Database SSOT**: `src/server/database/schema.ts` serves as the single source of truth for database tables. The project follows a code-first schema push workflow (`npm run db:push`), and `npm run db:seed` automatically seeds both the primary database (`database.sqlite`) and local Cloudflare D1 (`.wrangler/state/v3/d1/`).
+> **Database SSOT**: `src/server/database/schema.ts` serves as the single source of truth for database tables. The project follows a code-first schema push workflow (`vpr db:push`), and `vpr db:seed` automatically seeds both the primary database (`database.sqlite`) and local Cloudflare D1 (`.wrangler/state/v3/d1/`).
 
 ### 2. Run Development Server
 
 ```bash
-npm run dev
+vp dev
 ```
 
 - Web App: `http://localhost:5173/` (native Vite dev server with Cloudflare Workers emulation)
 - Scalar API Reference: `http://localhost:5173/openapi`
 - OpenAPI JSON Spec: `http://localhost:5173/openapi/doc.json`
 
-For Node.js production runner, start with `npm start` (listening on `PORT`, default `3000`).
+For Node.js production runner, start with `vpr start` (listening on `PORT`, default `3000`).
 
 ---
 
@@ -67,20 +51,17 @@ For Node.js production runner, start with `npm start` (listening on `PORT`, defa
 
 This template follows an **End-to-End Type-Safe & Test-Driven (TDD)** development flow:
 
-1. **Define OpenAPI Schema**:
-   - Create Zod request/response schemas in `src/server/routes/<feature>/<feature>.schema.ts`.
-2. **Server Handler & In-Memory Test**:
-   - Implement route handlers in `src/server/routes/<feature>/`.
-   - Write integration tests in `test/server/` using Hono's `app.request()` (zero port conflicts, sub-second feedback).
-3. **Mount RPC Route**:
-   - Register route in `src/server/router.ts`. Client RPC types (`AppType`, `api.<feature>`) update automatically.
-4. **Client UI & Form**:
+1. **Scaffold Feature Slice**:
+   - Run `vpr scaffold:feature <feature-name>` to bootstrap schema, routes, handlers, and contract tests.
+2. **Implement Business Logic**:
+   - Connect handlers and database models in `src/server/routes/<feature>/`.
+3. **Client UI & Form**:
    - Create routes in `src/client/routes/` and components in `src/client/components/`.
    - Bind forms to RPC types via `useAntdForm<RouterInputs["<feature>"]>()`.
-5. **Browser Mode Test**:
+4. **Browser Mode Test**:
    - Write real browser tests in `test/client/` using `renderAppAt()` to verify UI interactions, token styles, and RPC calls.
-6. **Unified Verification Gate**:
-   - Execute `npm run check` to verify types, lints, formatting, dead code, tests, and build.
+5. **Unified Verification Gate**:
+   - Execute `vpr check` to verify types, lints, formatting, dead code, tests, and build.
 
 ---
 
@@ -89,98 +70,44 @@ This template follows an **End-to-End Type-Safe & Test-Driven (TDD)** developmen
 Run the unified gate before committing or completing development tasks:
 
 ```bash
-npm run check
+vpr check
 ```
 
-Executes `typecheck` + `lint` + `lint:tailwind` + `format:check` + `check:deadcode` (Knip) + `test` (Vitest dual-track: Chromium + Node) + `build`. Must pass with 0 errors and 0 warnings.
-
----
-
-## CI/CD Pipeline Architecture
-
-The repository enforces a high-efficiency tiered gate and proactive runtime monitoring strategy via GitHub Actions:
-
-### 1. Daily CI Gate (`.github/workflows/ci.yml`)
-
-Runs on `push` and `pull_request` targeting `main`:
-
-- **Tier 1 (`gatekeeper`)**: Executed on `ubuntu-latest` against the authoritative Node runtime specified in `package.json` (`engines.node`). Runs clean dependency installation, Playwright browser caching, database seeding, and the complete verification gate:
-  - Formatting check (`npm run format:check`)
-  - Strict typechecking (`npm run agent:typecheck`)
-  - ESLint with zero-warning tolerance & Tailwind v4 canonical linting (`npm run agent:lint`)
-  - Dead-code analysis (`npm run check:deadcode`)
-  - Server unit & contract tests (`npm run agent:test:unit`)
-  - Dual-target production build (`npm run build`)
-  - Real browser E2E test journeys in headless Chromium (`npm run agent:test:e2e`)
-  - Conditional artifact upload (`test-results/`, `playwright-report/`, `.vitest/`) on test failures.
-- **Tier 2 (`platform-compat`)**: Executes on `windows-latest` and `macos-latest` only after `gatekeeper` succeeds (`needs: [gatekeeper]`). Validates native compiler bindings (e.g. Rolldown, LightningCSS) and OS path separators via production builds and lightweight server unit tests without duplicating static analysis or heavy browser runners.
-
-### 2. Proactive Upstream Canary (`.github/workflows/node-canary.yml`)
-
-- **Schedule**: Runs weekly via cron (`0 3 * * 1`) and via manual dispatch (`workflow_dispatch`).
-- **Target**: Tests against the upcoming Node.js release line (Node 26) moving toward Active LTS on a single `ubuntu-latest` runner.
-- **Resilience**: Bypasses local engine restrictions (`--engine-strict=false`) and runs non-blocking builds and unit tests (`continue-on-error: true`) to surface regressions early without disrupting repository pass badges.
-
-### 3. Shift-Left Local Verification (`actionlint`)
-
-Whenever modifying workflow files in `.github/workflows/`, validate them locally prior to staging:
-
-```bash
-npm run lint:ci
-```
-
-Runs static analysis and ShellCheck via `actionlint`. Remote CI workflows remain dedicated to build and test execution.
-
----
-
-## Deployment Topologies
-
-1. **Fullstack Monolith (Default)**: Single Node / Docker / Cloudflare Worker serving both API and SPA on the same origin (zero CORS).
-   ```bash
-   npm run build && npm start
-   ```
-2. **Decoupled**: Build client (`npm run build:client`) for CDN / Pages and server (`npm run build:server`) for any Node / Cloudflare runtime with full RPC typing.
-3. **Headless API**: Build server only (`npm run build:server`). The server automatically serves as a standalone API when client assets are omitted.
+Executes `vp check` (Oxlint + Oxfmt + typecheck) + `lint:tailwind` + `check:deadcode` (Knip) + `test` (Vitest dual-track: Chromium + Node) + `build`. Must pass with 0 errors and 0 warnings.
 
 ---
 
 ## Available Scripts
 
-| Command                      | Description                                                               |
-| :--------------------------- | :------------------------------------------------------------------------ |
-| `npm run dev`                | Start native Vite dev server (with `@cloudflare/vite-plugin` emulation)   |
-| `npm run preview`            | Preview production build locally via Vite                                 |
-| `npm run check`              | Run unified 7-step verification gate                                      |
-| `npm run check:fast`         | Human developer fast feedback loop (`typecheck` + `lint` + `test:server`) |
-| `npm run agent:verify:inner` | Agent fail-fast static verification (`typecheck` + `lint`)                |
-| `npm run agent:verify:unit`  | Agent unit verification (`inner` + server unit tests)                     |
-| `npm run agent:verify:gate`  | Agent comprehensive gate (`unit` + `build` + client E2E tests)            |
-| `npm run agent:typecheck`    | TypeScript strict type check with raw output                              |
-| `npm run agent:lint`         | ESLint and Tailwind class verification with zero warnings tolerance       |
-| `npm run agent:test:unit`    | Server in-memory unit tests in flat TAP format                            |
-| `npm run agent:test:e2e`     | Client browser E2E tests in headless Chromium in flat TAP format          |
-| `npm run test`               | Run all Vitest tests (client + server)                                    |
-| `npm run test:client`        | Run client tests in headless Chromium (browser mode)                      |
-| `npm run test:server`        | Run server tests in Node.js via in-memory Hono                            |
-| `npm run test:setup`         | Install Playwright Chromium binary                                        |
-| `npm run build`              | Build both client SPA (`dist/client`) and server bundle (`dist/server`)   |
-| `npm start`                  | Start Node.js production server (`node dist/server/app.js`)               |
-| `npm run lint:tailwind`      | Check Tailwind CSS v4 canonical class syntax                              |
-| `npm run lint:tailwind:fix`  | Automatically format Tailwind CSS v4 canonical classes                    |
-| `npm run check:deadcode`     | Audit unused code and dependencies with Knip                              |
-| `npm run db:push`            | Push schema changes via Drizzle Kit                                       |
-| `npm run db:seed`            | Seed database with initial data                                           |
-| `npm run db:studio`          | Launch Drizzle Studio database manager                                    |
-| `npm run deploy:cf`          | Deploy to Cloudflare Workers                                              |
+| Command                  | Description                                                             |
+| :----------------------- | :---------------------------------------------------------------------- |
+| `vp dev`                 | Start native Vite dev server (with `@cloudflare/vite-plugin` emulation) |
+| `vp preview`             | Preview production build locally via Vite                               |
+| `vp check`               | Run Oxlint, Oxfmt, and TypeScript checks                                |
+| `vpr check`              | Run unified verification gate (checks, deadcode, tests, build)          |
+| `vpr check:fast`         | Fast feedback loop (`typecheck` + `lint` + server unit tests)           |
+| `vpr agent:verify:inner` | Agent fail-fast static verification (`typecheck` + `lint`)              |
+| `vpr agent:verify:unit`  | Agent unit verification (`inner` + server unit tests)                   |
+| `vpr agent:verify:gate`  | Agent comprehensive gate (`unit` + `build` + client E2E tests)          |
+| `vpr agent:typecheck`    | TypeScript strict type check with raw output                            |
+| `vpr agent:lint`         | Oxlint and Tailwind class verification with zero warnings tolerance     |
+| `vpr agent:test:unit`    | Server in-memory unit tests in flat TAP format                          |
+| `vpr agent:test:e2e`     | Client browser E2E tests in headless Chromium in flat TAP format        |
+| `vp test`                | Run all Vitest tests (client + server)                                  |
+| `vpr test:setup`         | Install Playwright Chromium binary                                      |
+| `vpr build`              | Build both client SPA (`dist/client`) and server bundle (`dist/server`) |
+| `vpr start`              | Start Node.js production server (`node dist/server/app.js`)             |
+| `vpr lint:tailwind`      | Check Tailwind CSS v4 canonical class syntax                            |
+| `vpr lint:tailwind:fix`  | Automatically format Tailwind CSS v4 canonical classes                  |
+| `vpr check:deadcode`     | Audit unused code and dependencies with Knip                            |
+| `vpr db:push`            | Push schema changes via Drizzle Kit                                     |
+| `vpr db:seed`            | Seed database with initial data                                         |
+| `vpr db:studio`          | Launch Drizzle Studio database manager                                  |
+| `vpr deploy:cf`          | Deploy to Cloudflare Workers                                            |
+| `vpr docker:build`       | Build Docker image with dynamic `engines.node` injection                |
 
 ---
 
 ## Guidelines
 
 For architectural rules, SSOT conventions, and strict coding standards, see [AGENTS.md](AGENTS.md).
-
----
-
-## License
-
-[MIT](LICENSE)

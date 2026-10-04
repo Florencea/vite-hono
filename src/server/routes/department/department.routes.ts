@@ -1,5 +1,5 @@
-import { createRoute, z } from "@hono/zod-openapi";
-import { EmptyResSchema, ErrorResSchema } from "../../common/schemas.ts";
+import { createRoute } from "@hono/zod-openapi";
+import { EmptyResSchema, ErrorResSchema, IdParamSchema } from "../../common/schemas.ts";
 import { requirePermission } from "../../middleware/permission.ts";
 import {
   CreateDepartmentReqSchema,
@@ -72,9 +72,7 @@ export const updateDepartmentRoute = createRoute({
   tags: ["Department"],
   middleware: [requirePermission("system:dept:update")] as const,
   request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ description: "Department ID" }),
-    }),
+    params: IdParamSchema,
     body: {
       content: { "application/json": { schema: UpdateDepartmentReqSchema } },
       required: true,
@@ -112,9 +110,7 @@ export const deleteDepartmentRoute = createRoute({
   tags: ["Department"],
   middleware: [requirePermission("system:dept:delete")] as const,
   request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ description: "Department ID" }),
-    }),
+    params: IdParamSchema,
   },
   responses: {
     200: {

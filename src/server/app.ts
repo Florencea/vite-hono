@@ -36,9 +36,7 @@ if (process.env.NODE_ENV !== "test") {
     },
     () => {
       const timestamp = new Date().toLocaleTimeString("en-US");
-      console.info(
-        `${timestamp} [hono] Server Ready on http://localhost:${PORT.toString()}`,
-      );
+      console.info(`${timestamp} [hono] Server Ready on http://localhost:${PORT.toString()}`);
     },
   );
 }
@@ -49,10 +47,7 @@ const gracefulShutdown = () => {
   }, 1000).unref();
 
   if (server) {
-    if (
-      "closeAllConnections" in server &&
-      typeof server.closeAllConnections === "function"
-    ) {
+    if ("closeAllConnections" in server && typeof server.closeAllConnections === "function") {
       server.closeAllConnections();
     }
     server.close(() => {

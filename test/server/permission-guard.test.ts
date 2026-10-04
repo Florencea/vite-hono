@@ -1,13 +1,11 @@
-import { expect, test } from "vitest";
+import { expect, test } from "vite-plus/test";
 import app from "../../src/server/app.ts";
+import { ErrorResSchema } from "../../src/server/common/schemas.ts";
 import { db } from "../../src/server/database/index.ts";
 import { userRoles, users } from "../../src/server/database/schema.ts";
 import { hashPassword } from "../../src/server/auth.ts";
 
-async function loginAs(
-  account: string,
-  password = "password123",
-): Promise<string> {
+async function loginAs(account: string, password = "password123"): Promise<string> {
   const res = await app.request("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -102,6 +100,6 @@ test("Permission Guard: Employee role without system:dept:create returns 403 For
     body: JSON.stringify({ name: "未經授權部門" }),
   });
   expect(createDeptRes.status).toBe(403);
-  const json = (await createDeptRes.json()) as { error: string };
+  const json = ErrorResSchema.parse(await createDeptRes.json());
   expect(json.error).toBeTruthy();
 });

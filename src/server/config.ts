@@ -16,17 +16,12 @@ export function validateConfig(
   const databaseUrl = env.DATABASE_URL?.trim() ?? "file:./database.sqlite";
 
   const rawCookieSecret = env.COOKIE_SECRET?.trim();
-  if (
-    env.NODE_ENV === "production" &&
-    rawCookieSecret &&
-    rawCookieSecret.length < 32
-  ) {
+  if (env.NODE_ENV === "production" && rawCookieSecret && rawCookieSecret.length < 32) {
     throw new Error(
       `[Config Error] COOKIE_SECRET must be at least 32 characters long in production for security.`,
     );
   }
-  const cookieSecret =
-    rawCookieSecret ?? "dev-insecure-cookie-secret-min-32-chars-long";
+  const cookieSecret = rawCookieSecret ?? "dev-insecure-cookie-secret-min-32-chars-long";
 
   let port = 3000;
   const portStr = env.PORT?.trim();
@@ -43,8 +38,7 @@ export function validateConfig(
   const corsOrigin = env.CORS_ORIGIN?.trim() ?? "*";
 
   const enableOpenApiStr = env.ENABLE_OPENAPI?.trim();
-  const enableOpenApi =
-    enableOpenApiStr !== "0" && enableOpenApiStr !== "false";
+  const enableOpenApi = enableOpenApiStr !== "0" && enableOpenApiStr !== "false";
 
   return {
     DATABASE_URL: databaseUrl,
@@ -55,10 +49,4 @@ export function validateConfig(
   };
 }
 
-export const {
-  DATABASE_URL,
-  COOKIE_SECRET,
-  PORT,
-  CORS_ORIGIN,
-  ENABLE_OPENAPI,
-} = validateConfig();
+export const { DATABASE_URL, COOKIE_SECRET, PORT, CORS_ORIGIN, ENABLE_OPENAPI } = validateConfig();

@@ -1,45 +1,34 @@
 import { asc, eq } from "drizzle-orm";
 import type { Database } from "../../database/index.ts";
-import {
-  roleDepartments,
-  rolePermissions,
-  roles,
-} from "../../database/schema.ts";
-import type {
-  CreateRoleReqSchema,
-  UpdateRoleReqSchema,
-} from "./role.schema.ts";
+import { roleDepartments, rolePermissions, roles } from "../../database/schema.ts";
+import type { CreateRoleReqSchema, UpdateRoleReqSchema } from "./role.schema.ts";
 import type { z } from "@hono/zod-openapi";
 
 type CreateInput = z.infer<typeof CreateRoleReqSchema>;
 type UpdateInput = z.infer<typeof UpdateRoleReqSchema>;
 
 export async function getRoleList(db: Database) {
-  const allRoles = await db
-    .select()
-    .from(roles)
-    .orderBy(asc(roles.sort), asc(roles.id));
+  const allRoles = await db.select().from(roles).orderBy(asc(roles.sort), asc(roles.id));
 
-  const items = [];
-  for (const r of allRoles) {
-    const rPerms = await db
-      .select({ permissionId: rolePermissions.permissionId })
-      .from(rolePermissions)
-      .where(eq(rolePermissions.roleId, r.id));
+  return await Promise.all(
+    allRoles.map(async (r) => {
+      const [rPerms, rDepts] = await Promise.all([
+        db
+          .select({ permissionId: rolePermissions.permissionId })
+          .from(rolePermissions)
+          .where(eq(rolePermissions.roleId, r.id)),
+        db
+          .select({ departmentId: roleDepartments.departmentId })
+          .from(roleDepartments)
+          .where(eq(roleDepartments.roleId, r.id)),
+      ]);
 
-    const rDepts = await db
-      .select({ departmentId: roleDepartments.departmentId })
-      .from(roleDepartments)
-      .where(eq(roleDepartments.roleId, r.id));
-
-    items.push({
-      ...r,
-      permissionIds: rPerms.map((p) => p.permissionId),
-      departmentIds: rDepts.map((d) => d.departmentId),
-    });
-  }
-
-  return items;
+      return Object.assign(r, {
+        permissionIds: rPerms.map((p) => p.permissionId),
+        departmentIds: rDepts.map((d) => d.departmentId),
+      });
+    }),
+  );
 }
 
 export async function createRole(db: Database, input: CreateInput) {
@@ -67,24 +56,24 @@ export async function createRole(db: Database, input: CreateInput) {
     throw new Error("Failed to insert role");
   }
 
-  // Insert assigned permissions
+  // Insert assigned permissions in batch
   if (input.permissionIds.length > 0) {
-    for (const pid of input.permissionIds) {
-      await db.insert(rolePermissions).values({
+    await db.insert(rolePermissions).values(
+      input.permissionIds.map((pid) => ({
         roleId: role.id,
         permissionId: pid,
-      });
-    }
+      })),
+    );
   }
 
-  // Insert assigned departments if dataScope is CUSTOM
+  // Insert assigned departments in batch if dataScope is CUSTOM
   if (input.dataScope === "CUSTOM" && input.departmentIds.length > 0) {
-    for (const did of input.departmentIds) {
-      await db.insert(roleDepartments).values({
+    await db.insert(roleDepartments).values(
+      input.departmentIds.map((did) => ({
         roleId: role.id,
         departmentId: did,
-      });
-    }
+      })),
+    );
   }
 
   return {
@@ -116,25 +105,29 @@ export async function updateRole(db: Database, id: number, input: UpdateInput) {
     })
     .where(eq(roles.id, id));
 
-  // Update permissions if provided
+  // Update permissions if provided in batch
   if (input.permissionIds !== undefined) {
     await db.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
-    for (const pid of input.permissionIds) {
-      await db.insert(rolePermissions).values({
-        roleId: id,
-        permissionId: pid,
-      });
+    if (input.permissionIds.length > 0) {
+      await db.insert(rolePermissions).values(
+        input.permissionIds.map((pid) => ({
+          roleId: id,
+          permissionId: pid,
+        })),
+      );
     }
   }
 
-  // Update departments if provided
+  // Update departments if provided in batch
   if (input.departmentIds !== undefined) {
     await db.delete(roleDepartments).where(eq(roleDepartments.roleId, id));
-    for (const did of input.departmentIds) {
-      await db.insert(roleDepartments).values({
-        roleId: id,
-        departmentId: did,
-      });
+    if (input.departmentIds.length > 0) {
+      await db.insert(roleDepartments).values(
+        input.departmentIds.map((did) => ({
+          roleId: id,
+          departmentId: did,
+        })),
+      );
     }
   }
 

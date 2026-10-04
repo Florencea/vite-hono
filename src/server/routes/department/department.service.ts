@@ -1,20 +1,14 @@
 import { asc, eq, like } from "drizzle-orm";
 import type { Database } from "../../database/index.ts";
 import { departments } from "../../database/schema.ts";
-import type {
-  CreateDepartmentReqSchema,
-  UpdateDepartmentReqSchema,
-} from "./department.schema.ts";
+import type { CreateDepartmentReqSchema, UpdateDepartmentReqSchema } from "./department.schema.ts";
 import type { z } from "@hono/zod-openapi";
 
 type CreateInput = z.infer<typeof CreateDepartmentReqSchema>;
 type UpdateInput = z.infer<typeof UpdateDepartmentReqSchema>;
 
 export async function getDepartmentList(db: Database) {
-  return await db
-    .select()
-    .from(departments)
-    .orderBy(asc(departments.sort), asc(departments.id));
+  return await db.select().from(departments).orderBy(asc(departments.sort), asc(departments.id));
 }
 
 export async function createDepartment(db: Database, input: CreateInput) {
@@ -23,8 +17,7 @@ export async function createDepartment(db: Database, input: CreateInput) {
     const parent = await db.query.departments.findFirst({
       where: { id: input.parentId },
     });
-    if (!parent)
-      return { success: false as const, reason: "parent_not_found" as const };
+    if (!parent) return { success: false as const, reason: "parent_not_found" as const };
     parentPath = parent.path;
   }
 
@@ -45,28 +38,18 @@ export async function createDepartment(db: Database, input: CreateInput) {
     throw new Error("Failed to insert department");
   }
 
-  const finalPath = parentPath
-    ? `${parentPath}${dept.id.toString()}/`
-    : `/${dept.id.toString()}/`;
+  const finalPath = parentPath ? `${parentPath}${dept.id.toString()}/` : `/${dept.id.toString()}/`;
 
-  await db
-    .update(departments)
-    .set({ path: finalPath })
-    .where(eq(departments.id, dept.id));
+  await db.update(departments).set({ path: finalPath }).where(eq(departments.id, dept.id));
 
   return { success: true as const, department: { ...dept, path: finalPath } };
 }
 
-export async function updateDepartment(
-  db: Database,
-  id: number,
-  input: UpdateInput,
-) {
+export async function updateDepartment(db: Database, id: number, input: UpdateInput) {
   const existing = await db.query.departments.findFirst({
     where: { id },
   });
-  if (!existing)
-    return { success: false as const, reason: "not_found" as const };
+  if (!existing) return { success: false as const, reason: "not_found" as const };
 
   let newPath = existing.path;
 
@@ -77,14 +60,14 @@ export async function updateDepartment(
       const parent = await db.query.departments.findFirst({
         where: { id: input.parentId },
       });
-      if (!parent)
-        return { success: false as const, reason: "parent_not_found" as const };
+      if (!parent) return { success: false as const, reason: "parent_not_found" as const };
       parentPath = parent.path;
     }
 
-    newPath = parentPath
-      ? `${parentPath}${id.toString()}/`
-      : `/${id.toString()}/`;
+    newPath =
+      parentPath !== null && parentPath !== ""
+        ? `${parentPath}${id.toString()}/`
+        : `/${id.toString()}/`;
 
     // Cascade update descendants
     const oldPrefix = existing.path;
@@ -93,26 +76,27 @@ export async function updateDepartment(
       .from(departments)
       .where(like(departments.path, `${oldPrefix}%`));
 
-    for (const desc of descendants) {
-      if (desc.id === id) continue;
-      const updatedDescPath = desc.path.replace(oldPrefix, newPath);
-      await db
-        .update(departments)
-        .set({ path: updatedDescPath })
-        .where(eq(departments.id, desc.id));
-    }
+    await Promise.all(
+      descendants
+        .filter((desc) => desc.id !== id)
+        .map((desc) => {
+          const updatedDescPath = desc.path.replace(oldPrefix, newPath);
+          return db
+            .update(departments)
+            .set({ path: updatedDescPath })
+            .where(eq(departments.id, desc.id));
+        }),
+    );
   }
 
   await db
     .update(departments)
     .set({
       name: input.name ?? existing.name,
-      parentId:
-        input.parentId !== undefined ? input.parentId : existing.parentId,
+      parentId: input.parentId !== undefined ? input.parentId : existing.parentId,
       path: newPath,
       sort: input.sort ?? existing.sort,
-      leaderId:
-        input.leaderId !== undefined ? input.leaderId : existing.leaderId,
+      leaderId: input.leaderId !== undefined ? input.leaderId : existing.leaderId,
       updatedAt: new Date(),
     })
     .where(eq(departments.id, id));
@@ -132,15 +116,13 @@ export async function deleteDepartment(db: Database, id: number) {
   const existing = await db.query.departments.findFirst({
     where: { id },
   });
-  if (!existing)
-    return { success: false as const, reason: "not_found" as const };
+  if (!existing) return { success: false as const, reason: "not_found" as const };
 
   // Check if department has child departments
   const child = await db.query.departments.findFirst({
     where: { parentId: id },
   });
-  if (child)
-    return { success: false as const, reason: "has_children" as const };
+  if (child) return { success: false as const, reason: "has_children" as const };
 
   // Check if department has assigned users
   const user = await db.query.users.findFirst({

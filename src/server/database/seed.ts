@@ -1,16 +1,13 @@
 import { createClient } from "@libsql/client";
-import { eq, is, SQL, sql } from "drizzle-orm";
-import {
-  getTableConfig,
-  SQLiteDialect,
-  SQLiteTable,
-} from "drizzle-orm/sqlite-core";
+import { eq, inArray, is, SQL, sql } from "drizzle-orm";
+import { getTableConfig, SQLiteDialect, SQLiteTable } from "drizzle-orm/sqlite-core";
 import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { defineRelations } from "drizzle-orm/relations";
 import { existsSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { hashPassword } from "../auth.ts";
+import { TableInfoSchema } from "../common/schemas.ts";
 import { db, type Database } from "./index.ts";
 import * as schema from "./schema.ts";
 
@@ -29,8 +26,7 @@ export function generateCreateTableSql(table: SQLiteTable): string {
   for (const col of config.columns) {
     const parts = [`"${col.name}"`, col.getSQLType()];
     if (col.primary) {
-      const isAutoIncrement =
-        "autoIncrement" in col && Boolean(col.autoIncrement);
+      const isAutoIncrement = "autoIncrement" in col && Boolean(col.autoIncrement);
       parts.push(isAutoIncrement ? "PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY");
     }
     if (col.notNull) {
@@ -44,10 +40,7 @@ export function generateCreateTableSql(table: SQLiteTable): string {
         parts.push(`DEFAULT ${dialect.sqlToQuery(col.default).sql}`);
       } else if (typeof col.default === "string") {
         parts.push(`DEFAULT '${col.default.replace(/'/g, "''")}'`);
-      } else if (
-        typeof col.default === "number" ||
-        typeof col.default === "boolean"
-      ) {
+      } else if (typeof col.default === "number" || typeof col.default === "boolean") {
         parts.push(`DEFAULT ${col.default.toString()}`);
       }
     }
@@ -58,42 +51,46 @@ export function generateCreateTableSql(table: SQLiteTable): string {
 }
 
 export async function syncDatabaseSchema(targetDb: Database): Promise<void> {
+  const tableValues: SQLiteTable[] = [];
   for (const val of Object.values(schema)) {
     if (is(val, SQLiteTable)) {
+      tableValues.push(val);
+    }
+  }
+
+  await Promise.all(
+    tableValues.map(async (val) => {
       const ddl = generateCreateTableSql(val);
       await targetDb.run(sql.raw(ddl));
 
       // Handle newly added columns for existing tables in SQLite
       const config = getTableConfig(val);
       try {
-        const infoRes = (await targetDb.all(
-          sql.raw(`PRAGMA table_info("${config.name}")`),
-        )) as unknown as { name: string }[];
+        const rawInfo = await targetDb.all(sql.raw(`PRAGMA table_info("${config.name}")`));
+        const infoRes = TableInfoSchema.parse(rawInfo);
         const existingColNames = new Set(infoRes.map((r) => r.name));
 
-        for (const col of config.columns) {
-          if (!existingColNames.has(col.name)) {
+        const alterPromises = config.columns
+          .filter((col) => !existingColNames.has(col.name))
+          .map((col) => {
             let colDef = `ALTER TABLE "${config.name}" ADD COLUMN "${col.name}" ${col.getSQLType()}`;
             if (col.default !== undefined) {
               if (col.default instanceof SQL) {
                 colDef += ` DEFAULT ${dialect.sqlToQuery(col.default).sql}`;
               } else if (typeof col.default === "string") {
                 colDef += ` DEFAULT '${col.default.replace(/'/g, "''")}'`;
-              } else if (
-                typeof col.default === "number" ||
-                typeof col.default === "boolean"
-              ) {
+              } else if (typeof col.default === "number" || typeof col.default === "boolean") {
                 colDef += ` DEFAULT ${col.default.toString()}`;
               }
             }
-            await targetDb.run(sql.raw(colDef));
-          }
-        }
+            return targetDb.run(sql.raw(colDef));
+          });
+        await Promise.all(alterPromises);
       } catch {
         // Ignored if PRAGMA is restricted or not supported in environment
       }
-    }
-  }
+    }),
+  );
 }
 
 export const INITIAL_PERMISSIONS = [
@@ -181,13 +178,13 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
   await syncDatabaseSchema(targetDb);
 
   // 1. Seed Permissions
-  for (const perm of INITIAL_PERMISSIONS) {
-    const existingPerm = await targetDb.query.permissions.findFirst({
-      where: { code: perm.code },
-    });
-    if (!existingPerm) {
-      await targetDb.insert(schema.permissions).values(perm);
-    }
+  const existingPerms = await targetDb
+    .select({ code: schema.permissions.code })
+    .from(schema.permissions);
+  const existingPermCodes = new Set(existingPerms.map((p) => p.code));
+  const newPerms = INITIAL_PERMISSIONS.filter((perm) => !existingPermCodes.has(perm.code));
+  if (newPerms.length > 0) {
+    await targetDb.insert(schema.permissions).values(newPerms);
   }
 
   // 2. Seed Departments
@@ -272,21 +269,21 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
   }
 
   // 4. Assign Permissions to roles
-  if (superAdminRoleId) {
+  if (superAdminRoleId !== undefined) {
     const allPerms = await targetDb.query.permissions.findMany();
-    for (const p of allPerms) {
-      const existingRel = await targetDb.query.rolePermissions.findFirst({
-        where: {
-          roleId: superAdminRoleId,
-          permissionId: p.id,
-        },
-      });
-      if (!existingRel) {
-        await targetDb.insert(schema.rolePermissions).values({
-          roleId: superAdminRoleId,
-          permissionId: p.id,
-        });
-      }
+    const existingRolePerms = await targetDb
+      .select({ permissionId: schema.rolePermissions.permissionId })
+      .from(schema.rolePermissions)
+      .where(eq(schema.rolePermissions.roleId, superAdminRoleId));
+    const existingPermIds = new Set(existingRolePerms.map((rp) => rp.permissionId));
+    const newRolePerms = allPerms
+      .filter((p) => !existingPermIds.has(p.id))
+      .map((p) => ({
+        roleId: superAdminRoleId,
+        permissionId: p.id,
+      }));
+    if (newRolePerms.length > 0) {
+      await targetDb.insert(schema.rolePermissions).values(newRolePerms);
     }
   }
 
@@ -303,19 +300,23 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
       "system:user:update",
       "system:role:read",
     ];
-    for (const code of managerPermCodes) {
-      const p = await targetDb.query.permissions.findFirst({ where: { code } });
-      if (p) {
-        const existingRel = await targetDb.query.rolePermissions.findFirst({
-          where: { roleId: currentDeptManagerRole.id, permissionId: p.id },
-        });
-        if (!existingRel) {
-          await targetDb.insert(schema.rolePermissions).values({
-            roleId: currentDeptManagerRole.id,
-            permissionId: p.id,
-          });
-        }
-      }
+    const perms = await targetDb
+      .select()
+      .from(schema.permissions)
+      .where(inArray(schema.permissions.code, managerPermCodes));
+    const existingRolePerms = await targetDb
+      .select({ permissionId: schema.rolePermissions.permissionId })
+      .from(schema.rolePermissions)
+      .where(eq(schema.rolePermissions.roleId, currentDeptManagerRole.id));
+    const existingPermIds = new Set(existingRolePerms.map((rp) => rp.permissionId));
+    const newManagerPerms = perms
+      .filter((p) => !existingPermIds.has(p.id))
+      .map((p) => ({
+        roleId: currentDeptManagerRole.id,
+        permissionId: p.id,
+      }));
+    if (newManagerPerms.length > 0) {
+      await targetDb.insert(schema.rolePermissions).values(newManagerPerms);
     }
   }
 
@@ -394,31 +395,25 @@ export async function seedAllDatabases(): Promise<void> {
   await seedDatabase(db);
 
   // Also seed local Cloudflare D1 database if present in .wrangler
-  const d1Dir = join(
-    process.cwd(),
-    ".wrangler",
-    "state",
-    "v3",
-    "d1",
-    "miniflare-D1DatabaseObject",
-  );
+  const d1Dir = join(process.cwd(), ".wrangler", "state", "v3", "d1", "miniflare-D1DatabaseObject");
   if (existsSync(d1Dir)) {
     const files = readdirSync(d1Dir).filter(
       (f) => f.endsWith(".sqlite") && !f.startsWith("metadata"),
     );
-    for (const file of files) {
-      console.info(`[seed] Seeding local Cloudflare D1 database (${file})...`);
-      const client = createClient({ url: `file:${join(d1Dir, file)}` });
-      const d1Db = drizzleLibsql({ client, relations });
-      await seedDatabase(d1Db);
-    }
+    await Promise.all(
+      files.map(async (file) => {
+        console.info(`[seed] Seeding local Cloudflare D1 database (${file})...`);
+        const client = createClient({ url: `file:${join(d1Dir, file)}` });
+        const d1Db = drizzleLibsql({ client, relations });
+        await seedDatabase(d1Db);
+      }),
+    );
   }
 }
 
 const scriptArg = process.argv[1];
 const isDirectExecution =
-  scriptArg !== undefined &&
-  resolve(scriptArg) === fileURLToPath(import.meta.url);
+  scriptArg !== undefined && resolve(scriptArg) === fileURLToPath(import.meta.url);
 
 if (isDirectExecution) {
   seedAllDatabases()

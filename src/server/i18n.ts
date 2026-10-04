@@ -4,8 +4,8 @@ import { getTranslation } from "../locales/core.ts";
 import {
   DEFAULT_LOCALE,
   dictionaries,
+  isSupportedLocale,
   SUPPORTED_LOCALE_KEYS,
-  type SupportedLocale,
 } from "../locales/registry.ts";
 import type { TranslationKey, TranslationParams } from "../locales/schema.ts";
 
@@ -26,10 +26,8 @@ export function t(
   path: TranslationKey | (string & {}),
   params?: TranslationParams,
 ): string {
-  const lang = c.get("language") as string | undefined;
-  const currentLang = (
-    lang && lang in dictionaries ? lang : DEFAULT_LOCALE
-  ) as SupportedLocale;
+  const lang = c.get("language");
+  const currentLang = isSupportedLocale(lang) ? lang : DEFAULT_LOCALE;
   const dict = dictionaries[currentLang];
   return getTranslation(dict, path, params);
 }

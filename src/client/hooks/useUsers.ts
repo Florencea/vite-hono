@@ -2,12 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App } from "antd";
 import { useState } from "react";
 import { api } from "../api.ts";
-import type {
-  DepartmentItem,
-  RoleItem,
-  RouterInputs,
-  UserItem,
-} from "../types/api.ts";
+import type { RouterInputs, UserItem } from "../types/api.ts";
 import { useAntdForm } from "./useAntdForm.ts";
 import { useI18n } from "./useI18n.ts";
 
@@ -37,10 +32,10 @@ export function useUsers() {
     queryKey: ["users", "list"],
     queryFn: async () => {
       const res = await api.users.$get();
-      if (!(res as Response).ok) {
+      if (!res.ok) {
         throw new Error("Failed to fetch users");
       }
-      return (await res.json()) as { items: UserItem[] };
+      return await res.json();
     },
   });
 
@@ -48,10 +43,10 @@ export function useUsers() {
     queryKey: ["departments", "list"],
     queryFn: async () => {
       const res = await api.departments.$get();
-      if (!(res as Response).ok) {
+      if (!res.ok) {
         throw new Error("Failed to fetch departments");
       }
-      return (await res.json()) as { items: DepartmentItem[] };
+      return await res.json();
     },
   });
 
@@ -59,10 +54,10 @@ export function useUsers() {
     queryKey: ["roles", "list"],
     queryFn: async () => {
       const res = await api.roles.$get();
-      if (!(res as Response).ok) {
+      if (!res.ok) {
         throw new Error("Failed to fetch roles");
       }
-      return (await res.json()) as { items: RoleItem[] };
+      return await res.json();
     },
   });
 
@@ -71,11 +66,11 @@ export function useUsers() {
       const res = await api.users[":id"].$delete({
         param: { id: id.toString() },
       });
-      if (!(res as Response).ok) {
-        const err = (await res.json()) as { error?: string };
-        throw new Error(err.error ?? "Failed to delete user");
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error);
       }
-      return res.json();
+      return await res.json();
     },
     onSuccess: () => {
       void message.success(t("common.success"));
@@ -89,9 +84,7 @@ export function useUsers() {
   const saveMutation = useMutation({
     mutationFn: async (values: UserFormValues) => {
       const targetDeptId =
-        values.departmentId !== undefined &&
-        values.departmentId !== null &&
-        values.departmentId > 0
+        values.departmentId !== undefined && values.departmentId !== null && values.departmentId > 0
           ? values.departmentId
           : null;
 
@@ -111,11 +104,11 @@ export function useUsers() {
             roleIds: values.roleIds,
           },
         });
-        if (!(res as Response).ok) {
-          const err = (await res.json()) as { error?: string };
-          throw new Error(err.error ?? "Failed to update user");
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error);
         }
-        return res.json();
+        return await res.json();
       }
 
       const res = await api.users.$post({
@@ -130,11 +123,11 @@ export function useUsers() {
           roleIds: values.roleIds,
         },
       });
-      if (!(res as Response).ok) {
-        const err = (await res.json()) as { error?: string };
-        throw new Error(err.error ?? "Failed to create user");
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error);
       }
-      return res.json();
+      return await res.json();
     },
     onSuccess: () => {
       void message.success(t("common.success"));

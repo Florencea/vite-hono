@@ -33,65 +33,67 @@ export async function buildDataScopeCondition(
     return undefined;
   }
 
-  const conditions: SQL[] = [];
+  const scopeConditions = await Promise.all(
+    user.dataScopes.map(async (scope) => {
+      switch (scope) {
+        case "SELF":
+          return [eq(columns.userCol, user.id)];
 
-  for (const scope of user.dataScopes) {
-    switch (scope) {
-      case "SELF":
-        conditions.push(eq(columns.userCol, user.id));
-        break;
+        case "DEPT":
+          if (columns.deptCol !== undefined && user.departmentId !== null) {
+            return [eq(columns.deptCol, user.departmentId)];
+          }
+          return [eq(columns.userCol, user.id)];
 
-      case "DEPT":
-        if (columns.deptCol && user.departmentId) {
-          conditions.push(eq(columns.deptCol, user.departmentId));
-        } else {
-          conditions.push(eq(columns.userCol, user.id));
-        }
-        break;
+        case "DEPT_AND_CHILD":
+          if (columns.deptCol !== undefined && user.departmentId !== null) {
+            const currentDept = await db.query.departments.findFirst({
+              where: { id: user.departmentId },
+            });
+            if (currentDept?.path) {
+              const descendantDepts = await db
+                .select({ id: departments.id })
+                .from(departments)
+                .where(like(departments.path, `${currentDept.path}%`));
+              const deptIds = descendantDepts.map((d) => d.id);
+              if (deptIds.length > 0) {
+                return [inArray(columns.deptCol, deptIds)];
+              }
+            }
+          } else {
+            return [eq(columns.userCol, user.id)];
+          }
+          return [];
 
-      case "DEPT_AND_CHILD":
-        if (columns.deptCol && user.departmentId) {
-          const currentDept = await db.query.departments.findFirst({
-            where: { id: user.departmentId },
-          });
-          if (currentDept?.path) {
-            const descendantDepts = await db
-              .select({ id: departments.id })
-              .from(departments)
-              .where(like(departments.path, `${currentDept.path}%`));
-            const deptIds = descendantDepts.map((d) => d.id);
-            if (deptIds.length > 0) {
-              conditions.push(inArray(columns.deptCol, deptIds));
+        case "CUSTOM":
+          if (columns.deptCol !== undefined) {
+            // Query custom departments linked to the user's roles
+            const uRoles = await db
+              .select({ roleId: userRoles.roleId })
+              .from(userRoles)
+              .where(eq(userRoles.userId, user.id));
+            const roleIds = uRoles.map((r) => r.roleId);
+
+            if (roleIds.length > 0) {
+              const customDepts = await db
+                .select({ departmentId: roleDepartments.departmentId })
+                .from(roleDepartments)
+                .where(inArray(roleDepartments.roleId, roleIds));
+              const deptIds = customDepts.map((d) => d.departmentId);
+              if (deptIds.length > 0) {
+                return [inArray(columns.deptCol, deptIds)];
+              }
             }
           }
-        } else {
-          conditions.push(eq(columns.userCol, user.id));
-        }
-        break;
+          return [];
 
-      case "CUSTOM":
-        if (columns.deptCol) {
-          // Query custom departments linked to the user's roles
-          const uRoles = await db
-            .select({ roleId: userRoles.roleId })
-            .from(userRoles)
-            .where(eq(userRoles.userId, user.id));
-          const roleIds = uRoles.map((r) => r.roleId);
+        default:
+          return [];
+      }
+    }),
+  );
 
-          if (roleIds.length > 0) {
-            const customDepts = await db
-              .select({ departmentId: roleDepartments.departmentId })
-              .from(roleDepartments)
-              .where(inArray(roleDepartments.roleId, roleIds));
-            const deptIds = customDepts.map((d) => d.departmentId);
-            if (deptIds.length > 0) {
-              conditions.push(inArray(columns.deptCol, deptIds));
-            }
-          }
-        }
-        break;
-    }
-  }
+  const conditions: SQL[] = scopeConditions.flat();
 
   if (conditions.length === 0) {
     return eq(columns.userCol, user.id);

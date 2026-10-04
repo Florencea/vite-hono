@@ -6,6 +6,9 @@ import { sign, verify } from "hono/jwt";
 import { COOKIE_SECRET } from "./config.ts";
 import { getDb } from "./database/index.ts";
 import { systemSettings } from "./database/schema.ts";
+import { SessionDataSchema, type SessionData } from "./routes/auth/auth.schema.ts";
+
+export type { SessionData };
 
 export const COOKIE_NAME = "vite_hono_session";
 const SESSION_TTL = 604800;
@@ -71,41 +74,30 @@ export async function getCookieSecret(c?: Context): Promise<string> {
   }
 }
 
-export interface SessionData {
-  id: number;
-  account: string;
-  exp?: number;
-}
-
 export async function getSession(c: Context): Promise<SessionData | null> {
   const token = getCookie(c, COOKIE_NAME);
   if (!token) return null;
 
   try {
     const secret = await getCookieSecret(c);
-    const payload = (await verify(token, secret, "HS256")) as unknown;
-    if (!payload || typeof payload !== "object") return null;
-    return payload as SessionData;
+    const payload = await verify(token, secret, "HS256");
+    const result = SessionDataSchema.safeParse(payload);
+    return result.success ? result.data : null;
   } catch {
     return null;
   }
 }
 
-export async function setSession(
-  c: Context,
-  data: Omit<SessionData, "exp">,
-): Promise<void> {
-  const payload: SessionData = {
-    ...data,
-    exp: Math.floor(Date.now() / 1000) + SESSION_TTL,
+export async function setSession(c: Context, data: Omit<SessionData, "exp">): Promise<void> {
+  const exp = Math.floor(Date.now() / 1000) + SESSION_TTL;
+  const payload: Record<string, unknown> = {
+    id: data.id,
+    account: data.account,
+    exp,
   };
 
   const secret = await getCookieSecret(c);
-  const token = await sign(
-    payload as unknown as Record<string, unknown>,
-    secret,
-    "HS256",
-  );
+  const token = await sign(payload, secret, "HS256");
 
   const isProduction = process.env.NODE_ENV === "production";
   setCookie(c, COOKIE_NAME, token, {

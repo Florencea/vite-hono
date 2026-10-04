@@ -14,8 +14,7 @@ export const Route = createFileRoute("/roles")({
       staleTime: "static",
     });
     const isSuperAdmin = data.roles.includes("super_admin");
-    const hasPerm =
-      isSuperAdmin || data.permissions.includes("system:role:read");
+    const hasPerm = isSuperAdmin || data.permissions.includes("system:role:read");
     if (!hasPerm) {
       throw redirect({ to: "/403" });
     }
@@ -57,12 +56,7 @@ function RolesPage() {
         </Flex>
       }
     >
-      <RoleTable
-        data={roles}
-        loading={isLoading}
-        onEdit={openEditDrawer}
-        onDelete={deleteRole}
-      />
+      <RoleTable data={roles} loading={isLoading} onEdit={openEditDrawer} onDelete={deleteRole} />
 
       <RoleDrawer
         open={drawerOpen}

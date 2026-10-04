@@ -1,10 +1,5 @@
 import { sql } from "drizzle-orm";
-import {
-  integer,
-  sqliteTable,
-  text,
-  uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 // ==========================================
 // 1. Departments (Hierarchical tree structure with materialized path)
@@ -31,13 +26,7 @@ export type NewDepartment = typeof departments.$inferInsert;
 // ==========================================
 // 2. Roles and Data Scopes
 // ==========================================
-export const dataScopeEnum = [
-  "ALL",
-  "DEPT_AND_CHILD",
-  "DEPT",
-  "SELF",
-  "CUSTOM",
-] as const;
+export const dataScopeEnum = ["ALL", "DEPT_AND_CHILD", "DEPT", "SELF", "CUSTOM"] as const;
 export type DataScopeType = (typeof dataScopeEnum)[number];
 
 export const roles = sqliteTable("Role", {
@@ -45,9 +34,7 @@ export const roles = sqliteTable("Role", {
   code: text("code").notNull().unique(),
   name: text("name").notNull(),
   description: text("description"),
-  dataScope: text("dataScope", { enum: dataScopeEnum })
-    .notNull()
-    .default("SELF"),
+  dataScope: text("dataScope", { enum: dataScopeEnum }).notNull().default("SELF"),
   sort: integer("sort").notNull().default(0),
   isSystem: integer("isSystem", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("createdAt", { mode: "timestamp" })
@@ -166,14 +153,7 @@ export const userRoles = sqliteTable(
     scopeType: text("scopeType").notNull().default("global"),
     scopeId: text("scopeId"),
   },
-  (t) => [
-    uniqueIndex("user_role_scope_idx").on(
-      t.userId,
-      t.roleId,
-      t.scopeType,
-      t.scopeId,
-    ),
-  ],
+  (t) => [uniqueIndex("user_role_scope_idx").on(t.userId, t.roleId, t.scopeType, t.scopeId)],
 );
 
 export type UserRole = typeof userRoles.$inferSelect;

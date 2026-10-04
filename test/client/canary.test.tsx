@@ -1,4 +1,4 @@
-import { expect, test, vi } from "vitest";
+import { expect, test, vi } from "vite-plus/test";
 import { renderAppAt } from "./test-utils";
 
 test("SSOT Token Bridge: Tailwind --color-primary bridges into Antd primary button background", async () => {
@@ -47,11 +47,7 @@ test("E2E RPC Wire Contract: Form submission dispatches typed payload matching L
   const originalFetch = window.fetch.bind(window);
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const urlStr =
-      typeof input === "string"
-        ? input
-        : input instanceof URL
-          ? input.toString()
-          : input.url;
+      typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
     if (urlStr.includes("/api/auth/login")) {
       dispatchedUrl = urlStr;

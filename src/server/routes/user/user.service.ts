@@ -1,15 +1,9 @@
 import { asc, eq } from "drizzle-orm";
 import { hashPassword } from "../../auth.ts";
-import {
-  buildDataScopeCondition,
-  type ScopeUser,
-} from "../../common/data-scope.ts";
+import { buildDataScopeCondition, type ScopeUser } from "../../common/data-scope.ts";
 import type { Database } from "../../database/index.ts";
 import { userRoles, users } from "../../database/schema.ts";
-import type {
-  CreateUserReqSchema,
-  UpdateUserReqSchema,
-} from "./user.schema.ts";
+import type { CreateUserReqSchema, UpdateUserReqSchema } from "./user.schema.ts";
 import type { z } from "@hono/zod-openapi";
 
 type CreateInput = z.infer<typeof CreateUserReqSchema>;
@@ -25,20 +19,18 @@ export async function getUserList(db: Database, currentUser: ScopeUser) {
     ? await db.select().from(users).where(scopeCondition).orderBy(asc(users.id))
     : await db.select().from(users).orderBy(asc(users.id));
 
-  const items = [];
-  for (const u of allUsers) {
-    const rolesRows = await db
-      .select({ roleId: userRoles.roleId })
-      .from(userRoles)
-      .where(eq(userRoles.userId, u.id));
+  return await Promise.all(
+    allUsers.map(async (u) => {
+      const rolesRows = await db
+        .select({ roleId: userRoles.roleId })
+        .from(userRoles)
+        .where(eq(userRoles.userId, u.id));
 
-    items.push({
-      ...u,
-      roleIds: rolesRows.map((r) => r.roleId),
-    });
-  }
-
-  return items;
+      return Object.assign(u, {
+        roleIds: rolesRows.map((r) => r.roleId),
+      });
+    }),
+  );
 }
 
 export async function createUser(db: Database, input: CreateInput) {
@@ -70,12 +62,12 @@ export async function createUser(db: Database, input: CreateInput) {
   }
 
   if (input.roleIds.length > 0) {
-    for (const rid of input.roleIds) {
-      await db.insert(userRoles).values({
+    await db.insert(userRoles).values(
+      input.roleIds.map((rid) => ({
         userId: user.id,
         roleId: rid,
-      });
-    }
+      })),
+    );
   }
 
   return {
@@ -95,38 +87,34 @@ export async function updateUser(db: Database, id: number, input: UpdateInput) {
     return { success: false as const, reason: "not_found" as const };
   }
 
-  const newPassword = input.password
-    ? await hashPassword(input.password)
-    : existing.password;
+  const newPassword =
+    input.password !== undefined && input.password !== ""
+      ? await hashPassword(input.password)
+      : existing.password;
 
   await db
     .update(users)
     .set({
       password: newPassword,
       name: input.name !== undefined ? input.name : existing.name,
-      employeeNo:
-        input.employeeNo !== undefined ? input.employeeNo : existing.employeeNo,
+      employeeNo: input.employeeNo !== undefined ? input.employeeNo : existing.employeeNo,
       title: input.title !== undefined ? input.title : existing.title,
       status: input.status ?? existing.status,
-      departmentId:
-        input.departmentId !== undefined
-          ? input.departmentId
-          : existing.departmentId,
-      reportsToId:
-        input.reportsToId !== undefined
-          ? input.reportsToId
-          : existing.reportsToId,
+      departmentId: input.departmentId !== undefined ? input.departmentId : existing.departmentId,
+      reportsToId: input.reportsToId !== undefined ? input.reportsToId : existing.reportsToId,
       updatedAt: new Date(),
     })
     .where(eq(users.id, id));
 
   if (input.roleIds !== undefined) {
     await db.delete(userRoles).where(eq(userRoles.userId, id));
-    for (const rid of input.roleIds) {
-      await db.insert(userRoles).values({
-        userId: id,
-        roleId: rid,
-      });
+    if (input.roleIds.length > 0) {
+      await db.insert(userRoles).values(
+        input.roleIds.map((rid) => ({
+          userId: id,
+          roleId: rid,
+        })),
+      );
     }
   }
 

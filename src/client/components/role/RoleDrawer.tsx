@@ -13,11 +13,8 @@ import {
 import type { DataNode } from "antd/es/tree";
 import { useI18n } from "../../hooks/useI18n.ts";
 import type { useRoles } from "../../hooks/useRoles.ts";
-import type {
-  DepartmentItem,
-  PermissionItem,
-  RoleItem,
-} from "../../types/api.ts";
+import type { DepartmentItem, PermissionItem, RoleItem } from "../../types/api.ts";
+import type { Key } from "react";
 import { DataDrawer } from "../common/DataDrawer.tsx";
 
 export interface RoleDrawerProps extends Pick<DrawerProps, "open"> {
@@ -31,8 +28,15 @@ export interface RoleDrawerProps extends Pick<DrawerProps, "open"> {
   onSave: () => void;
 }
 
+const EMPTY_KEYS: number[] = [];
+
+function extractNumericKeys(keys: Key[] | { checked: Key[]; halfChecked: Key[] }): number[] {
+  const rawList = Array.isArray(keys) ? keys : keys.checked;
+  return rawList.filter((k): k is number => typeof k === "number");
+}
+
 function PermissionTreeInput({
-  value = [],
+  value = EMPTY_KEYS,
   onChange,
   treeData,
 }: {
@@ -45,9 +49,7 @@ function PermissionTreeInput({
       checkable
       checkedKeys={value}
       onCheck={(keys) => {
-        onChange?.(
-          Array.isArray(keys) ? (keys as number[]) : (keys.checked as number[]),
-        );
+        onChange?.(extractNumericKeys(keys));
       }}
       treeData={treeData}
     />
@@ -69,8 +71,7 @@ export function RoleDrawer({
   const isEdit = Boolean(role);
 
   const selectedScope =
-    (Form.useWatch("dataScope", roleForm.formInstance) as
-      RoleItem["dataScope"] | undefined) ??
+    (Form.useWatch("dataScope", roleForm.formInstance) as RoleItem["dataScope"] | undefined) ??
     role?.dataScope ??
     "SELF";
 
@@ -117,9 +118,7 @@ export function RoleDrawer({
           <Radio.Group>
             <Flex vertical gap="small">
               <Radio value="ALL">{t("role.scopes.ALL")}</Radio>
-              <Radio value="DEPT_AND_CHILD">
-                {t("role.scopes.DEPT_AND_CHILD")}
-              </Radio>
+              <Radio value="DEPT_AND_CHILD">{t("role.scopes.DEPT_AND_CHILD")}</Radio>
               <Radio value="DEPT">{t("role.scopes.DEPT")}</Radio>
               <Radio value="SELF">{t("role.scopes.SELF")}</Radio>
               <Radio value="CUSTOM">{t("role.scopes.CUSTOM")}</Radio>

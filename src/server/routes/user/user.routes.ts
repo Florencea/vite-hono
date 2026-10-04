@@ -1,5 +1,5 @@
-import { createRoute, z } from "@hono/zod-openapi";
-import { EmptyResSchema, ErrorResSchema } from "../../common/schemas.ts";
+import { createRoute } from "@hono/zod-openapi";
+import { EmptyResSchema, ErrorResSchema, IdParamSchema } from "../../common/schemas.ts";
 import { requirePermission } from "../../middleware/permission.ts";
 import {
   CreateUserReqSchema,
@@ -73,9 +73,7 @@ export const updateUserRoute = createRoute({
   tags: ["User"],
   middleware: [requirePermission("system:user:update")] as const,
   request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ description: "User ID" }),
-    }),
+    params: IdParamSchema,
     body: {
       content: { "application/json": { schema: UpdateUserReqSchema } },
       required: true,
@@ -113,9 +111,7 @@ export const deleteUserRoute = createRoute({
   tags: ["User"],
   middleware: [requirePermission("system:user:delete")] as const,
   request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ description: "User ID" }),
-    }),
+    params: IdParamSchema,
   },
   responses: {
     200: {

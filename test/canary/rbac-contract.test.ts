@@ -1,37 +1,43 @@
-import { expect, test } from "vitest";
-import type {
-  AuthenticatedRouteMarker,
-  PermissionGuardedMiddleware,
-  PublicRouteMarker,
-} from "../../src/server/middleware/permission.ts";
+import { expect, test } from "vite-plus/test";
 import { apiRouter } from "../../src/server/router.ts";
 
-type GuardedHandler = Record<string, unknown> &
-  Partial<
-    PermissionGuardedMiddleware & PublicRouteMarker & AuthenticatedRouteMarker
-  >;
+function isRecordOrFunction(val: unknown): val is Record<string, unknown> {
+  return (typeof val === "function" || typeof val === "object") && val !== null;
+}
+
+function isPublicHandler(h: unknown): boolean {
+  return isRecordOrFunction(h) && Boolean(h["isPublic"]);
+}
+
+function isAuthenticatedHandler(h: unknown): boolean {
+  return isRecordOrFunction(h) && Boolean(h["isAuthenticated"]);
+}
+
+function hasPermissionHandler(h: unknown): boolean {
+  if (isRecordOrFunction(h)) {
+    const perms = h["requiredPermissions"];
+    return Array.isArray(perms) && perms.length > 0;
+  }
+  return false;
+}
 
 test("Canary Security Audit Contract: Every API route must have explicit RBAC, authentication, or public declaration", () => {
   // Map of `${method} ${path}` -> array of handlers/middlewares
-  const routeMap = new Map<string, GuardedHandler[]>();
+  const routeMap = new Map<string, unknown[]>();
 
   for (const route of apiRouter.routes) {
     const key = `${route.method.toUpperCase()} ${route.path}`;
     const list = routeMap.get(key) ?? [];
-    list.push(route.handler as unknown as GuardedHandler);
+    list.push(route.handler);
     routeMap.set(key, list);
   }
 
   const unguardedRoutes: string[] = [];
 
   for (const [routeKey, handlers] of routeMap.entries()) {
-    const isPublic = handlers.some((h) => Boolean(h.isPublic));
-    const isAuthenticated = handlers.some((h) => Boolean(h.isAuthenticated));
-    const hasRequiredPermissions = handlers.some(
-      (h) =>
-        Array.isArray(h.requiredPermissions) &&
-        h.requiredPermissions.length > 0,
-    );
+    const isPublic = handlers.some(isPublicHandler);
+    const isAuthenticated = handlers.some(isAuthenticatedHandler);
+    const hasRequiredPermissions = handlers.some(hasPermissionHandler);
 
     if (!isPublic && !isAuthenticated && !hasRequiredPermissions) {
       unguardedRoutes.push(routeKey);

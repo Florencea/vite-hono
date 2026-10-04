@@ -1,36 +1,17 @@
 import dayjs from "dayjs";
 import "dayjs/locale/zh-tw";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { getTranslation } from "../../locales/core.ts";
-import {
-  SUPPORTED_LOCALES,
-  type SupportedLocale,
-} from "../../locales/registry.ts";
-import type {
-  TranslationKey,
-  TranslationParams,
-} from "../../locales/schema.ts";
-import {
-  detectInitialLocale,
-  I18nContext,
-  STORAGE_KEY,
-} from "../hooks/useI18n.ts";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "../../locales/registry.ts";
+import type { TranslationKey, TranslationParams } from "../../locales/schema.ts";
+import { detectInitialLocale, I18nContext, STORAGE_KEY } from "../hooks/useI18n.ts";
 
 export interface I18nProviderProps {
   children: ReactNode;
   initialLocale?: SupportedLocale;
 }
 
-export const I18nProvider = ({
-  children,
-  initialLocale,
-}: I18nProviderProps) => {
+export const I18nProvider = ({ children, initialLocale }: I18nProviderProps) => {
   const [locale, setLocaleState] = useState<SupportedLocale>(
     () => initialLocale ?? detectInitialLocale(),
   );

@@ -1,5 +1,16 @@
 import type { LocaleSchema, TranslationParams } from "./schema.ts";
 
+function isRecord(val: unknown): val is Record<string, unknown> {
+  return typeof val === "object" && val !== null;
+}
+
+function isRouteKey(
+  routes: LocaleSchema["routes"],
+  key: string,
+): key is keyof LocaleSchema["routes"] {
+  return Object.prototype.hasOwnProperty.call(routes, key);
+}
+
 /**
  * Pure translation lookup function shared across client and server.
  * Supports dot-separated keys (e.g. 'common.logout'), route paths (e.g. '/user'),
@@ -10,16 +21,16 @@ export function getTranslation(
   path: string,
   params?: TranslationParams,
 ): string {
-  if (path.startsWith("/") && path in dict.routes) {
-    return dict.routes[path as keyof typeof dict.routes];
+  if (path.startsWith("/") && isRouteKey(dict.routes, path)) {
+    return dict.routes[path];
   }
 
   const keys = path.split(".");
   let current: unknown = dict;
 
   for (const k of keys) {
-    if (current && typeof current === "object" && k in current) {
-      current = (current as Record<string, unknown>)[k];
+    if (isRecord(current) && Object.prototype.hasOwnProperty.call(current, k)) {
+      current = current[k];
     } else {
       current = undefined;
       break;

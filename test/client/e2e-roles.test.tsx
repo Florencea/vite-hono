@@ -1,4 +1,5 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test } from "vite-plus/test";
+import { JsonRecordSchema } from "../../src/server/common/schemas.ts";
 import { renderAppAt } from "./test-utils";
 
 const originalFetch = window.fetch.bind(window);
@@ -58,11 +59,7 @@ function mockRoleEnvironment() {
 
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url =
-      typeof input === "string"
-        ? input
-        : input instanceof URL
-          ? input.toString()
-          : input.url;
+      typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
     const method = init?.method ?? "GET";
 
@@ -118,7 +115,8 @@ function mockRoleEnvironment() {
       dispatchedMethod = method;
       if (init?.body && typeof init.body === "string") {
         try {
-          dispatchedPayload = JSON.parse(init.body) as Record<string, unknown>;
+          const raw: unknown = JSON.parse(init.body);
+          dispatchedPayload = JsonRecordSchema.safeParse(raw).data ?? null;
         } catch {
           dispatchedPayload = null;
         }
@@ -178,9 +176,7 @@ test("E2E Role Flow: creates a new role with custom dataScope via drawer", async
   await nameInput.fill("稽核主管");
 
   // Select Data Scope radio
-  const scopeRadio = drawer.getByLabelText(
-    /Department & Children|本部門及以下數據/i,
-  );
+  const scopeRadio = drawer.getByLabelText(/Department & Children|本部門及以下數據/i);
   await scopeRadio.click();
 
   // Click Save button in drawer
@@ -206,9 +202,7 @@ test("E2E Role Flow: edits existing role name via drawer", async () => {
   await expect.element(superAdminText).toBeInTheDocument();
 
   // Click edit button for role
-  const editButtons = screen
-    .getByRole("main")
-    .getByRole("button", { name: /Edit|編輯/i });
+  const editButtons = screen.getByRole("main").getByRole("button", { name: /Edit|編輯/i });
   await editButtons.first().click();
 
   const drawer = screen.getByRole("dialog");
@@ -236,9 +230,7 @@ test("E2E Role Flow: deletes custom role with confirmation while system role is 
   await expect.element(deptMgrText).toBeInTheDocument();
 
   // System role (row 1) must not have a delete button
-  const deleteButtons = screen
-    .getByRole("main")
-    .getByRole("button", { name: /Delete|刪除/i });
+  const deleteButtons = screen.getByRole("main").getByRole("button", { name: /Delete|刪除/i });
   // There should only be 1 delete button in the table because role 1 is a system role
   expect(deleteButtons.all()).toHaveLength(1);
 
@@ -293,9 +285,7 @@ test("E2E Role Flow: drawer refreshes form state on open, edit, and cancel", asy
   await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
 
   // 3. Open Edit drawer for role 1, change name, then cancel
-  const editButtons = screen
-    .getByRole("main")
-    .getByRole("button", { name: /Edit|編輯/i });
+  const editButtons = screen.getByRole("main").getByRole("button", { name: /Edit|編輯/i });
   await editButtons.first().click();
   const editDrawer = screen.getByRole("dialog");
   await expect.element(editDrawer).toBeVisible();

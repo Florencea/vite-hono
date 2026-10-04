@@ -1,4 +1,4 @@
-import { afterAll } from "vitest";
+import { afterAll } from "vite-plus/test";
 import { closeDb } from "../../src/server/database/index.ts";
 
 process.env.NODE_ENV = "test";

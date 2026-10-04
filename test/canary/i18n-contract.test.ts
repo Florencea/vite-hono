@@ -1,15 +1,28 @@
-import { describe, expect, expectTypeOf, test } from "vitest";
+import { describe, expect, expectTypeOf, test } from "vite-plus/test";
 import { getTranslation } from "../../src/locales/core";
+import { ErrorResSchema } from "../../src/server/common/schemas";
 import enUS from "../../src/locales/en-US";
-import {
-  dictionaries,
-  SUPPORTED_LOCALE_KEYS,
-  SUPPORTED_LOCALES,
-  type SupportedLocale,
-} from "../../src/locales/registry";
+import { dictionaries, SUPPORTED_LOCALE_KEYS, SUPPORTED_LOCALES } from "../../src/locales/registry";
 import type { LocaleSchema, TranslationKey } from "../../src/locales/schema";
 import zhTW from "../../src/locales/zh-TW";
 import app from "../../src/server/app";
+
+function isRecord(val: unknown): val is Record<string, unknown> {
+  return typeof val === "object" && val !== null;
+}
+
+function getAllLeafKeys(obj: Record<string, unknown>, prefix = ""): string[] {
+  const keys: string[] = [];
+  for (const [k, v] of Object.entries(obj)) {
+    const fullKey = prefix.length > 0 ? `${prefix}.${k}` : k;
+    if (isRecord(v)) {
+      keys.push(...getAllLeafKeys(v, fullKey));
+    } else {
+      keys.push(fullKey);
+    }
+  }
+  return keys.toSorted();
+}
 
 describe("i18n Schema & Parity Contract", () => {
   test("Static Type Contract: All locales strictly conform to LocaleSchema", () => {
@@ -19,22 +32,6 @@ describe("i18n Schema & Parity Contract", () => {
   });
 
   test("Zero Key Drift Contract: Every language matches en-US keys recursively with non-empty values", () => {
-    function getAllLeafKeys(
-      obj: Record<string, unknown>,
-      prefix = "",
-    ): string[] {
-      const keys: string[] = [];
-      for (const [k, v] of Object.entries(obj)) {
-        const fullKey = prefix ? `${prefix}.${k}` : k;
-        if (v && typeof v === "object") {
-          keys.push(...getAllLeafKeys(v as Record<string, unknown>, fullKey));
-        } else {
-          keys.push(fullKey);
-        }
-      }
-      return keys.sort();
-    }
-
     const baseKeys = getAllLeafKeys(enUS);
 
     for (const locale of SUPPORTED_LOCALE_KEYS) {
@@ -79,7 +76,7 @@ describe("Server i18n HTTP & Error Contract", () => {
       headers: { "Accept-Language": "en-US,en;q=0.9" },
     });
     expect(enRes.status).toBe(401);
-    const enJson = (await enRes.json()) as { error: string };
+    const enJson = ErrorResSchema.parse(await enRes.json());
     expect(enJson.error).toBe(enUS.errors.auth.unauthorized);
 
     // Traditional Chinese request
@@ -88,7 +85,7 @@ describe("Server i18n HTTP & Error Contract", () => {
       headers: { "Accept-Language": "zh-TW,zh;q=0.9" },
     });
     expect(zhRes.status).toBe(401);
-    const zhJson = (await zhRes.json()) as { error: string };
+    const zhJson = ErrorResSchema.parse(await zhRes.json());
     expect(zhJson.error).toBe(zhTW.errors.auth.unauthorized);
   });
 
@@ -105,7 +102,7 @@ describe("Server i18n HTTP & Error Contract", () => {
       }),
     });
     expect(zhRes.status).toBe(400);
-    const zhJson = (await zhRes.json()) as { error: string };
+    const zhJson = ErrorResSchema.parse(await zhRes.json());
     expect(zhJson.error).toBe(zhTW.errors.auth.userNotFound);
 
     const enRes = await app.request("/api/auth/login", {
@@ -120,7 +117,7 @@ describe("Server i18n HTTP & Error Contract", () => {
       }),
     });
     expect(enRes.status).toBe(400);
-    const enJson = (await enRes.json()) as { error: string };
+    const enJson = ErrorResSchema.parse(await enRes.json());
     expect(enJson.error).toBe(enUS.errors.auth.userNotFound);
   });
 
@@ -130,7 +127,7 @@ describe("Server i18n HTTP & Error Contract", () => {
       headers: { "Accept-Language": "zh-TW" },
     });
     expect(zhRes.status).toBe(404);
-    const zhJson = (await zhRes.json()) as { error: string };
+    const zhJson = ErrorResSchema.parse(await zhRes.json());
     expect(zhJson.error).toBe(zhTW.errors.common.notFound);
 
     const enRes = await app.request("/api/unhandled_random_route", {
@@ -138,13 +135,12 @@ describe("Server i18n HTTP & Error Contract", () => {
       headers: { "Accept-Language": "en-US" },
     });
     expect(enRes.status).toBe(404);
-    const enJson = (await enRes.json()) as { error: string };
+    const enJson = ErrorResSchema.parse(await enRes.json());
     expect(enJson.error).toBe(enUS.errors.common.notFound);
   });
 
   test("Registry dictionaries map all supported locales", () => {
-    const supportedKeys = Object.keys(SUPPORTED_LOCALES) as SupportedLocale[];
-    for (const key of supportedKeys) {
+    for (const key of SUPPORTED_LOCALE_KEYS) {
       expect(dictionaries[key]).toBeDefined();
     }
   });

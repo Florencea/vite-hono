@@ -19,30 +19,36 @@ interface CloudflareEnv {
   DB?: Parameters<typeof drizzleD1>[0];
 }
 
-let _db: Database | undefined;
+let cachedDb: Database | undefined;
 
 export function closeDb(): void {
-  if (_db) {
-    _db.$client.close();
-    _db = undefined;
+  if (cachedDb) {
+    cachedDb.$client.close();
+    cachedDb = undefined;
   }
+}
+
+function isCloudflareEnv(env: unknown): env is CloudflareEnv {
+  return typeof env === "object" && env !== null && "DB" in env;
 }
 
 export function getDb(c?: Context): Database {
-  const env = c?.env as CloudflareEnv | undefined;
-  if (env?.DB) {
-    return drizzleD1(env.DB, { relations });
+  const rawEnv: unknown = c?.env;
+  if (isCloudflareEnv(rawEnv) && rawEnv.DB) {
+    return drizzleD1(rawEnv.DB, { relations });
   }
-  _db ??= getLibsqlDb();
-  return _db;
+  cachedDb ??= getLibsqlDb();
+  return cachedDb;
 }
 
-export const db: Database = new Proxy({} as Database, {
-  get(_target, prop, receiver) {
+export const db: Database = new Proxy(getLibsqlDb(), {
+  get(target, prop, receiver) {
+    void target;
     const targetDb = getDb();
-    const value = Reflect.get(targetDb, prop, receiver) as unknown;
-    return typeof value === "function"
-      ? (value as (...args: unknown[]) => unknown).bind(targetDb)
-      : value;
+    const value: unknown = Reflect.get(targetDb, prop, receiver);
+    if (typeof value === "function") {
+      return value.bind(targetDb);
+    }
+    return value;
   },
 });

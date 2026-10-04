@@ -1,10 +1,9 @@
-import { expect, test } from "vitest";
+import { expect, test } from "vite-plus/test";
 import app from "../../src/server/app.ts";
+import { ErrorResSchema } from "../../src/server/common/schemas.ts";
+import { UserListResSchema, UserResSchema } from "../../src/server/routes/user/user.schema.ts";
 
-async function loginAs(
-  account: string,
-  password = "password123",
-): Promise<string> {
+async function loginAs(account: string, password = "password123"): Promise<string> {
   const res = await app.request("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -37,12 +36,7 @@ test("User Contract: CRUD lifecycle and Role/Department assignment", async () =>
     }),
   });
   expect(createUserRes.status).toBe(200);
-  const user = (await createUserRes.json()) as {
-    id: number;
-    account: string;
-    employeeNo: string;
-    roleIds: number[];
-  };
+  const user = UserResSchema.parse(await createUserRes.json());
   expect(user.account).toBe("new_sales_member");
   expect(user.employeeNo).toBe("SALES001");
   expect(user.roleIds).toEqual([2]);
@@ -74,7 +68,7 @@ test("User Contract: CRUD lifecycle and Role/Department assignment", async () =>
     }),
   });
   expect(updateUserRes.status).toBe(200);
-  const updatedUser = (await updateUserRes.json()) as { title: string };
+  const updatedUser = UserResSchema.parse(await updateUserRes.json());
   expect(updatedUser.title).toBe("資深業務專員");
 
   // 4. Delete User
@@ -114,9 +108,7 @@ test("User Contract: Data Scope Filtering (SELF vs ALL)", async () => {
     headers: { Cookie: employeeCookie },
   });
   expect(empListRes.status).toBe(200);
-  const empListJson = (await empListRes.json()) as {
-    items: { account: string }[];
-  };
+  const empListJson = UserListResSchema.parse(await empListRes.json());
   expect(empListJson.items.length).toBe(1);
   expect(empListJson.items[0]?.account).toBe("self_scope_employee");
 
@@ -125,9 +117,7 @@ test("User Contract: Data Scope Filtering (SELF vs ALL)", async () => {
     method: "GET",
     headers: { Cookie: adminCookie },
   });
-  const adminListJson = (await adminListRes.json()) as {
-    items: { account: string }[];
-  };
+  const adminListJson = UserListResSchema.parse(await adminListRes.json());
   expect(adminListJson.items.length).toBeGreaterThan(1);
 });
 
@@ -138,9 +128,7 @@ test("User Contract: System admin cannot be deleted", async () => {
     method: "GET",
     headers: { Cookie: adminCookie },
   });
-  const listJson = (await listRes.json()) as {
-    items: { id: number; account: string; isSystem: boolean }[];
-  };
+  const listJson = UserListResSchema.parse(await listRes.json());
   const adminUser = listJson.items.find((u) => u.account === "admin");
   expect(adminUser).toBeDefined();
   if (!adminUser) {
@@ -148,14 +136,11 @@ test("User Contract: System admin cannot be deleted", async () => {
   }
   expect(adminUser.isSystem).toBe(true);
 
-  const deleteAdminRes = await app.request(
-    `/api/users/${adminUser.id.toString()}`,
-    {
-      method: "DELETE",
-      headers: { Cookie: adminCookie },
-    },
-  );
+  const deleteAdminRes = await app.request(`/api/users/${adminUser.id.toString()}`, {
+    method: "DELETE",
+    headers: { Cookie: adminCookie },
+  });
   expect(deleteAdminRes.status).toBe(400);
-  const deleteJson = (await deleteAdminRes.json()) as { error: string };
+  const deleteJson = ErrorResSchema.parse(await deleteAdminRes.json());
   expect(deleteJson.error).toBeTruthy();
 });

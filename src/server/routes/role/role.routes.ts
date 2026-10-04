@@ -1,5 +1,5 @@
-import { createRoute, z } from "@hono/zod-openapi";
-import { EmptyResSchema, ErrorResSchema } from "../../common/schemas.ts";
+import { createRoute } from "@hono/zod-openapi";
+import { EmptyResSchema, ErrorResSchema, IdParamSchema } from "../../common/schemas.ts";
 import { requirePermission } from "../../middleware/permission.ts";
 import {
   CreateRoleReqSchema,
@@ -12,8 +12,7 @@ export const listRolesRoute = createRoute({
   method: "get",
   path: "/",
   summary: "List roles",
-  description:
-    "Get list of all roles with their assigned permissions and data scopes",
+  description: "Get list of all roles with their assigned permissions and data scopes",
   tags: ["Role"],
   middleware: [requirePermission("system:role:read")] as const,
   responses: {
@@ -73,9 +72,7 @@ export const updateRoleRoute = createRoute({
   tags: ["Role"],
   middleware: [requirePermission("system:role:update")] as const,
   request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ description: "Role ID" }),
-    }),
+    params: IdParamSchema,
     body: {
       content: { "application/json": { schema: UpdateRoleReqSchema } },
       required: true,
@@ -113,9 +110,7 @@ export const deleteRoleRoute = createRoute({
   tags: ["Role"],
   middleware: [requirePermission("system:role:delete")] as const,
   request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ description: "Role ID" }),
-    }),
+    params: IdParamSchema,
   },
   responses: {
     200: {

@@ -51,11 +51,7 @@ export function DepartmentModal({
           <Input />
         </Form.Item>
         <Form.Item {...deptForm.formItemProps.parentId}>
-          <TreeSelect
-            treeData={treeSelectData}
-            placeholder={t("dept.parent")}
-            allowClear
-          />
+          <TreeSelect treeData={treeSelectData} placeholder={t("dept.parent")} allowClear />
         </Form.Item>
         <Form.Item {...deptForm.formItemProps.sort}>
           <InputNumber min={0} className="w-full" />

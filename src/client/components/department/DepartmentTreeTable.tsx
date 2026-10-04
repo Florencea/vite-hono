@@ -10,10 +10,7 @@ export interface DepartmentNode extends DepartmentItem {
   children?: DepartmentNode[];
 }
 
-export interface DepartmentTreeTableProps extends Pick<
-  TableProps<DepartmentNode>,
-  "loading"
-> {
+export interface DepartmentTreeTableProps extends Pick<TableProps<DepartmentNode>, "loading"> {
   data: DepartmentNode[];
   onAddChild: (parent: DepartmentItem) => void;
   onEdit: (record: DepartmentItem) => void;

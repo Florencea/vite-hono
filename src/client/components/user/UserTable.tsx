@@ -19,14 +19,7 @@ const STATUS_COLORS: Record<UserItem["status"], string> = {
   suspended: "error",
 };
 
-export function UserTable({
-  data,
-  departments,
-  roles,
-  loading,
-  onEdit,
-  onDelete,
-}: UserTableProps) {
+export function UserTable({ data, departments, roles, loading, onEdit, onDelete }: UserTableProps) {
   const { t } = useI18n();
 
   const deptMap = new Map(departments.map((d) => [d.id, d.name]));
@@ -41,9 +34,7 @@ export function UserTable({
       render: (account: string, record) => (
         <Space>
           <span>{account}</span>
-          {record.isSystem || record.account === "admin" ? (
-            <Tag color="gold">System</Tag>
-          ) : null}
+          {record.isSystem || record.account === "admin" ? <Tag color="gold">System</Tag> : null}
         </Space>
       ),
     },
@@ -70,8 +61,7 @@ export function UserTable({
       dataIndex: "departmentId",
       key: "departmentId",
       width: 140,
-      render: (deptId: number | null) =>
-        deptId ? (deptMap.get(deptId) ?? "-") : "-",
+      render: (deptId: number | null) => (deptId ? (deptMap.get(deptId) ?? "-") : "-"),
     },
     {
       title: t("user.roles"),
@@ -137,11 +127,5 @@ export function UserTable({
     },
   ];
 
-  return (
-    <DataTable<UserItem>
-      columns={columns}
-      dataSource={data}
-      loading={Boolean(loading)}
-    />
-  );
+  return <DataTable<UserItem> columns={columns} dataSource={data} loading={Boolean(loading)} />;
 }

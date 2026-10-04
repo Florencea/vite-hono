@@ -1,9 +1,6 @@
 import { createRoute } from "@hono/zod-openapi";
 import { EmptyResSchema, ErrorResSchema } from "../../common/schemas.ts";
-import {
-  authenticatedRoute,
-  publicRoute,
-} from "../../middleware/permission.ts";
+import { authenticatedRoute, publicRoute } from "../../middleware/permission.ts";
 import { LoginReqSchema, UserInfoResSchema } from "./auth.schema.ts";
 
 export const loginRoute = createRoute({

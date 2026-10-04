@@ -14,8 +14,7 @@ export const Route = createFileRoute("/departments")({
       staleTime: "static",
     });
     const isSuperAdmin = data.roles.includes("super_admin");
-    const hasPerm =
-      isSuperAdmin || data.permissions.includes("system:dept:read");
+    const hasPerm = isSuperAdmin || data.permissions.includes("system:dept:read");
     if (!hasPerm) {
       throw redirect({ to: "/403" });
     }

@@ -8,26 +8,15 @@ import type {
   listRolesRoute,
   updateRoleRoute,
 } from "./role.routes.ts";
-import {
-  createRole,
-  deleteRole,
-  getRoleList,
-  updateRole,
-} from "./role.service.ts";
+import { createRole, deleteRole, getRoleList, updateRole } from "./role.service.ts";
 
-export const listRolesHandler: RouteHandler<
-  typeof listRolesRoute,
-  AppEnv
-> = async (c) => {
+export const listRolesHandler: RouteHandler<typeof listRolesRoute, AppEnv> = async (c) => {
   const db = getDb(c);
   const items = await getRoleList(db);
   return c.json({ items }, 200);
 };
 
-export const createRoleHandler: RouteHandler<
-  typeof createRoleRoute,
-  AppEnv
-> = async (c) => {
+export const createRoleHandler: RouteHandler<typeof createRoleRoute, AppEnv> = async (c) => {
   const db = getDb(c);
   const body = c.req.valid("json");
   const res = await createRole(db, body);
@@ -39,10 +28,7 @@ export const createRoleHandler: RouteHandler<
   return c.json(res.role, 200);
 };
 
-export const updateRoleHandler: RouteHandler<
-  typeof updateRoleRoute,
-  AppEnv
-> = async (c) => {
+export const updateRoleHandler: RouteHandler<typeof updateRoleRoute, AppEnv> = async (c) => {
   const db = getDb(c);
   const { id } = c.req.valid("param");
   const body = c.req.valid("json");
@@ -55,10 +41,7 @@ export const updateRoleHandler: RouteHandler<
   return c.json(res.role, 200);
 };
 
-export const deleteRoleHandler: RouteHandler<
-  typeof deleteRoleRoute,
-  AppEnv
-> = async (c) => {
+export const deleteRoleHandler: RouteHandler<typeof deleteRoleRoute, AppEnv> = async (c) => {
   const db = getDb(c);
   const { id } = c.req.valid("param");
 

@@ -1,253 +1,71 @@
+<!--VITE PLUS START-->
+
+## Vite+ Guidelines
+
+This project uses Vite+ to manage development tools. Always use `vp` (or `vpr` shorthand for `vp run`) to run commands:
+
+- `vpr <script>` (or `vp run <script>`): Run scripts from `package.json`
+- `vp install`: Install dependencies
+- `vp update`: Update dependencies
+- `vp test`: Run Vitest tests
+- `vp check`: Run linter, typecheck, format checks
+- `vp fmt`: Run formatter
+- `vp lint`: Run linter
+
+<!--VITE PLUS END-->
+
 # Agent Development Guidelines
 
-Guidelines for AI agents and developers working on this repository.
+Guidelines for AI agents and human contributors working on this repository.
 
-### Quick Architecture Map
+## 1. Architecture Map
 
-| Layer                 | Path                                           | Responsibility                                                                                 |
-| :-------------------- | :--------------------------------------------- | :--------------------------------------------------------------------------------------------- |
-| **Frontend Routes**   | `src/client/routes/`                           | TanStack file-based routes (run `npm run routes:generate` to regenerate tree)                  |
-| **Frontend UI**       | `src/client/components/`                       | Ant Design + Tailwind CSS v4 components                                                        |
-| **Theme & Tokens**    | `src/client/global.css`, `src/client/theme.ts` | SSOT Tailwind `@theme` bridged into Antd tokens                                                |
-| **Translations**      | `src/locales/`                                 | `schema.ts` (SSOT), `en-US.ts`, `zh-TW.ts` (strict parity)                                     |
-| **Backend Routes**    | `src/server/routes/`                           | Modular OpenAPI schemas, route specs, handlers                                                 |
-| **API Router**        | `src/server/router.ts`                         | Sub-router mounts & RPC `AppType` inference                                                    |
-| **Database Schema**   | `src/server/database/schema.ts`                | Single Source of Truth (SSOT) for tables and relations                                         |
-| **Database Seed**     | `src/server/database/seed.ts`                  | Dynamic schema DDL sync (`syncDatabaseSchema`) & seed                                          |
-| **Testing**           | `test/`                                        | Vitest browser (`test/client`) & in-memory (`test/server`, `test/canary`)                      |
-| **Tooling & Scripts** | `scripts/`                                     | `scaffold-feature.ts`, `generate-routes.ts`, `lint-tailwind.ts`                                |
-| **CI/CD Pipelines**   | `.github/workflows/`                           | Tiered gatekeeper (`ci.yml`) & upstream canary (`node-canary.yml`) (verified via `actionlint`) |
+| Layer               | Path                            | Responsibility                                      |
+| :------------------ | :------------------------------ | :-------------------------------------------------- |
+| **Frontend Routes** | `src/client/routes/`            | TanStack Router file routes (protected route tree)  |
+| **Frontend UI**     | `src/client/components/`        | Ant Design v6 + Tailwind CSS v4 components          |
+| **Theme & Tokens**  | `src/client/theme.ts`           | Tailwind v4 SSOT bridge to Ant Design tokens        |
+| **Translations**    | `src/locales/`                  | `schema.ts` (SSOT), strict `en-US` & `zh-TW` parity |
+| **Backend Routes**  | `src/server/routes/`            | OpenAPI route specs, schemas, handlers              |
+| **API Router**      | `src/server/router.ts`          | Sub-router mounts & RPC `AppType` inference         |
+| **Database Schema** | `src/server/database/schema.ts` | Drizzle ORM Single Source of Truth                  |
+| **Tests**           | `test/`                         | Vitest Chromium browser & in-memory server tests    |
+| **Domain Rules**    | `.agents/rules/`                | Modular glob-triggered domain rules                 |
+| **Project Skills**  | `.agents/skills/`               | On-demand repeatable workflow runbooks              |
 
-## 1. Architectural Conventions
+---
 
-- **Frontend (`src/client/`)**:
-  - **Routes**: Modular routes in `src/client/routes/`. Never manually edit `src/client/routeTree.gen.ts`. Run `npm run routes:generate` whenever you add, rename, or delete routes.
-  - **Components & Reusability**:
-    - **Single Source of Truth (SSOT) Types**: Derive all client domain and API types directly from backend Hono RPC definitions (`InferRequestType`, `InferResponseType` in `src/client/types/api.ts`) using `Pick<>` and `Omit<>`. Never handwrite duplicate interface contracts.
-    - **Ant Design Props Extension**: Component props must derive directly from Ant Design's standard types (`TableProps`, `ModalProps`, `DrawerProps`, `ButtonProps`) using `Pick`, `Omit`, or `extends` to ensure resilience against upstream library updates.
-    - **Core Component Encapsulation**: Prefer composing from reusable core wrappers:
-      - `<DataTable>`: Standardizes responsive scrolling (`max-content`), default `rowKey="id"`, and clean layout defaults.
-      - `<DataModal>`: Enforces Ant Design 6 `destroyOnHidden` lifecycle and dialog modal defaults.
-      - `<DataDrawer>`: Enforces Ant Design 6 `destroyOnHidden` lifecycle and drawer defaults.
-      - `<PermissionButton>`: Seamlessly encapsulates RBAC permission checks (`permission`, `permissionMode="hide" | "disable"`) directly with Ant Design's `Button`.
-    - **Standardized Forms with `useAntdForm`**: Use `useAntdForm` for all Ant Design forms to standardize form instance binding, layout props (`preserve: false` by default), and typed field rules across the application.
-    - **Headless Feature Hook & Presenter Decoupling**:
-      - **Headless Hook (`src/client/hooks/use<Feature>.ts`)**: Encapsulates all data fetching (`useQuery`), RPC mutations (`useMutation`), cache invalidation (`invalidateQueries`), feedback toasts, dialog/selection state, and form configuration (`useAntdForm`).
-      - **Pure Presentational Views (`src/client/routes/` & `src/client/components/<feature>/`)**: Views must remain purely presentational. NEVER write inline `useMutation`, raw `api` fetch calls, or side-effectful state logic directly in presentational components. Consume the feature hook and bind to core wrappers (`DataTable`, `DataModal`, `DataDrawer`, `PermissionButton`).
-    - **No Unnecessary Effects ("You Might Not Need an Effect") & Dialog Lifecycle Refresh**:
-      - Never use `useEffect` to synchronize props to form states (e.g. `form.setFieldsValue`). Follow the official React documentation by passing a declarative `key={`${record?.id ?? 'new'}-${formRevision}`}` and dynamic `initialValues` to the `<Form>`.
-      - Feature hooks maintain a `formRevision` counter incremented upon opening create/edit dialogs, ensuring stale dirty edits are discarded and fresh record values remount cleanly with zero Ant Design warnings.
-  - **React Compiler**: Automatic fine-grained memoization is enabled via `@vitejs/plugin-react` (`reactCompilerPreset`) and `@rolldown/plugin-babel`. Do not write manual `useMemo`, `useCallback`, or `React.memo` unless handling non-compiler edge cases. Conforms strictly to `eslint-plugin-react-hooks`'s `recommended-latest` rules.
-- **Backend (`src/server/`)**:
-  - **Routes**: Modular OpenAPI handlers in `src/server/routes/`.
-  - **Database & Seeding SSOT**:
-    - `src/server/database/schema.ts`: Single Source of Truth (SSOT) for all database tables and relations.
-    - `src/server/database/seed.ts`: SSOT for seed data (`DEFAULT_ADMIN`) and dynamic schema verification (`syncDatabaseSchema()`, `seedDatabase()`). Dynamically derives table DDL from `schema.ts` without hardcoded SQL statements. Automatically seeds both primary database (`database.sqlite`) and local Cloudflare D1 (`.wrangler/state/v3/d1/*.sqlite`).
-    - **Test Database Isolation**: All automated tests run against an isolated ephemeral database (`database.test.sqlite`) that is automatically cleaned on teardown, preventing mutation of the local development database.
-    - **Code-First Schema Push**: The project follows a code-first workflow (`npm run db:push`, `npm run db:seed`). The `drizzle/` migrations directory is excluded in `.gitignore` to prevent committing generated SQL snapshots.
-  - **Dual-Track Architecture**:
-    - `src/server/core.ts`: Single Source of Truth (SSOT) containing all middleware, OpenAPI setup, and route mounting. NEVER contains DDL or database seeding logic.
-    - `src/server/worker.ts`: Cloudflare Workers & local dev/preview entry point via `@cloudflare/vite-plugin`.
-    - `src/server/app.ts`: Dedicated Node.js, Bare-Metal, and Docker production runner via `@hono/node-server`.
-  - **Authentication & Security**:
-    - Uses pure-TypeScript, zero-dependency `bcrypt-ts` (`hash`, `compare`) in `src/server/auth.ts` for universal runtime compatibility across Node.js 24, Docker, and Cloudflare Workers isolates (`workerd`).
-    - Do NOT use native C++ `bcrypt` (fails in Cloudflare Workers) or `hash-wasm` (violates Cloudflare Workers dynamic WebAssembly compilation security restrictions).
-- **Styling & SSOT**:
-  - **Single Source of Truth**: TailwindCSS v4 `@theme` in `src/client/global.css` defines all tokens.
-  - **Token Bridge**: `src/client/theme.ts` dynamically extracts CSS variables into Ant Design tokens. Never hardcode fallback colors.
-  - **No Inline `style`**: Prefer Ant Design layout components (`Layout`, `Flex`, `Space`, `Row`, `Col`, `Card`).
-  - **No `!` (important)**: Tailwind is scoped under `#root` with natural specificity over Ant Design.
-  - **Canonical Classes**: Use Tailwind CSS v4 canonical class syntax (e.g. `bg-(--variable)` instead of `bg-[var(--variable)]`). Run `npm run lint:tailwind` to diagnose non-canonical classes and `npm run lint:tailwind:fix` to automatically format them.
-- **Language & i18n**:
-  - **Pure TypeScript Schema SSOT**: `src/locales/schema.ts` defines `LocaleSchema` and `TranslationKey`.
-  - **Strict Language Parity**: Every supported language (`en-US`, `zh-TW`, and future languages) in `src/locales/` MUST implement `satisfies LocaleSchema`.
-  - **Central Registry**: `src/locales/registry.ts` manages supported locales and bridges Day.js and Ant Design locales without server bundling bloat.
-  - **Isomorphic Translation API**: Client uses `useI18n()` (`useTranslation`), server uses `t(c, key)` from `src/server/i18n.ts`.
-  - Keep code comments in concise English.
+## 2. Core SSOT & Invariants
 
-## 2. Strict Coding Standards
+- **Styling SSOT**: TailwindCSS v4 `@theme` in `src/client/global.css` is the sole source of truth for tokens. `src/client/theme.ts` bridges CSS variables to Ant Design. Never hardcode colors or use inline `style={{ ... }}`.
+- **Database SSOT**: `src/server/database/schema.ts` is the sole source of truth. Code-first schema push via `vpr db:push`.
+- **Protected Files**: Never manually edit `src/client/routeTree.gen.ts` (auto-generated by `@tanstack/router-plugin/vite`).
+- **Domain Rules**: Path-specific rules live under `.agents/rules/` (`api-routes`, `database`, `ui-styling`, `routing`, `locales`, `testing`, `ci-workflows`) and activate via file globbing.
 
-- **No `any`**: Always provide explicit TypeScript types or generics.
-- **No `@ts-ignore`**: Use `@ts-expect-error` with a descriptive reason only if strictly unavoidable.
-- **No Floating Promises**: Always `await` or properly handle Promises.
-- **No Dead Code**: Do not export unused types/functions or leave unused dependencies. Knip checks this.
-- **No Linter Workarounds**: Never weaken `eslint.config.ts`. Fix code directly to satisfy strict rules.
-- **Modern & Idiomatic TypeScript**:
-  - Write concise, idiomatic TypeScript and avoid redundant defensive wrappers (e.g. do NOT use `.filter(Boolean)` in Vite `plugins` array since Vite natively filters falsy plugin entries).
-  - Use modern syntax features: object property shorthands (`{ routeTree }`), interface extension (`interface B extends A`), and clean fallback operators (`||`, `??=`).
-  - Use `Boolean(x)` instead of `!!x` for clarity where explicit booleans are required.
-  - **Zero-Config Runtime & Robust Configuration**:
-    - The repository adheres to a 100% Zero-Config architecture for local development and automated testing—never require `.env` to build, run tests, or boot the dev server.
-    - Application constants (e.g. title, brand) MUST be defined in `src/client/config.ts` (SSOT) and injected isomorphically; NEVER use pseudo-environment variables (`import.meta.env.VITE_*` or `process.env.VITE_*`).
-    - Keep `src/server/config.ts` lean and purposeful, providing safe defaults for all standard server settings (`PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `ENABLE_OPENAPI`).
-    - Session cookie signing secrets are auto-generated and persisted in the `SystemSetting` database table (`getCookieSecret()`); manual `COOKIE_SECRET` environment variables remain an optional override.
-- **Boundary Defense & Strict Optional Types**: The project enforces `"noUncheckedIndexedAccess": true` and `"exactOptionalPropertyTypes": true`.
-  - Array and Record index access evaluates to `T | undefined`. Explicitly narrow or guard values before consumption (e.g. `if (!record) throw new Error(...)` or `items[0]?.prop`). Non-null assertions (`!`) and `@ts-ignore` are strictly forbidden.
-  - Optional properties (`prop?: T`) do not permit `{ prop: undefined }`. Use explicit boolean conversion (`open={Boolean(open)}`), default values, or conditional object spreading (`...(val !== undefined ? { val } : {})`).
-- **Strict React Hooks Dependencies**: `react-hooks/exhaustive-deps` is enforced as `error`. All external variables referenced inside hook callbacks must be declared in dependency arrays without inline disables.
-- **Explicit String Conversions**: Call `.toString()` on numbers in template literals.
-- **Zero Key Drift & Complete i18n**:
-  - Never hardcode user-facing copy or API error messages.
-  - When creating or modifying screens or APIs, define keys in `src/locales/schema.ts` and implement them across ALL supported language files (`en-US.ts`, `zh-TW.ts`, etc.).
-  - Backend errors (including 400, 401, 403, 404, 500) must return localized error messages using `t(c, "errors.<domain>.<code">)`.
-- **Mandatory RBAC & Fail-Closed Gate**:
-  - **Zero Unprotected Routes**: Every newly introduced route (API & UI) MUST have explicit access control. Never expose raw, unguarded endpoints. Unprotected routes will fail the Canary Contract Test (`test/canary/rbac-contract.test.ts`).
-  - **Clarification Protocol**: When asked to create a new page, feature, or API, if the user did not explicitly specify permission codes or Data Scope, the Agent MUST:
-    1. Ask the user to define the permission codes (e.g. `<domain>:<resource>:<action>`) and data scope (`ALL`, `DEPT_AND_CHILD`, `DEPT`, `SELF`, `CUSTOM`).
-    2. If developing autonomously or unprompted, apply the Least Privilege Principle (`default-deny` / restricted to `super_admin` with `SELF` scope).
-  - **Route Security Declarations**: Every API route specification in `createRoute` must declare `middleware: [requirePermission("...")]`, `middleware: [authenticatedRoute()]`, or explicitly `middleware: [publicRoute()]`.
+---
 
-## 3. Testing Standards
+## 3. Frictionless Execution (Whitelist-First)
 
-- **Dual-Track Testing Architecture**:
-  - **Client (`test:client`)**: Runs inside headless Chromium (`@vitest/browser-playwright`). Use `renderAppAt(initialUrl)` from `test/client/test-utils.tsx` to mount routes with complete `<Providers>` context.
-  - **Server (`test:server`)**: Runs in Node.js environment. Leverage Hono's native `app.request()` for in-memory HTTP/RPC and schema verification without network port conflicts.
-- **End-to-End Type Safety**:
-  - Ensure server Zod schemas (`@hono/zod-openapi`) stay in sync with client RPC (`hc<AppType>`), `RouterInputs`, and Ant Design forms (`useAntdForm`).
-  - Use `expectTypeOf` to guard static contracts in `test/canary/e2e-type-contract.test.ts`.
-- **i18n Schema Parity & Contract Testing**:
-  - Guard zero key drift with recursive key completeness assertions in `test/canary/i18n-contract.test.ts`.
-  - Assert that server error responses dynamically resolve translations according to `Accept-Language` headers.
-- **Business Process E2E Testing (`test:client`)**:
-  - Every UI feature and CRUD screen MUST have a corresponding browser E2E test file (`test/client/e2e-<feature>.test.tsx`) running in headless Chromium with `@vitest/browser-playwright`.
-  - Must test complete real-world user journeys:
-    - Table initial render, column headers, and hierarchical/tag display.
-    - Create modal/drawer opening, filling form fields, and asserting typed RPC `POST` wire payloads.
-    - Edit modal pre-filling, updating fields, and asserting typed RPC `PUT` wire payloads.
-    - Delete action triggering Ant Design `Popconfirm`, user confirmation, and asserting typed RPC `DELETE` wire requests.
-    - Success feedback toasts, query cache invalidations, and dialog closures.
-- **Selector Standards**:
-  - Prefer accessible queries (`screen.getByRole`, `screen.getByLabelText`) or explicit `data-testid`.
-  - Never query by volatile CSS classes (such as `.ant-btn-primary`).
-- **Assertion Rigor**:
-  - For browser UI elements, assert both DOM presence and visibility:
-    - `await expect.element(el).toBeInTheDocument()`
-    - `await expect.element(el).toBeVisible()`
+Prioritize `vpr agent:*` commands matching Antigravity's whitelist:
 
-## 4. Feature Development Workflow (Agent-First TDD)
+- **Gate**: `vpr agent:verify:gate` (unit -> build -> e2e)
+- **Inner Loop**: `vpr agent:verify:inner` (typecheck + lint)
+- **Unit Tests**: `vpr agent:test:unit` (in-memory server tests)
+- **E2E Tests**: `vpr agent:test:e2e` (Chromium browser tests)
+- **Lint & Fix**: `vpr agent:lint:fix`, `vpr agent:lint:tailwind:fix`
+- **Type Check**: `vpr agent:typecheck`
+- **CI Lint**: `vpr agent:lint:ci` (`actionlint` 0 errors/warnings)
 
-When implementing a new feature or API, follow this end-to-end type-safe flow:
+---
 
-> [!TIP]
-> **Rapid Agent Scaffolding**: You can bootstrap the entire backend slice, tests, and i18n keys in seconds:
->
-> ```bash
-> npm run scaffold:feature <feature-name>
-> ```
->
-> This creates compliant route schemas, routes, handlers, sub-router, contract tests, and registers the feature in `router.ts` and `locales/` with zero key drift.
+## 4. Git Workflow & Commit Restrictions
 
-1. **Backend Schema & i18n First (`src/server/routes/<feature>/` & `src/locales/`)**:
-   - Define request/response Zod schemas with `@hono/zod-openapi` in `<feature>.schema.ts`.
-   - Register route specification using `createRoute()` in `<feature>.routes.ts`.
-   - If feature defines error responses, add corresponding keys to `src/locales/schema.ts` and populate all dictionaries.
-2. **Server Handler & In-Memory Test (`test/server/`)**:
-   - Implement route handlers in `<feature>.handlers.ts` using `t(c, "errors...")` for error states, and export the sub-router in `<feature>/index.ts`.
-   - Write in-memory HTTP integration tests using Hono's `app.request()` in `test/server/` to verify schemas, status codes, localized errors, and edge cases.
-3. **Expose RPC Route (`src/server/router.ts`)**:
-   - Mount the sub-router into `apiRouter`. Hono RPC types (`AppType`, `api.<feature>`) infer automatically for client consumption.
-4. **Client SSOT Types, Headless Hook & Presentational UI (`src/client/`)**:
-   - **SSOT Types**: Derive types using `InferRequestType` and `InferResponseType` in `src/client/types/api.ts` with `Pick<>` and `Omit<>`.
-   - **Headless Feature Hook (`src/client/hooks/use<Feature>.ts`)**: Encapsulate all queries, mutations, cache invalidations, feedback toasts, dialog state, and `useAntdForm`.
-   - **Presentational UI & Routes (`src/client/components/<feature>/` & `src/client/routes/`)**: Build pure presentational components and routes consuming the hook, composed from `<DataTable>`, `<DataModal>`, and `<PermissionButton>`.
-   - Add UI copy keys to `src/locales/schema.ts` and all language files.
-   - Run `npm run routes:generate` to regenerate route tree types.
-5. **Browser Mode Business Flow E2E Test (`test/client/`)**:
-   - Write comprehensive business flow E2E tests under `test/client/e2e-<feature>.test.tsx` using `renderAppAt()`.
-   - Test complete CRUD journeys (Create, Read, Update, Delete with Popconfirm), accessible form selectors, and typed RPC wire contracts.
-6. **Pass Verification Gates**:
-   - For micro-iteration & fast feedback: `npm run agent:verify:inner`
-   - For module completion: `npm run agent:verify:unit`
-   - For pre-submission gate: `npm run agent:verify:gate`
-   - For final verification: `npm run check`
+- **NEVER execute `git commit` directly**: Local environment uses 1Password SSH signing; non-interactive commit fails.
+- **Protocol**: Stage changes with `git add <files>` and output `git commit -m "..."` in English for user to run locally.
 
-## 5. Verification Gate (Definition of Done)
+---
 
-The project employs a dual-track verification strategy distinguishing Human DX and Agent DX:
+## 5. Language & Planning Standards
 
-### Human Developer Fast Feedback (`check:fast`)
-
-Reserved exclusively for human developers working interactively in the terminal with colored output, progress indicators, and formatted stack traces (~1.5s):
-
-```bash
-npm run check:fast
-```
-
-> [!CAUTION]
-> **Agents Must NOT Run `check:fast`**:
-> Automated AI coding agents and CI environments MUST NEVER execute `npm run check:fast`. Agents must strictly follow the `agent:verify:*` ladder below to guarantee deterministic zero-noise output (`--no-color`), non-interactive reporting (`--reporter=tap-flat`), and zero tolerance for warnings and inline escapes (`--no-inline-config`, `--max-warnings 0`).
-
-### Agent Execution Workflow & Fail-Fast Ladder
-
-For automated AI coding agents and script environments, use specialized non-interactive verification commands with clean outputs, zero terminal color escape noise, and zero tolerance for warnings:
-
-1. **Micro-iteration & Active Editing (`agent:verify:inner`)**:
-   ```bash
-   npm run agent:verify:inner
-   ```
-   Runs `agent:typecheck` (`tsc -b --pretty false`) and `agent:lint` (`eslint --no-color --no-inline-config --max-warnings 0` + `lint:tailwind`).
-2. **Module Completion (`agent:verify:unit`)**:
-   ```bash
-   npm run agent:verify:unit
-   ```
-   Runs `agent:verify:inner` followed by `agent:test:unit` (`vitest run --project server --reporter=tap-flat --no-color`).
-3. **Pre-Submission & Gate Verification (`agent:verify:gate`)**:
-   ```bash
-   npm run agent:verify:gate
-   ```
-   Runs `agent:verify:unit` followed by production dual bundle build (`npm run build`) and client E2E tests in headless Chromium (`agent:test:e2e`).
-
-> [!IMPORTANT]
-> **CI Workflow Verification**: Whenever `.github/workflows/` files are added or modified, agents must run `npm run agent:lint:ci` (`actionlint -no-color`) and ensure **0 errors and 0 warnings** before staging.
-
-### Outer Loop: Unified Verification Gate (`check`)
-
-Before completing any task, PR, or commit, execute the full Definition of Done:
-
-```bash
-npm run check
-```
-
-Runs:
-
-1. `typecheck` (`tsc -b` in strict mode)
-2. `lint` (ESLint strict + stylistic type checks)
-3. `lint:tailwind` (Official Tailwind CSS v4 diagnostic & canonical class check via headless `@tailwindcss/language-server`)
-4. `format:check` (Prettier style check)
-5. `check:deadcode` (Knip zero-config dead-code audit)
-6. `test` (Vitest dual-track tests: client browser + server in-memory)
-7. `build` (Client SPA + SSR server build)
-
-All checks must pass with 0 errors and 0 warnings.
-
-### CI/CD Pipeline Architecture & Automated Verification
-
-The repository enforces a two-tiered gate and proactive runtime monitoring strategy:
-
-- **Tier 1 (`gatekeeper` in `.github/workflows/ci.yml`)**:
-  - Runs on `ubuntu-latest` against the authoritative Node runtime dynamically resolved from `package.json` (`engines.node`).
-  - Pre-fetches and caches Playwright Chromium (`.cache/ms-playwright`).
-  - Enforces the full verification gate: formatting check, strict typechecking, zero-warning ESLint & Tailwind v4 validation, Knip dead-code audit, in-memory server unit/contract tests, dual production build, and headless Chromium E2E testing.
-  - Automatically captures failure artifacts (`test-results/`, `playwright-report/`, `.vitest/`) via `actions/upload-artifact@v7`.
-- **Tier 2 (`platform-compat` in `.github/workflows/ci.yml`)**:
-  - Dependent on Tier 1 passing (`needs: [gatekeeper]`).
-  - Runs matrix on `windows-latest` and `macos-latest`.
-  - Executes production build and lightweight server unit tests to verify native binary bindings (Rolldown, LightningCSS) and cross-platform path separators (`\` vs `/`).
-  - Omits pure JS/TS static analysis and heavy browser E2E suites to conserve runner resources.
-- **Proactive Upstream Canary (`.github/workflows/node-canary.yml`)**:
-  - Scheduled weekly (`0 3 * * 1`) and manually dispatchable (`workflow_dispatch`).
-  - Targets the upcoming Node.js release line (Node 26) on `ubuntu-latest`.
-  - Bypasses repository engine constraints (`--engine-strict=false`) and runs non-blocking build/unit tests (`continue-on-error: true`) to surface upstream breaking changes proactively.
-- **Cache & Artifact Collision Defense**:
-  - Cache and test report directories (`.cache`, `test-results`, `playwright-report`) are strictly excluded in `.gitignore`, `.prettierignore`, and `eslint.config.ts` (`globalIgnores`) to prevent false-positive failures during verification gates.
-- **Shift-Left Local CI Workflow Verification (`actionlint`)**:
-  - Whenever `.github/workflows/` files are added or modified, running `actionlint` locally with **0 errors and 0 warnings** is a strict requirement before staging.
-  - Local command: `npm run lint:ci` (or non-interactive agent equivalent: `npm run agent:lint:ci` / `actionlint -no-color`).
-  - **Strict Offline/Local Scope**: `actionlint` is strictly a local shift-left verification guardrail and MUST NOT be embedded into remote GitHub Actions CI workflows. Remote CI environments focus on runtime build and test execution, while local static analysis catches syntax errors, runner expression typos, and shellcheck issues before pushing.
-
-## 6. Git Workflow & Commit Restrictions
-
-- **NEVER execute `git commit` directly**: Local environment uses 1Password SSH signing; running `git commit` in non-interactive/subshell will fail.
-- **Standard Protocol**:
-  1. Stage changes with `git add <files>`.
-  2. Output the complete `git commit -m "..."` command with a concise commit message in English in chat for user to review and run locally.
+- **Traditional Chinese for Plans & Responses**: All plans (`/plan`), walkthroughs, and chat responses must strictly be written in **Traditional Chinese (繁體中文)**.
+- **Code Artifacts**: Source code, inline comments, commit messages, and automated tests must use concise English.

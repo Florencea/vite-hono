@@ -2,12 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App } from "antd";
 import { useState } from "react";
 import { api } from "../api.ts";
-import type {
-  DepartmentItem,
-  PermissionItem,
-  RoleItem,
-  RouterInputs,
-} from "../types/api.ts";
+import type { RoleItem, RouterInputs } from "../types/api.ts";
 import { useAntdForm } from "./useAntdForm.ts";
 import { useI18n } from "./useI18n.ts";
 
@@ -35,10 +30,10 @@ export function useRoles() {
     queryKey: ["roles", "list"],
     queryFn: async () => {
       const res = await api.roles.$get();
-      if (!(res as Response).ok) {
+      if (!res.ok) {
         throw new Error("Failed to fetch roles");
       }
-      return (await res.json()) as { items: RoleItem[] };
+      return await res.json();
     },
   });
 
@@ -46,10 +41,10 @@ export function useRoles() {
     queryKey: ["permissions", "list"],
     queryFn: async () => {
       const res = await api.permissions.$get();
-      if (!(res as Response).ok) {
+      if (!res.ok) {
         throw new Error("Failed to fetch permissions");
       }
-      return (await res.json()) as { items: PermissionItem[] };
+      return await res.json();
     },
   });
 
@@ -57,10 +52,10 @@ export function useRoles() {
     queryKey: ["departments", "list"],
     queryFn: async () => {
       const res = await api.departments.$get();
-      if (!(res as Response).ok) {
+      if (!res.ok) {
         throw new Error("Failed to fetch departments");
       }
-      return (await res.json()) as { items: DepartmentItem[] };
+      return await res.json();
     },
   });
 
@@ -69,11 +64,11 @@ export function useRoles() {
       const res = await api.roles[":id"].$delete({
         param: { id: id.toString() },
       });
-      if (!(res as Response).ok) {
-        const err = (await res.json()) as { error?: string };
-        throw new Error(err.error ?? "Failed to delete role");
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error);
       }
-      return res.json();
+      return await res.json();
     },
     onSuccess: () => {
       void message.success(t("common.success"));
@@ -95,15 +90,14 @@ export function useRoles() {
             dataScope: values.dataScope,
             sort: values.sort,
             permissionIds: values.permissionIds,
-            departmentIds:
-              values.dataScope === "CUSTOM" ? (values.departmentIds ?? []) : [],
+            departmentIds: values.dataScope === "CUSTOM" ? (values.departmentIds ?? []) : [],
           },
         });
-        if (!(res as Response).ok) {
-          const err = (await res.json()) as { error?: string };
-          throw new Error(err.error ?? "Failed to update role");
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error);
         }
-        return res.json();
+        return await res.json();
       }
 
       const res = await api.roles.$post({
@@ -114,15 +108,14 @@ export function useRoles() {
           dataScope: values.dataScope,
           sort: values.sort,
           permissionIds: values.permissionIds,
-          departmentIds:
-            values.dataScope === "CUSTOM" ? (values.departmentIds ?? []) : [],
+          departmentIds: values.dataScope === "CUSTOM" ? (values.departmentIds ?? []) : [],
         },
       });
-      if (!(res as Response).ok) {
-        const err = (await res.json()) as { error?: string };
-        throw new Error(err.error ?? "Failed to create role");
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error);
       }
-      return res.json();
+      return await res.json();
     },
     onSuccess: () => {
       void message.success(t("common.success"));

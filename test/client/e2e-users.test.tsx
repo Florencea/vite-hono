@@ -1,4 +1,5 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test } from "vite-plus/test";
+import { JsonRecordSchema } from "../../src/server/common/schemas.ts";
 import { renderAppAt } from "./test-utils";
 
 const originalFetch = window.fetch.bind(window);
@@ -137,11 +138,7 @@ function mockUserEnvironment() {
 
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url =
-      typeof input === "string"
-        ? input
-        : input instanceof URL
-          ? input.toString()
-          : input.url;
+      typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
     const method = init?.method?.toUpperCase() ?? "GET";
 
@@ -181,7 +178,8 @@ function mockUserEnvironment() {
       dispatchedMethod = method;
       if (init?.body && typeof init.body === "string") {
         try {
-          dispatchedPayload = JSON.parse(init.body) as Record<string, unknown>;
+          const raw: unknown = JSON.parse(init.body);
+          dispatchedPayload = JsonRecordSchema.safeParse(raw).data ?? null;
         } catch {
           dispatchedPayload = null;
         }
@@ -276,9 +274,7 @@ test("E2E User Flow: edits existing user job title and profile", async () => {
   await expect.element(accountText).toBeInTheDocument();
 
   // Click edit button for emp_alice (second user row)
-  const editButtons = screen
-    .getByRole("main")
-    .getByRole("button", { name: /Edit|編輯/i });
+  const editButtons = screen.getByRole("main").getByRole("button", { name: /Edit|編輯/i });
   const targetEditButton = editButtons.all()[1];
   if (!targetEditButton) throw new Error("Target edit button not found");
   await targetEditButton.click();
@@ -307,9 +303,7 @@ test("E2E User Flow: deletes custom user record with Popconfirm while admin is p
   await expect.element(accountText).toBeInTheDocument();
 
   // Admin user must not have a delete button, only emp_alice has one
-  const deleteButtons = screen
-    .getByRole("main")
-    .getByRole("button", { name: /Delete|刪除/i });
+  const deleteButtons = screen.getByRole("main").getByRole("button", { name: /Delete|刪除/i });
   expect(deleteButtons.all()).toHaveLength(1);
 
   await deleteButtons.first().click();
@@ -362,9 +356,7 @@ test("E2E User Flow: modal refreshes form state on open, edit, and cancel", asyn
   await expect.element(screen.getByRole("dialog")).not.toBeInTheDocument();
 
   // 3. Open Edit modal for user 2 (emp_alice), change title, then cancel
-  const editButtons = screen
-    .getByRole("main")
-    .getByRole("button", { name: /Edit|編輯/i });
+  const editButtons = screen.getByRole("main").getByRole("button", { name: /Edit|編輯/i });
   const editBtn = editButtons.all()[1];
   if (!editBtn) throw new Error("Edit button not found");
   await editBtn.click();

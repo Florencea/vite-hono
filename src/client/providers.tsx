@@ -29,18 +29,12 @@ const AppRouterProvider = () => {
   return <RouterProvider router={router} context={{ queryClient }} />;
 };
 
-export const Providers = ({
-  container,
-  children,
-  queryClient,
-}: ProviderProps) => {
+export const Providers = ({ container, children, queryClient }: ProviderProps) => {
   return (
     <StrictMode>
       <I18nProvider>
         <ApiProvider queryClient={queryClient}>
-          <AntdProvider container={container}>
-            {children ?? <AppRouterProvider />}
-          </AntdProvider>
+          <AntdProvider container={container}>{children ?? <AppRouterProvider />}</AntdProvider>
         </ApiProvider>
       </I18nProvider>
     </StrictMode>

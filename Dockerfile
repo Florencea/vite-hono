@@ -1,40 +1,39 @@
-# Dynamic Node.js version argument (defaults to engines.node in package.json)
-ARG NODE_VERSION=24.20.0
+# syntax=docker/dockerfile:1
 
-# Build stage
-FROM node:${NODE_VERSION}-alpine AS builder
-
+# --- Build stage: official Vite+ toolchain image ---
+FROM ghcr.io/voidzero-dev/vite-plus:latest AS builder
 WORKDIR /app
 
-# Install build dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
+# Install dependencies first for layer caching
+COPY --chown=vp:vp package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+RUN vp install
 
-# Copy source files
-COPY . .
+# Copy source and build (vp reads engines.node in package.json and provisions Node automatically)
+COPY --chown=vp:vp . .
+RUN vp build
 
-# Ensure drizzle directory exists for COPY in runner stage
-RUN mkdir -p /app/drizzle
+# Export the exact resolved Node.js binary for the runtime stage
+RUN cp "$(vp env which node | head -1)" /tmp/node
 
-# Build client and server
-RUN npm run build
+# --- Deps stage: production-only dependencies ---
+FROM ghcr.io/voidzero-dev/vite-plus:latest AS deps
+WORKDIR /app
+COPY --chown=vp:vp package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+RUN vp install --prod
 
-# Production stage
-FROM node:${NODE_VERSION}-alpine AS runner
-
+# --- Runtime stage: small, glibc, no vp ---
+FROM debian:bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Copy package info and production dependencies
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# The exact Node.js binary resolved by vp from engines.node
+COPY --from=builder /tmp/node /usr/local/bin/node
 
-# Copy built assets from builder
+# Copy built assets and production dependencies
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/drizzle ./drizzle
-COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
 
 # Create data directory for SQLite persistence
 RUN mkdir -p /app/data

@@ -53,3 +53,15 @@ export const UserInfoResSchema = z.object({
     example: ["ALL"],
   }),
 });
+
+export const SessionDataSchema = z.object({
+  id: z.number().openapi({ description: "Session user ID" }),
+  account: z.string().openapi({ description: "Session account" }),
+  exp: z.number().optional().openapi({ description: "Session expiration timestamp" }),
+});
+
+export type SessionData = z.infer<typeof SessionDataSchema>;
+
+export const LoginSearchSchema = z.object({
+  redirect: z.string().optional().openapi({ description: "Redirect URL after login" }),
+});

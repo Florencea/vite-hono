@@ -7,10 +7,7 @@ import type { DepartmentItem, RouterInputs } from "../types/api.ts";
 import { useAntdForm } from "./useAntdForm.ts";
 import { useI18n } from "./useI18n.ts";
 
-export type DepartmentFormValues = Pick<
-  RouterInputs["department"]["create"],
-  "name" | "sort"
-> & {
+export type DepartmentFormValues = Pick<RouterInputs["department"]["create"], "name" | "sort"> & {
   parentId: number;
 };
 
@@ -55,10 +52,10 @@ export function useDepartments() {
     queryKey: ["departments", "list"],
     queryFn: async () => {
       const res = await api.departments.$get();
-      if (!(res as Response).ok) {
+      if (!res.ok) {
         throw new Error("Failed to fetch departments");
       }
-      return (await res.json()) as { items: DepartmentItem[] };
+      return await res.json();
     },
   });
 
@@ -70,11 +67,11 @@ export function useDepartments() {
       const res = await api.departments[":id"].$delete({
         param: { id: id.toString() },
       });
-      if (!(res as Response).ok) {
-        const err = (await res.json()) as { error?: string };
-        throw new Error(err.error ?? "Failed to delete department");
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error);
       }
-      return res.json();
+      return await res.json();
     },
     onSuccess: () => {
       void message.success(t("common.success"));
@@ -98,11 +95,11 @@ export function useDepartments() {
             sort: values.sort,
           },
         });
-        if (!(res as Response).ok) {
-          const err = (await res.json()) as { error?: string };
-          throw new Error(err.error ?? "Failed to update department");
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error);
         }
-        return res.json();
+        return await res.json();
       }
 
       const res = await api.departments.$post({
@@ -112,11 +109,11 @@ export function useDepartments() {
           sort: values.sort,
         },
       });
-      if (!(res as Response).ok) {
-        const err = (await res.json()) as { error?: string };
-        throw new Error(err.error ?? "Failed to create department");
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error);
       }
-      return res.json();
+      return await res.json();
     },
     onSuccess: () => {
       void message.success(t("common.success"));
@@ -132,9 +129,7 @@ export function useDepartments() {
 
   const initialValues: DepartmentFormValues = {
     name: selectedDept?.name ?? "",
-    parentId: selectedDept
-      ? (selectedDept.parentId ?? 0)
-      : (parentPresetId ?? 0),
+    parentId: selectedDept ? (selectedDept.parentId ?? 0) : (parentPresetId ?? 0),
     sort: selectedDept?.sort ?? 1,
   };
 

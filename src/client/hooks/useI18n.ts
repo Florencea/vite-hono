@@ -4,13 +4,11 @@ import antdZhTW from "antd/es/locale/zh_TW";
 import { createContext, use } from "react";
 import {
   DEFAULT_LOCALE,
+  isSupportedLocale,
   SUPPORTED_LOCALES,
   type SupportedLocale,
 } from "../../locales/registry.ts";
-import type {
-  TranslationKey,
-  TranslationParams,
-} from "../../locales/schema.ts";
+import type { TranslationKey, TranslationParams } from "../../locales/schema.ts";
 
 export const antdLocales: Record<SupportedLocale, Locale> = {
   "en-US": antdEnUS,
@@ -23,8 +21,8 @@ export function detectInitialLocale(): SupportedLocale {
   if (typeof window === "undefined") return DEFAULT_LOCALE;
 
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored && stored in SUPPORTED_LOCALES) {
-    return stored as SupportedLocale;
+  if (isSupportedLocale(stored)) {
+    return stored;
   }
 
   const browserLang = navigator.language.toLowerCase();
@@ -38,10 +36,7 @@ export function detectInitialLocale(): SupportedLocale {
 export interface I18nContextValue {
   locale: SupportedLocale;
   setLocale: (locale: SupportedLocale) => void;
-  t: (
-    key: TranslationKey | (string & {}),
-    params?: TranslationParams,
-  ) => string;
+  t: (key: TranslationKey | (string & {}), params?: TranslationParams) => string;
   supportedLocales: typeof SUPPORTED_LOCALES;
 }
 

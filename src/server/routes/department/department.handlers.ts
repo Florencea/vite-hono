@@ -15,19 +15,17 @@ import {
   updateDepartment,
 } from "./department.service.ts";
 
-export const listDepartmentsHandler: RouteHandler<
-  typeof listDepartmentsRoute,
-  AppEnv
-> = async (c) => {
+export const listDepartmentsHandler: RouteHandler<typeof listDepartmentsRoute, AppEnv> = async (
+  c,
+) => {
   const db = getDb(c);
   const items = await getDepartmentList(db);
   return c.json({ items }, 200);
 };
 
-export const createDepartmentHandler: RouteHandler<
-  typeof createDepartmentRoute,
-  AppEnv
-> = async (c) => {
+export const createDepartmentHandler: RouteHandler<typeof createDepartmentRoute, AppEnv> = async (
+  c,
+) => {
   const db = getDb(c);
   const body = c.req.valid("json");
   const res = await createDepartment(db, body);
@@ -39,10 +37,9 @@ export const createDepartmentHandler: RouteHandler<
   return c.json(res.department, 200);
 };
 
-export const updateDepartmentHandler: RouteHandler<
-  typeof updateDepartmentRoute,
-  AppEnv
-> = async (c) => {
+export const updateDepartmentHandler: RouteHandler<typeof updateDepartmentRoute, AppEnv> = async (
+  c,
+) => {
   const db = getDb(c);
   const { id } = c.req.valid("param");
   const body = c.req.valid("json");
@@ -55,10 +52,9 @@ export const updateDepartmentHandler: RouteHandler<
   return c.json(res.department, 200);
 };
 
-export const deleteDepartmentHandler: RouteHandler<
-  typeof deleteDepartmentRoute,
-  AppEnv
-> = async (c) => {
+export const deleteDepartmentHandler: RouteHandler<typeof deleteDepartmentRoute, AppEnv> = async (
+  c,
+) => {
   const db = getDb(c);
   const { id } = c.req.valid("param");
 

@@ -1,23 +1,14 @@
-import {
-  Form,
-  type FormInstance,
-  type FormItemProps,
-  type FormProps,
-} from "antd";
-
-type FormItemConfig<Name = string> = Omit<FormItemProps, "name"> & {
-  name: Name;
-};
+import { Form, type FormInstance, type FormItemProps, type FormProps } from "antd";
 
 export interface UseAntdFormOptions<T> {
   formProps?: FormProps<T>;
-  formItemProps?: { [K in keyof T]?: FormItemConfig<K> };
+  formItemProps?: Record<string, FormItemProps>;
 }
 
 export interface UseAntdFormReturn<T> {
   formInstance: FormInstance<T>;
   formProps: FormProps<T>;
-  formItemProps: { [K in keyof T]: FormItemConfig<K> };
+  formItemProps: Record<string, FormItemProps>;
 }
 
 /**
@@ -27,7 +18,7 @@ export interface UseAntdFormReturn<T> {
 export const useAntdForm = <T>({
   formProps,
   formItemProps = {},
-}: UseAntdFormOptions<T>): UseAntdFormReturn<T> => {
+}: UseAntdFormOptions<T> = {}): UseAntdFormReturn<T> => {
   const [formInstance] = Form.useForm<T>(formProps?.form);
   return {
     formInstance,
@@ -36,6 +27,6 @@ export const useAntdForm = <T>({
       preserve: false,
       ...formProps,
     },
-    formItemProps: formItemProps as { [K in keyof T]: FormItemConfig<K> },
+    formItemProps,
   };
 };

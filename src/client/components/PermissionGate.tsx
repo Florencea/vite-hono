@@ -1,9 +1,4 @@
-import {
-  cloneElement,
-  isValidElement,
-  type ReactElement,
-  type ReactNode,
-} from "react";
+import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import { useAccess } from "../hooks/useAccess.ts";
 
 export interface PermissionGateProps {
@@ -11,6 +6,10 @@ export interface PermissionGateProps {
   mode?: "hide" | "disable";
   fallback?: ReactNode;
   children: ReactNode;
+}
+
+function isDisableableElement(element: ReactNode): element is ReactElement<{ disabled?: boolean }> {
+  return isValidElement(element);
 }
 
 /**
@@ -29,8 +28,8 @@ export function PermissionGate({
     return <>{children}</>;
   }
 
-  if (mode === "disable" && isValidElement(children)) {
-    return cloneElement(children as ReactElement<{ disabled?: boolean }>, {
+  if (mode === "disable" && isDisableableElement(children)) {
+    return cloneElement(children, {
       disabled: true,
     });
   }

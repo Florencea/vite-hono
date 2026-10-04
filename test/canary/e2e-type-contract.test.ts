@@ -1,12 +1,9 @@
 import type { InferRequestType, InferResponseType } from "hono/client";
-import { expectTypeOf, test } from "vitest";
+import { expectTypeOf, test } from "vite-plus/test";
 import type { z } from "zod";
 import type { api } from "../../src/client/api";
 import type { RouterInputs } from "../../src/client/constants/routes";
-import type {
-  LoginReqSchema,
-  UserInfoResSchema,
-} from "../../src/server/routes/auth/auth.schema";
+import type { LoginReqSchema, UserInfoResSchema } from "../../src/server/routes/auth/auth.schema";
 
 test("E2E Type Contract: Client RouterInputs[auth][login] matches Server LoginReqSchema", () => {
   type ServerLoginReq = z.infer<typeof LoginReqSchema>;
@@ -26,15 +23,10 @@ test("E2E Type Contract: Client RouterInputs[auth][login] matches Server LoginRe
 
 test("E2E Type Contract: Server UserInfoResSchema matches Client RPC InferResponseType", () => {
   type ServerUserInfoRes = z.infer<typeof UserInfoResSchema>;
-  type RpcUserInfoRes200 = InferResponseType<
-    typeof api.auth.getUserInfo.$get,
-    200
-  >;
+  type RpcUserInfoRes200 = InferResponseType<typeof api.auth.getUserInfo.$get, 200>;
 
   // Static assertion: Client 200 response type equals server Zod response
   expectTypeOf<RpcUserInfoRes200>().toEqualTypeOf<ServerUserInfoRes>();
   expectTypeOf<RpcUserInfoRes200>().toHaveProperty("success").toBeBoolean();
-  expectTypeOf<RpcUserInfoRes200>()
-    .toHaveProperty("account")
-    .toEqualTypeOf<string | null>();
+  expectTypeOf<RpcUserInfoRes200>().toHaveProperty("account").toEqualTypeOf<string | null>();
 });

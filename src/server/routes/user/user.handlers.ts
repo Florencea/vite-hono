@@ -8,17 +8,9 @@ import type {
   listUsersRoute,
   updateUserRoute,
 } from "./user.routes.ts";
-import {
-  createUser,
-  deleteUser,
-  getUserList,
-  updateUser,
-} from "./user.service.ts";
+import { createUser, deleteUser, getUserList, updateUser } from "./user.service.ts";
 
-export const listUsersHandler: RouteHandler<
-  typeof listUsersRoute,
-  AppEnv
-> = async (c) => {
+export const listUsersHandler: RouteHandler<typeof listUsersRoute, AppEnv> = async (c) => {
   const db = getDb(c);
   const user = c.get("user");
   if (!user) {
@@ -29,10 +21,7 @@ export const listUsersHandler: RouteHandler<
   return c.json({ items }, 200);
 };
 
-export const createUserHandler: RouteHandler<
-  typeof createUserRoute,
-  AppEnv
-> = async (c) => {
+export const createUserHandler: RouteHandler<typeof createUserRoute, AppEnv> = async (c) => {
   const db = getDb(c);
   const body = c.req.valid("json");
   const res = await createUser(db, body);
@@ -44,10 +33,7 @@ export const createUserHandler: RouteHandler<
   return c.json(res.user, 200);
 };
 
-export const updateUserHandler: RouteHandler<
-  typeof updateUserRoute,
-  AppEnv
-> = async (c) => {
+export const updateUserHandler: RouteHandler<typeof updateUserRoute, AppEnv> = async (c) => {
   const db = getDb(c);
   const { id } = c.req.valid("param");
   const body = c.req.valid("json");
@@ -60,10 +46,7 @@ export const updateUserHandler: RouteHandler<
   return c.json(res.user, 200);
 };
 
-export const deleteUserHandler: RouteHandler<
-  typeof deleteUserRoute,
-  AppEnv
-> = async (c) => {
+export const deleteUserHandler: RouteHandler<typeof deleteUserRoute, AppEnv> = async (c) => {
   const db = getDb(c);
   const { id } = c.req.valid("param");
 

@@ -113,9 +113,7 @@ type Join<K, P> = K extends string | number
     : never
   : never;
 
-type Leaves<T> = T extends object
-  ? { [K in keyof T]-?: Join<K, Leaves<T[K]>> }[keyof T]
-  : "";
+type Leaves<T> = T extends object ? { [K in keyof T]-?: Join<K, Leaves<T[K]>> }[keyof T] : "";
 
 /**
  * Union of all valid dot-separated key paths in `LocaleSchema`.

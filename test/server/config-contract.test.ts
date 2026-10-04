@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test } from "vite-plus/test";
 import { getCookieSecret } from "../../src/server/auth.ts";
 import { validateConfig } from "../../src/server/config.ts";
 
@@ -7,9 +7,7 @@ describe("Server Config Zero-Config Contract", () => {
     const config = validateConfig({});
 
     expect(config.DATABASE_URL).toBe("file:./database.sqlite");
-    expect(config.COOKIE_SECRET).toBe(
-      "dev-insecure-cookie-secret-min-32-chars-long",
-    );
+    expect(config.COOKIE_SECRET).toBe("dev-insecure-cookie-secret-min-32-chars-long");
     expect(config.PORT).toBe(3000);
     expect(config.CORS_ORIGIN).toBe("*");
     expect(config.ENABLE_OPENAPI).toBe(true);
@@ -25,9 +23,7 @@ describe("Server Config Zero-Config Contract", () => {
     });
 
     expect(config.DATABASE_URL).toBe("file:./custom.sqlite");
-    expect(config.COOKIE_SECRET).toBe(
-      "custom-secret-that-is-at-least-32-chars-long",
-    );
+    expect(config.COOKIE_SECRET).toBe("custom-secret-that-is-at-least-32-chars-long");
     expect(config.PORT).toBe(8080);
     expect(config.CORS_ORIGIN).toBe("https://example.com");
     expect(config.ENABLE_OPENAPI).toBe(false);

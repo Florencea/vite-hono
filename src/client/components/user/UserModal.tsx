@@ -56,9 +56,7 @@ export function UserModal({
           <Input disabled={isEdit} />
         </Form.Item>
         <Form.Item {...userForm.formItemProps.password}>
-          <Input.Password
-            placeholder={isEdit ? "保留空白則不修改密碼" : undefined}
-          />
+          <Input.Password placeholder={isEdit ? "保留空白則不修改密碼" : undefined} />
         </Form.Item>
         <Form.Item {...userForm.formItemProps.name}>
           <Input />
@@ -70,19 +68,10 @@ export function UserModal({
           <Input />
         </Form.Item>
         <Form.Item {...userForm.formItemProps.departmentId}>
-          <TreeSelect
-            treeData={deptTreeData}
-            placeholder={t("user.department")}
-            allowClear
-          />
+          <TreeSelect treeData={deptTreeData} placeholder={t("user.department")} allowClear />
         </Form.Item>
         <Form.Item {...userForm.formItemProps.roleIds}>
-          <Select
-            mode="multiple"
-            options={roleOptions}
-            placeholder={t("user.roles")}
-            allowClear
-          />
+          <Select mode="multiple" options={roleOptions} placeholder={t("user.roles")} allowClear />
         </Form.Item>
         <Form.Item {...userForm.formItemProps.status}>
           <Radio.Group>

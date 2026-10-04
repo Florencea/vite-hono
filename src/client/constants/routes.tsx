@@ -1,9 +1,5 @@
-import {
-  ApartmentOutlined,
-  SafetyCertificateOutlined,
-  TeamOutlined,
-} from "@ant-design/icons";
-import type { QueryClient } from "@tanstack/react-query";
+import { ApartmentOutlined, SafetyCertificateOutlined, TeamOutlined } from "@ant-design/icons";
+import { QueryClient } from "@tanstack/react-query";
 import { createRouter, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { APP_TITLE } from "../config.ts";
@@ -49,11 +45,13 @@ export const MENU_ITEMS: MenuItemConfig[] = [
   },
 ];
 
+const defaultQueryClient = new QueryClient();
+
 export const router = createRouter({
   routeTree,
   basepath: import.meta.env.BASE_URL,
   context: {
-    queryClient: undefined as unknown as QueryClient,
+    queryClient: defaultQueryClient,
   },
 });
 
@@ -76,8 +74,7 @@ export const useSiteTitle = () => {
   }
 
   const translated = t(`routes.${currentItem.key}` as const);
-  const label =
-    translated !== `routes.${currentItem.key}` ? translated : currentItem.label;
+  const label = translated !== `routes.${currentItem.key}` ? translated : currentItem.label;
 
   return `${label} - ${APP_TITLE}`;
 };

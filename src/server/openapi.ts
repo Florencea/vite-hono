@@ -9,8 +9,7 @@ export const openapiConfig = {
   info: {
     title: "API Reference",
     version: "1.0.0",
-    description:
-      "- All datetime strings use ISO8601 (e.g. `2023-07-30T14:00:30.590Z`)",
+    description: "- All datetime strings use ISO8601 (e.g. `2023-07-30T14:00:30.590Z`)",
   },
   components: {
     securitySchemes: {

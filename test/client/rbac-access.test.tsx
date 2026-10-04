@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test } from "vite-plus/test";
 import { renderAppAt } from "./test-utils";
 
 const originalFetch = window.fetch.bind(window);
@@ -7,20 +7,12 @@ afterEach(() => {
   window.fetch = originalFetch;
 });
 
-function mockAuthAndApis(options: {
-  roles?: string[];
-  permissions?: string[];
-  account?: string;
-}) {
+function mockAuthAndApis(options: { roles?: string[]; permissions?: string[]; account?: string }) {
   const { roles = [], permissions = [], account = "test_user" } = options;
 
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url =
-      typeof input === "string"
-        ? input
-        : input instanceof URL
-          ? input.toString()
-          : input.url;
+      typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
     if (url.includes("/api/auth/getUserInfo")) {
       return new Response(

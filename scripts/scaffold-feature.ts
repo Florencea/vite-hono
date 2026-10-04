@@ -3,9 +3,7 @@ import path from "node:path";
 import process from "node:process";
 
 function toCamelCase(str: string): string {
-  return str
-    .toLowerCase()
-    .replace(/[-_]([a-z])/g, (_, letter: string) => letter.toUpperCase());
+  return str.toLowerCase().replace(/[-_]([a-z])/g, (_, letter: string) => letter.toUpperCase());
 }
 
 function toPascalCase(str: string): string {
@@ -23,7 +21,7 @@ function toKebabCase(str: string): string {
 const rawName = process.argv[2]?.trim();
 if (!rawName) {
   console.error("Error: Please specify a feature name.");
-  console.error("Usage: npm run scaffold:feature <feature-name>");
+  console.error("Usage: vpr scaffold:feature <feature-name>");
   process.exit(1);
 }
 
@@ -33,21 +31,14 @@ const pascalName = toPascalCase(rawName);
 
 const rootDir = process.cwd();
 const featureDir = path.join(rootDir, "src", "server", "routes", kebabName);
-const testFile = path.join(
-  rootDir,
-  "test",
-  "server",
-  `${kebabName}-contract.test.ts`,
-);
+const testFile = path.join(rootDir, "test", "server", `${kebabName}-contract.test.ts`);
 const routerFile = path.join(rootDir, "src", "server", "router.ts");
 const schemaLocaleFile = path.join(rootDir, "src", "locales", "schema.ts");
 const enLocaleFile = path.join(rootDir, "src", "locales", "en-US.ts");
 const zhLocaleFile = path.join(rootDir, "src", "locales", "zh-TW.ts");
 
 if (fs.existsSync(featureDir)) {
-  console.error(
-    `Error: Feature directory "src/server/routes/${kebabName}" already exists.`,
-  );
+  console.error(`Error: Feature directory "src/server/routes/${kebabName}" already exists.`);
   process.exit(1);
 }
 
@@ -81,11 +72,7 @@ export const ${pascalName}ListResSchema = z.object({
 });
 `;
 
-fs.writeFileSync(
-  path.join(featureDir, `${kebabName}.schema.ts`),
-  schemaContent,
-  "utf8",
-);
+fs.writeFileSync(path.join(featureDir, `${kebabName}.schema.ts`), schemaContent, "utf8");
 
 // 2. Feature Routes
 const routesContent = `import { createRoute } from "@hono/zod-openapi";
@@ -186,11 +173,7 @@ export const create${pascalName}Route = createRoute({
 });
 `;
 
-fs.writeFileSync(
-  path.join(featureDir, `${kebabName}.routes.ts`),
-  routesContent,
-  "utf8",
-);
+fs.writeFileSync(path.join(featureDir, `${kebabName}.routes.ts`), routesContent, "utf8");
 
 // 3. Feature Handlers
 const handlersContent = `import type { RouteHandler } from "@hono/zod-openapi";
@@ -221,11 +204,7 @@ export const create${pascalName}Handler: RouteHandler<
 };
 `;
 
-fs.writeFileSync(
-  path.join(featureDir, `${kebabName}.handlers.ts`),
-  handlersContent,
-  "utf8",
-);
+fs.writeFileSync(path.join(featureDir, `${kebabName}.handlers.ts`), handlersContent, "utf8");
 
 // 4. Feature Index Sub-Router
 const indexContent = `import { createRouter } from "../../common/factory.ts";
@@ -250,7 +229,7 @@ export * from "./${kebabName}.schema.ts";
 fs.writeFileSync(path.join(featureDir, "index.ts"), indexContent, "utf8");
 
 // 5. Integration / Contract Test
-const testContent = `import { expect, test } from "vitest";
+const testContent = `import { expect, test } from "vite-plus/test";
 import enUS from "../../src/locales/en-US";
 import zhTW from "../../src/locales/zh-TW";
 import app from "../../src/server/app";
@@ -322,8 +301,7 @@ let schemaLocaleSrc = fs.readFileSync(schemaLocaleFile, "utf8");
 const schemaLocaleSnippet = `  ${camelName}: {\n    title: string;\n  };\n`;
 schemaLocaleSrc = schemaLocaleSrc.replace(
   /export interface LocaleSchema \{([\s\S]*?)errors: \{/,
-  (_, p1: string) =>
-    `export interface LocaleSchema {${p1}${schemaLocaleSnippet}  errors: {`,
+  (_, p1: string) => `export interface LocaleSchema {${p1}${schemaLocaleSnippet}  errors: {`,
 );
 const schemaErrorSnippet = `    ${camelName}: {\n      invalid: string;\n      notFound: string;\n    };\n`;
 schemaLocaleSrc = schemaLocaleSrc.replace(
@@ -361,19 +339,11 @@ zhLocaleSrc = zhLocaleSrc.replace(
 fs.writeFileSync(zhLocaleFile, zhLocaleSrc, "utf8");
 
 console.info(`✓ Successfully scaffolded feature "${kebabName}":`);
-console.info(
-  `  - Route Schema:  src/server/routes/${kebabName}/${kebabName}.schema.ts`,
-);
-console.info(
-  `  - Route Specs:   src/server/routes/${kebabName}/${kebabName}.routes.ts`,
-);
-console.info(
-  `  - Route Handler: src/server/routes/${kebabName}/${kebabName}.handlers.ts`,
-);
+console.info(`  - Route Schema:  src/server/routes/${kebabName}/${kebabName}.schema.ts`);
+console.info(`  - Route Specs:   src/server/routes/${kebabName}/${kebabName}.routes.ts`);
+console.info(`  - Route Handler: src/server/routes/${kebabName}/${kebabName}.handlers.ts`);
 console.info(`  - Sub-Router:    src/server/routes/${kebabName}/index.ts`);
 console.info(`  - Contract Test: test/server/${kebabName}-contract.test.ts`);
 console.info(`  - Mounted in:    src/server/router.ts`);
 console.info(`  - Localized in:  src/locales/schema.ts, en-US.ts, zh-TW.ts`);
-console.info(
-  `Run "npm run check:fast" to verify the newly scaffolded feature.`,
-);
+console.info(`Run "vpr check:fast" to verify the newly scaffolded feature.`);

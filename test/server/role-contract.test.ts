@@ -1,5 +1,7 @@
-import { expect, test } from "vitest";
+import { expect, test } from "vite-plus/test";
 import app from "../../src/server/app.ts";
+import { PermissionListResSchema } from "../../src/server/routes/permission/permission.schema.ts";
+import { RoleListResSchema, RoleResSchema } from "../../src/server/routes/role/role.schema.ts";
 
 async function getAdminCookie(): Promise<string> {
   const res = await app.request("/api/auth/login", {
@@ -22,9 +24,7 @@ test("Role Contract: CRUD lifecycle, custom dataScope, and system role protectio
     headers: { Cookie: adminCookie },
   });
   expect(permsRes.status).toBe(200);
-  const permsJson = (await permsRes.json()) as {
-    items: { id: number; code: string }[];
-  };
+  const permsJson = PermissionListResSchema.parse(await permsRes.json());
   expect(permsJson.items.length).toBeGreaterThan(0);
   const samplePermIds = permsJson.items.slice(0, 2).map((p) => p.id);
 
@@ -45,12 +45,7 @@ test("Role Contract: CRUD lifecycle, custom dataScope, and system role protectio
     }),
   });
   expect(createRoleRes.status).toBe(200);
-  const createdRole = (await createRoleRes.json()) as {
-    id: number;
-    code: string;
-    permissionIds: number[];
-    departmentIds: number[];
-  };
+  const createdRole = RoleResSchema.parse(await createRoleRes.json());
   expect(createdRole.code).toBe("custom_auditor");
   expect(createdRole.permissionIds).toEqual(samplePermIds);
   expect(createdRole.departmentIds).toEqual([1]);
@@ -71,25 +66,19 @@ test("Role Contract: CRUD lifecycle, custom dataScope, and system role protectio
   expect(dupRoleRes.status).toBe(400);
 
   // 4. Update role
-  const updateRoleRes = await app.request(
-    `/api/roles/${createdRole.id.toString()}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: adminCookie,
-      },
-      body: JSON.stringify({
-        name: "進階稽核專員",
-        dataScope: "ALL",
-      }),
+  const updateRoleRes = await app.request(`/api/roles/${createdRole.id.toString()}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: adminCookie,
     },
-  );
+    body: JSON.stringify({
+      name: "進階稽核專員",
+      dataScope: "ALL",
+    }),
+  });
   expect(updateRoleRes.status).toBe(200);
-  const updatedRole = (await updateRoleRes.json()) as {
-    name: string;
-    dataScope: string;
-  };
+  const updatedRole = RoleResSchema.parse(await updateRoleRes.json());
   expect(updatedRole.name).toBe("進階稽核專員");
   expect(updatedRole.dataScope).toBe("ALL");
 
@@ -98,9 +87,7 @@ test("Role Contract: CRUD lifecycle, custom dataScope, and system role protectio
     method: "GET",
     headers: { Cookie: adminCookie },
   });
-  const rolesList = (await rolesListRes.json()) as {
-    items: { id: number; code: string; isSystem: boolean }[];
-  };
+  const rolesList = RoleListResSchema.parse(await rolesListRes.json());
   const superAdmin = rolesList.items.find((r) => r.code === "super_admin");
   expect(superAdmin).toBeDefined();
 
@@ -108,22 +95,16 @@ test("Role Contract: CRUD lifecycle, custom dataScope, and system role protectio
     throw new Error("super_admin not found");
   }
 
-  const failDeleteSystemRole = await app.request(
-    `/api/roles/${superAdmin.id.toString()}`,
-    {
-      method: "DELETE",
-      headers: { Cookie: adminCookie },
-    },
-  );
+  const failDeleteSystemRole = await app.request(`/api/roles/${superAdmin.id.toString()}`, {
+    method: "DELETE",
+    headers: { Cookie: adminCookie },
+  });
   expect(failDeleteSystemRole.status).toBe(400);
 
   // 6. Delete custom role succeeds
-  const deleteCustomRole = await app.request(
-    `/api/roles/${createdRole.id.toString()}`,
-    {
-      method: "DELETE",
-      headers: { Cookie: adminCookie },
-    },
-  );
+  const deleteCustomRole = await app.request(`/api/roles/${createdRole.id.toString()}`, {
+    method: "DELETE",
+    headers: { Cookie: adminCookie },
+  });
   expect(deleteCustomRole.status).toBe(200);
 });
