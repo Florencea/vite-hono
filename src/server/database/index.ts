@@ -41,14 +41,25 @@ export function getDb(c?: Context): Database {
   return cachedDb;
 }
 
-export const db: Database = new Proxy(getLibsqlDb(), {
-  get(target, prop, receiver) {
-    void target;
-    const targetDb = getDb();
-    const value: unknown = Reflect.get(targetDb, prop, receiver);
-    if (typeof value === "function") {
-      return value.bind(targetDb);
-    }
-    return value;
-  },
-});
+function isDatabase(val: object): val is Database {
+  return val !== null;
+}
+
+function createLazyDb(): Database {
+  const target: object = {};
+  if (isDatabase(target)) {
+    return new Proxy(target, {
+      get(_target, prop, receiver) {
+        const targetDb = getDb();
+        const value: unknown = Reflect.get(targetDb, prop, receiver);
+        if (typeof value === "function") {
+          return value.bind(targetDb);
+        }
+        return value;
+      },
+    });
+  }
+  return getDb();
+}
+
+export const db: Database = createLazyDb();
