@@ -52,15 +52,18 @@ export default defineConfig(({ mode, isSsrBuild }) => {
       ],
       sortPackageJson: true,
     },
-    staged: {
-      "*.{ts,tsx}": "vp check --fix",
+    run: {
+      cache: {
+        scripts: true,
+        tasks: true,
+      },
     },
     environments: {
       server: {
         build: {
           outDir: "dist/server",
           ssr: true,
-          rollupOptions: {
+          rolldownOptions: {
             input: {
               app: "src/server/app.ts",
             },

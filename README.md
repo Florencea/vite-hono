@@ -70,10 +70,10 @@ This template follows an **End-to-End Type-Safe & Test-Driven (TDD)** developmen
 Run the unified gate before committing or completing development tasks:
 
 ```bash
-vpr check
+vpr verify
 ```
 
-Executes `vp check` (Oxlint + Oxfmt + typecheck) + `lint:tailwind` + `check:deadcode` (Knip) + `test` (Vitest dual-track: Chromium + Node) + `build`. Must pass with 0 errors and 0 warnings.
+Executes `vp check` (Oxlint + Oxfmt + typecheck) + `lint:tailwind` + `check:deadcode` (Knip) + `test` (Vitest dual-track: Chromium + Node) + `vp build`. Must pass with 0 errors and 0 warnings.
 
 ---
 
@@ -84,19 +84,19 @@ Executes `vp check` (Oxlint + Oxfmt + typecheck) + `lint:tailwind` + `check:dead
 | `vp dev`                 | Start native Vite dev server (with `@cloudflare/vite-plugin` emulation)                                   |
 | `vp preview`             | Preview production build locally via Vite                                                                 |
 | `vp check`               | Run Oxlint, Oxfmt, and TypeScript checks                                                                  |
-| `vpr check`              | Run unified verification gate (checks, deadcode, tests, build)                                            |
+| `vpr verify`             | Run unified verification gate (checks, deadcode, tests, build) with Vite Task caching                     |
 | `vpr check:fast`         | Fast feedback loop (`typecheck` + `lint` + server unit tests)                                             |
 | `vpr agent:verify:inner` | Agent fail-fast static verification (`typecheck` + `lint`)                                                |
 | `vpr agent:verify:unit`  | Agent unit verification (`inner` + server unit tests)                                                     |
 | `vpr agent:verify:gate`  | Agent comprehensive gate (`unit` + `build` + client E2E tests)                                            |
-| `vpr agent:typecheck`    | TypeScript strict type check with raw output                                                              |
-| `vpr agent:lint`         | Oxlint and Tailwind class verification with zero warnings tolerance                                       |
+| `vpr typecheck`          | TypeScript strict type check with raw output                                                              |
 | `vpr agent:test:unit`    | Server in-memory unit tests in flat TAP format                                                            |
 | `vpr agent:test:e2e`     | Client browser E2E tests in headless Chromium in flat TAP format                                          |
 | `vp test`                | Run all Vitest tests (client + server)                                                                    |
 | `vpr test:setup`         | Install Playwright Chromium binary                                                                        |
 | `vp build`               | Build client SPA (`dist/client`), server bundle (`dist/server`), and Cloudflare Worker (`dist/vite_hono`) |
-| `vpr start`              | Start Node.js production server (`node dist/server/app.js`)                                               |
+| `vpr start`              | Start Node.js production server (`vp node dist/server/app.js`)                                            |
+| `vpr lint:ci`            | Validate GitHub Actions workflows locally via actionlint                                                  |
 | `vpr lint:tailwind`      | Check Tailwind CSS v4 canonical class syntax                                                              |
 | `vpr lint:tailwind:fix`  | Automatically format Tailwind CSS v4 canonical classes                                                    |
 | `vpr check:deadcode`     | Audit unused code and dependencies with Knip                                                              |

@@ -40,6 +40,15 @@ jobs:
       - name: Install dependencies
         run: vp install
 
+      - name: Cache Vite Task Cache
+        uses: actions/cache@v6
+        with:
+          path: node_modules/.vite/task-cache
+          key: ${{ runner.os }}-vite-task-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vite-task-cache-${{ hashFiles('pnpm-lock.yaml') }}-
+            ${{ runner.os }}-vite-task-cache-
+
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(vp exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
@@ -59,13 +68,13 @@ jobs:
         run: vp run db:seed
 
       - name: Run typecheck
-        run: vp run agent:typecheck
+        run: vp run typecheck
 
       - name: Check (Oxlint & Oxfmt)
         run: vp check
 
       - name: Lint (Tailwind CSS)
-        run: vp run agent:lint:tailwind
+        run: vp run lint:tailwind
 
       - name: Check dead code
         run: vp run check:deadcode
@@ -76,7 +85,7 @@ jobs:
       - name: Build client and server
         env:
           NODE_ENV: production
-        run: vp run build
+        run: vp build
 
       - name: Run E2E browser tests
         run: vp run agent:test:e2e
@@ -115,13 +124,22 @@ jobs:
       - name: Install dependencies
         run: vp install
 
+      - name: Cache Vite Task Cache
+        uses: actions/cache@v6
+        with:
+          path: node_modules/.vite/task-cache
+          key: ${{ runner.os }}-vite-task-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vite-task-cache-${{ hashFiles('pnpm-lock.yaml') }}-
+            ${{ runner.os }}-vite-task-cache-
+
       - name: Initialize database
         run: vp run db:seed
 
       - name: Build client and server
         env:
           NODE_ENV: production
-        run: vp run build
+        run: vp build
 
       - name: Run lightweight unit and contract tests
         run: vp run agent:test:unit

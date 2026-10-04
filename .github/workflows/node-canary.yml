@@ -46,7 +46,7 @@ jobs:
         continue-on-error: true
         env:
           NODE_ENV: production
-        run: vp run build
+        run: vp build
 
       - name: Run baseline unit and contract tests
         continue-on-error: true

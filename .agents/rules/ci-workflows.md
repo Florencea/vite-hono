@@ -11,7 +11,7 @@ Standards for maintaining and updating GitHub Actions workflows.
 ## 1. Shift-Left Local Verification
 
 - **Strict Requirement**: Whenever `.github/workflows/` files are added or modified, running `actionlint` locally with **0 errors and 0 warnings** is mandatory before staging (`git add`).
-- **Execution Script**: Execute via `vpr agent:lint:ci` (or `actionlint` directly).
+- **Execution Script**: Execute via `vpr lint:ci` (or `actionlint` directly).
 
 ## 2. Guardrail Boundaries
 

@@ -17,7 +17,7 @@ Guidelines for building UI components with Ant Design v6, TailwindCSS v4, and Re
 
 - **No Inline `style`**: Never use `style={{ ... }}` on Ant Design or React components. Prefer Ant Design layout components (`Layout`, `Flex`, `Space`, `Row`, `Col`, `Card`).
 - **No `!` (important)**: Never use the `!` modifier in Tailwind classes. Tailwind utilities are scoped under `#root` with natural specificity over Ant Design.
-- **Canonical Classes**: Use Tailwind CSS v4 canonical class syntax (e.g. `bg-(--variable)` instead of `bg-[var(--variable)]`). Run `vpr agent:lint:tailwind` to diagnose and `vpr agent:lint:tailwind:fix` to auto-fix.
+- **Canonical Classes**: Use Tailwind CSS v4 canonical class syntax (e.g. `bg-(--variable)` instead of `bg-[var(--variable)]`). Run `vpr lint:tailwind` to diagnose and `vpr lint:tailwind:fix` to auto-fix.
 
 ## 3. React 19 & Core Component Wrappers
 
