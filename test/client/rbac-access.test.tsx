@@ -110,6 +110,12 @@ test("Sidebar Navigation RBAC: non-admin user only sees authorized menu items", 
     name: /Users|人員管理/i,
   });
   await expect.element(userMenu).not.toBeInTheDocument();
+
+  // Login menu item without icon should NOT exist in the DOM
+  const loginMenu = screen.getByRole("menuitem", {
+    name: /Login|登入/i,
+  });
+  await expect.element(loginMenu).not.toBeInTheDocument();
 });
 
 test("Sidebar Navigation RBAC: super_admin sees all administration menu items", async () => {
@@ -133,6 +139,12 @@ test("Sidebar Navigation RBAC: super_admin sees all administration menu items", 
     name: /Users|人員管理/i,
   });
   await expect.element(userMenu).toBeInTheDocument();
+
+  // Login menu item without icon should NOT exist even for super_admin
+  const loginMenu = screen.getByRole("menuitem", {
+    name: /Login|登入/i,
+  });
+  await expect.element(loginMenu).not.toBeInTheDocument();
 });
 
 test("Route Guard: accessing unauthorized route redirects to 403 Forbidden page", async () => {

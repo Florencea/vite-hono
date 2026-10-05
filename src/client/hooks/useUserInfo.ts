@@ -10,7 +10,7 @@ export const useUserInfo = () => {
   const { hasPermission } = useAccess();
 
   const menuItems = MENU_ITEMS.filter((item) => {
-    if (item.icon === undefined) return false;
+    if (item.icon === undefined || item.icon === null) return false;
     if (item.permission !== undefined && !hasPermission(item.permission)) {
       return false;
     }

@@ -23,7 +23,6 @@ export const MENU_ITEMS: MenuItemConfig[] = [
   {
     label: "Login",
     key: "/login",
-    icon: null,
   },
   {
     label: "Departments",
