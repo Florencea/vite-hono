@@ -2,6 +2,8 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
 import { CORS_ORIGIN, ENABLE_OPENAPI } from "./config.ts";
+import { getDb } from "./database/index.ts";
+import { ensureDatabaseReady } from "./database/init.ts";
 import { i18nMiddleware, t } from "./i18n.ts";
 import { openapiConfig, scalarReference } from "./openapi.ts";
 import { apiRouter } from "./router.ts";
@@ -20,6 +22,13 @@ export function createCoreApp() {
   app.use("*", cors({ origin: CORS_ORIGIN, credentials: true }));
   app.use("*", i18nMiddleware);
 
+  // Auto-initialize schema & seed data if target database is empty
+  app.use("/api/*", async (c, next) => {
+    const database = getDb(c);
+    await ensureDatabaseReady(database);
+    await next();
+  });
+
   // Business API Routes
   app.route("/api", apiRouter);
 
@@ -29,7 +38,8 @@ export function createCoreApp() {
   });
 
   // Global localized 500 error handler
-  app.onError((_err, c) => {
+  app.onError((err, c) => {
+    console.error("[ServerError]", err);
     return c.json({ error: t(c, "errors.common.internalServerError") }, 500);
   });
 

@@ -94,3 +94,16 @@ test("Server Integration Contract: Full login, authenticated session, and logout
   const clearCookieHeader = logoutRes.headers.get("set-cookie");
   expect(clearCookieHeader).toContain("Max-Age=0");
 });
+
+test("Server Database Initialization Contract: Auto-initializes schema and default admin", async () => {
+  const { ensureDatabaseReady } = await import("../../src/server/database/init.ts");
+  const { db } = await import("../../src/server/database/index.ts");
+  await ensureDatabaseReady(db);
+
+  const loginRes = await app.request("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ account: "admin", password: "string" }),
+  });
+  expect(loginRes.status).toBe(200);
+});

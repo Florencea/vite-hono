@@ -3,9 +3,6 @@ import { eq, inArray, is, SQL, sql } from "drizzle-orm";
 import { getTableConfig, SQLiteDialect, SQLiteTable } from "drizzle-orm/sqlite-core";
 import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { defineRelations } from "drizzle-orm/relations";
-import { existsSync, readdirSync } from "node:fs";
-import { join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { hashPassword } from "../auth.ts";
 import { TableInfoSchema } from "../common/schemas.ts";
 import { db, type Database } from "./index.ts";
@@ -395,34 +392,59 @@ export async function seedAllDatabases(): Promise<void> {
   await seedDatabase(db);
 
   // Also seed local Cloudflare D1 database if present in .wrangler
-  const d1Dir = join(process.cwd(), ".wrangler", "state", "v3", "d1", "miniflare-D1DatabaseObject");
-  if (existsSync(d1Dir)) {
-    const files = readdirSync(d1Dir).filter(
-      (f) => f.endsWith(".sqlite") && !f.startsWith("metadata"),
-    );
-    await Promise.all(
-      files.map(async (file) => {
-        console.info(`[seed] Seeding local Cloudflare D1 database (${file})...`);
-        const client = createClient({ url: `file:${join(d1Dir, file)}` });
-        const d1Db = drizzleLibsql({ client, relations });
-        await seedDatabase(d1Db);
-      }),
-    );
+  try {
+    const { existsSync, readdirSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const d1Base = join(process.cwd(), ".wrangler", "state", "v3", "d1");
+    if (existsSync(d1Base)) {
+      const sqlitePaths: string[] = [];
+      const searchDirs = [d1Base];
+      while (searchDirs.length > 0) {
+        const dir = searchDirs.pop();
+        if (dir === undefined) {
+          continue;
+        }
+        const entries = readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fullPath = join(dir, entry.name);
+          if (entry.isDirectory()) {
+            searchDirs.push(fullPath);
+          } else if (
+            entry.isFile() &&
+            entry.name.endsWith(".sqlite") &&
+            !entry.name.startsWith("metadata")
+          ) {
+            sqlitePaths.push(fullPath);
+          }
+        }
+      }
+      await Promise.all(
+        sqlitePaths.map(async (filePath) => {
+          console.info(`[seed] Seeding local Cloudflare D1 database (${filePath})...`);
+          const client = createClient({ url: `file:${filePath}` });
+          const d1Db = drizzleLibsql({ client, relations });
+          await seedDatabase(d1Db);
+        }),
+      );
+    }
+  } catch {
+    // Filesystem scanning is only supported in Node.js runtime
   }
 }
 
-const scriptArg = process.argv[1];
+const scriptArg = process.argv?.[1];
 const isDirectExecution =
-  scriptArg !== undefined && resolve(scriptArg) === fileURLToPath(import.meta.url);
+  scriptArg !== undefined &&
+  typeof import.meta.filename === "string" &&
+  (await import("node:path")).resolve(scriptArg) === import.meta.filename;
 
 if (isDirectExecution) {
-  seedAllDatabases()
-    .then(() => {
-      console.info("[seed] Database seed completed successfully.");
-      process.exit(0);
-    })
-    .catch((e: unknown) => {
-      console.error("[seed] Database seed failed:", e);
-      process.exit(1);
-    });
+  try {
+    await seedAllDatabases();
+    console.info("[seed] Database seed completed successfully.");
+    process.exitCode = 0;
+  } catch (e: unknown) {
+    console.error("[seed] Database seed failed:", e);
+    process.exitCode = 1;
+  }
 }
