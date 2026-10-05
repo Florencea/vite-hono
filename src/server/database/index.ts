@@ -22,7 +22,7 @@ interface CloudflareEnv {
 let cachedDb: Database | undefined;
 
 export function closeDb(): void {
-  if (cachedDb) {
+  if (cachedDb !== undefined) {
     cachedDb.$client.close();
     cachedDb = undefined;
   }
@@ -34,7 +34,7 @@ function isCloudflareEnv(env: unknown): env is CloudflareEnv {
 
 export function getDb(c?: Context): Database {
   const rawEnv: unknown = c?.env;
-  if (isCloudflareEnv(rawEnv) && rawEnv.DB) {
+  if (isCloudflareEnv(rawEnv) && rawEnv.DB !== undefined) {
     return drizzleD1(rawEnv.DB, { relations });
   }
   cachedDb ??= getLibsqlDb();

@@ -25,11 +25,12 @@ let cachedCookieSecret: string | undefined;
  * 5. Safe fallback for early bootstrap or offline database states.
  */
 export async function getCookieSecret(c?: Context): Promise<string> {
-  if (process.env.COOKIE_SECRET?.trim()) {
-    return process.env.COOKIE_SECRET.trim();
+  const envSecret = process.env.COOKIE_SECRET?.trim();
+  if (envSecret !== undefined && envSecret !== "") {
+    return envSecret;
   }
 
-  if (cachedCookieSecret) {
+  if (cachedCookieSecret !== undefined) {
     return cachedCookieSecret;
   }
 
@@ -41,7 +42,7 @@ export async function getCookieSecret(c?: Context): Promise<string> {
       .where(eq(systemSettings.key, "cookie_secret"))
       .get();
 
-    if (existing?.value) {
+    if (existing?.value !== undefined && existing.value !== "") {
       cachedCookieSecret = existing.value;
       return existing.value;
     }
@@ -76,7 +77,7 @@ export async function getCookieSecret(c?: Context): Promise<string> {
 
 export async function getSession(c: Context): Promise<SessionData | null> {
   const token = getCookie(c, COOKIE_NAME);
-  if (!token) return null;
+  if (token === undefined || token === "") return null;
 
   try {
     const secret = await getCookieSecret(c);

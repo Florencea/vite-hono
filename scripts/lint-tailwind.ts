@@ -236,10 +236,10 @@ async function createLSPClient(projectRoot: string): Promise<LSPClient> {
   const diagnosticsWaiters = new Map<string, (diags: Diagnostic[]) => void>();
 
   connection.onNotification(PublishDiagnosticsNotification.type, (params) => {
-    if (params.uri && diagnosticsWaiters.has(params.uri)) {
+    if (params.uri !== undefined && params.uri !== "") {
       const resolve = diagnosticsWaiters.get(params.uri);
-      diagnosticsWaiters.delete(params.uri);
-      if (resolve) {
+      if (resolve !== undefined) {
+        diagnosticsWaiters.delete(params.uri);
         resolve(params.diagnostics);
       }
     }

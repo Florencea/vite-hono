@@ -28,7 +28,7 @@ export const DocTitle = ({
   const prefixStr = prefixes.length > 0 ? `${prefixes.join(" ")} ` : "";
   let finalTitle = `${prefixStr}${baseTitle}`;
 
-  if (title && withAppSuffix && !finalTitle.endsWith(APP_TITLE)) {
+  if (title !== undefined && title !== "" && withAppSuffix && !finalTitle.endsWith(APP_TITLE)) {
     finalTitle = `${finalTitle} - ${APP_TITLE}`;
   }
 

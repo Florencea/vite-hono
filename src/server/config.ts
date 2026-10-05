@@ -16,7 +16,11 @@ export function validateConfig(
   const databaseUrl = env.DATABASE_URL?.trim() ?? "file:./database.sqlite";
 
   const rawCookieSecret = env.COOKIE_SECRET?.trim();
-  if (env.NODE_ENV === "production" && rawCookieSecret && rawCookieSecret.length < 32) {
+  if (
+    env.NODE_ENV === "production" &&
+    rawCookieSecret !== undefined &&
+    rawCookieSecret.length < 32
+  ) {
     throw new Error(
       `[Config Error] COOKIE_SECRET must be at least 32 characters long in production for security.`,
     );
@@ -25,7 +29,7 @@ export function validateConfig(
 
   let port = 3000;
   const portStr = env.PORT?.trim();
-  if (portStr) {
+  if (portStr !== undefined && portStr !== "") {
     const parsedPort = Number.parseInt(portStr, 10);
     if (Number.isNaN(parsedPort) || parsedPort <= 0 || parsedPort > 65535) {
       throw new Error(

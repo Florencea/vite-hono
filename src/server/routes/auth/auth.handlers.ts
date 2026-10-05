@@ -13,9 +13,7 @@ export const loginHandler: RouteHandler<typeof loginRoute, AppEnv> = async (c) =
   const result = await authenticateUser(db, account, password);
   if (!result.success) {
     const errorKey =
-      result.reason === "user_not_found"
-        ? ("errors.auth.userNotFound" as const)
-        : ("errors.auth.wrongPassword" as const);
+      result.reason === "user_not_found" ? "errors.auth.userNotFound" : "errors.auth.wrongPassword";
     return c.json({ error: t(c, errorKey) }, 400);
   }
 
@@ -29,7 +27,7 @@ export const loginHandler: RouteHandler<typeof loginRoute, AppEnv> = async (c) =
 
 export const logoutHandler: RouteHandler<typeof logoutRoute, AppEnv> = async (c) => {
   const session = await getSession(c);
-  if (!session?.id) {
+  if (session?.id === undefined) {
     return c.json({ error: t(c, "errors.auth.unauthorized") }, 401);
   }
 
@@ -39,7 +37,7 @@ export const logoutHandler: RouteHandler<typeof logoutRoute, AppEnv> = async (c)
 
 export const getUserInfoHandler: RouteHandler<typeof getUserInfoRoute, AppEnv> = async (c) => {
   const session = await getSession(c);
-  if (!session?.id) {
+  if (session?.id === undefined) {
     return c.json(
       {
         success: false,
@@ -60,7 +58,7 @@ export const getUserInfoHandler: RouteHandler<typeof getUserInfoRoute, AppEnv> =
   const db = getDb(c);
   const detail = await getAuthUserDetail(db, session.id);
 
-  if (!detail) {
+  if (detail === null) {
     return c.json(
       {
         success: false,

@@ -25,7 +25,7 @@ export function DepartmentModal({
   onOk,
 }: DepartmentModalProps) {
   const { t } = useI18n();
-  const isEdit = Boolean(department);
+  const isEdit = department !== null;
 
   const treeSelectData = [
     { title: t("dept.root"), value: 0, key: 0 },
@@ -40,7 +40,7 @@ export function DepartmentModal({
 
   return (
     <DataModal
-      open={Boolean(open)}
+      open={open === true}
       title={isEdit ? t("dept.edit") : t("dept.create")}
       onCancel={onCancel}
       onOk={onOk}

@@ -61,7 +61,7 @@ export function UserTable({ data, departments, roles, loading, onEdit, onDelete 
       dataIndex: "departmentId",
       key: "departmentId",
       width: 140,
-      render: (deptId: number | null) => (deptId ? (deptMap.get(deptId) ?? "-") : "-"),
+      render: (deptId: number | null) => (deptId !== null ? (deptMap.get(deptId) ?? "-") : "-"),
     },
     {
       title: t("user.roles"),
@@ -127,5 +127,5 @@ export function UserTable({ data, departments, roles, loading, onEdit, onDelete 
     },
   ];
 
-  return <DataTable<UserItem> columns={columns} dataSource={data} loading={Boolean(loading)} />;
+  return <DataTable<UserItem> columns={columns} dataSource={data} loading={loading === true} />;
 }

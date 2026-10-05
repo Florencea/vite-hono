@@ -88,7 +88,7 @@ export function useUsers() {
           ? values.departmentId
           : null;
 
-      if (selectedUser) {
+      if (selectedUser !== null) {
         const res = await api.users[":id"].$put({
           param: { id: selectedUser.id.toString() },
           json: {
@@ -140,7 +140,7 @@ export function useUsers() {
   });
 
   const [formRevision, setFormRevision] = useState(0);
-  const isEdit = Boolean(selectedUser);
+  const isEdit = selectedUser !== null;
 
   const initialValues: UserFormValues = {
     account: selectedUser?.account ?? "",
@@ -153,7 +153,7 @@ export function useUsers() {
     roleIds: selectedUser?.roleIds ?? [],
   };
 
-  const formKey = `${selectedUser ? selectedUser.id.toString() : "new"}-${formRevision.toString()}`;
+  const formKey = `${selectedUser !== null ? selectedUser.id.toString() : "new"}-${formRevision.toString()}`;
 
   const userForm = useAntdForm<UserFormValues>({
     formProps: {

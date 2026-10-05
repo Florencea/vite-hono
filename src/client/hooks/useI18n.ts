@@ -44,7 +44,7 @@ export const I18nContext = createContext<I18nContextValue | null>(null);
 
 export const useI18n = (): I18nContextValue => {
   const ctx = use(I18nContext);
-  if (!ctx) {
+  if (ctx === null) {
     throw new Error("useI18n must be used within an I18nProvider");
   }
   return ctx;

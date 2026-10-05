@@ -50,7 +50,7 @@ export async function buildDataScopeCondition(
             const currentDept = await db.query.departments.findFirst({
               where: { id: user.departmentId },
             });
-            if (currentDept?.path) {
+            if (currentDept?.path !== undefined && currentDept.path !== "") {
               const descendantDepts = await db
                 .select({ id: departments.id })
                 .from(departments)

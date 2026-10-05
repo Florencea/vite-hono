@@ -1,6 +1,6 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Layout as AntdLayout, Button, Flex, Menu, Typography } from "antd";
-import clsx from "clsx";
+import { cn } from "../utils/cn.ts";
 import { useState } from "react";
 import logo from "../assets/logo.png";
 import { APP_TITLE } from "../config.ts";
@@ -27,7 +27,7 @@ export const Layout = () => {
       <AntdLayout className="h-svh max-w-svw">
         {isLogin && (
           <Header
-            className={clsx(
+            className={cn(
               "flex items-center justify-between bg-white px-3 dark:bg-(--ant-color-bg-container)",
               {
                 "lg:px-4": !collapsed,

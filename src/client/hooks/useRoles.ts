@@ -81,7 +81,7 @@ export function useRoles() {
 
   const saveMutation = useMutation({
     mutationFn: async (values: RoleFormValues) => {
-      if (selectedRole) {
+      if (selectedRole !== null) {
         const res = await api.roles[":id"].$put({
           param: { id: selectedRole.id.toString() },
           json: {
@@ -139,7 +139,7 @@ export function useRoles() {
     permissionIds: selectedRole?.permissionIds ?? [],
   };
 
-  const formKey = `${selectedRole ? selectedRole.id.toString() : "new"}-${formRevision.toString()}`;
+  const formKey = `${selectedRole !== null ? selectedRole.id.toString() : "new"}-${formRevision.toString()}`;
 
   const roleForm = useAntdForm<RoleFormValues>({
     formProps: {

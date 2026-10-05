@@ -23,7 +23,7 @@ export function generateCreateTableSql(table: SQLiteTable): string {
   for (const col of config.columns) {
     const parts = [`"${col.name}"`, col.getSQLType()];
     if (col.primary) {
-      const isAutoIncrement = "autoIncrement" in col && Boolean(col.autoIncrement);
+      const isAutoIncrement = "autoIncrement" in col && col.autoIncrement === true;
       parts.push(isAutoIncrement ? "PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY");
     }
     if (col.notNull) {
@@ -187,7 +187,7 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
   // 2. Seed Departments
   const existingDept = await targetDb.query.departments.findFirst();
   let rootDeptId: number;
-  if (!existingDept) {
+  if (existingDept === undefined) {
     const rootRes = await targetDb
       .insert(schema.departments)
       .values({
@@ -222,7 +222,7 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
   });
   let superAdminRoleId = superAdminRole?.id;
 
-  if (!superAdminRole) {
+  if (superAdminRole === undefined) {
     const inserted = await targetDb
       .insert(schema.roles)
       .values({
@@ -240,7 +240,7 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
   const deptManagerRole = await targetDb.query.roles.findFirst({
     where: { code: "dept_manager" },
   });
-  if (!deptManagerRole) {
+  if (deptManagerRole === undefined) {
     await targetDb.insert(schema.roles).values({
       code: "dept_manager",
       name: "部門主管",
@@ -254,7 +254,7 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
   const employeeRole = await targetDb.query.roles.findFirst({
     where: { code: "employee" },
   });
-  if (!employeeRole) {
+  if (employeeRole === undefined) {
     await targetDb.insert(schema.roles).values({
       code: "employee",
       name: "一般員工",
@@ -287,7 +287,7 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
   const currentDeptManagerRole = await targetDb.query.roles.findFirst({
     where: { code: "dept_manager" },
   });
-  if (currentDeptManagerRole) {
+  if (currentDeptManagerRole !== undefined) {
     const managerPermCodes = [
       "system:dept:read",
       "system:dept:create",
@@ -320,15 +320,15 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
   const currentEmployeeRole = await targetDb.query.roles.findFirst({
     where: { code: "employee" },
   });
-  if (currentEmployeeRole) {
+  if (currentEmployeeRole !== undefined) {
     const p = await targetDb.query.permissions.findFirst({
       where: { code: "system:user:read" },
     });
-    if (p) {
+    if (p !== undefined) {
       const existingRel = await targetDb.query.rolePermissions.findFirst({
         where: { roleId: currentEmployeeRole.id, permissionId: p.id },
       });
-      if (!existingRel) {
+      if (existingRel === undefined) {
         await targetDb.insert(schema.rolePermissions).values({
           roleId: currentEmployeeRole.id,
           permissionId: p.id,
@@ -345,7 +345,7 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
 
   let adminUserId = existingUser?.id;
 
-  if (existingUser) {
+  if (existingUser !== undefined) {
     await targetDb
       .update(schema.users)
       .set({
@@ -371,14 +371,14 @@ export async function seedDatabase(targetDb: Database): Promise<void> {
   }
 
   // 6. Assign super_admin role to admin user
-  if (adminUserId && superAdminRoleId) {
+  if (adminUserId !== undefined && superAdminRoleId !== undefined) {
     const existingUserRole = await targetDb.query.userRoles.findFirst({
       where: {
         userId: adminUserId,
         roleId: superAdminRoleId,
       },
     });
-    if (!existingUserRole) {
+    if (existingUserRole === undefined) {
       await targetDb.insert(schema.userRoles).values({
         userId: adminUserId,
         roleId: superAdminRoleId,

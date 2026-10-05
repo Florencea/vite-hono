@@ -62,6 +62,7 @@ export default {
     employeeNo: "工號",
     title: "職稱",
     password: "密碼",
+    passwordPlaceholder: "保留空白則不修改密碼",
     department: "所屬部門",
     roles: "角色",
     create: "新增使用者",

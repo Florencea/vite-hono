@@ -6,12 +6,12 @@ import { defineConfig } from "vite-plus";
 import { playwright } from "vite-plus/test/browser-playwright";
 import { APP_TITLE } from "./src/client/config.ts";
 
-export default defineConfig(({ mode, isSsrBuild }) => {
+export default defineConfig(({ mode }) => {
   const isTest = mode === "test" || process.env.NODE_ENV === "test";
 
   return {
     build: {
-      outDir: isSsrBuild ? "dist/server" : "dist",
+      outDir: "dist",
       chunkSizeWarningLimit: 1000,
     },
     lint: {
@@ -94,7 +94,7 @@ export default defineConfig(({ mode, isSsrBuild }) => {
         compiler: true,
       }),
       tailwindcss(),
-      !isSsrBuild && !isTest && cloudflare(),
+      !isTest && cloudflare(),
     ],
     test: {
       allowOnly: !process.env.CI,

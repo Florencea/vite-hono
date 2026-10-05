@@ -65,14 +65,14 @@ const ApiProvider = ({ children, queryClient: customQueryClient }: Props) => {
       new QueryClient({
         queryCache: new QueryCache({
           onError: (err) => {
-            if (err.message) {
+            if (err.message !== "") {
               void msg.error(err.message, 4.5);
             }
           },
         }),
         mutationCache: new MutationCache({
           onError: (err) => {
-            if (err.message) {
+            if (err.message !== "") {
               void msg.error(err.message, 4.5);
             }
           },

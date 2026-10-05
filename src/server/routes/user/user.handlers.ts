@@ -13,7 +13,7 @@ import { createUser, deleteUser, getUserList, updateUser } from "./user.service.
 export const listUsersHandler: RouteHandler<typeof listUsersRoute, AppEnv> = async (c) => {
   const db = getDb(c);
   const user = c.get("user");
-  if (!user) {
+  if (user === null || user === undefined) {
     return c.json({ error: t(c, "errors.auth.unauthorized") }, 401);
   }
 

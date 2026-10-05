@@ -46,7 +46,7 @@ const gracefulShutdown = () => {
     process.exit(0);
   }, 1000).unref();
 
-  if (server) {
+  if (server !== undefined) {
     if ("closeAllConnections" in server && typeof server.closeAllConnections === "function") {
       server.closeAllConnections();
     }

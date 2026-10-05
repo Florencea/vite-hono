@@ -41,7 +41,7 @@ export function getTranslation(
     return path;
   }
 
-  if (!params) {
+  if (params === undefined) {
     return current;
   }
 

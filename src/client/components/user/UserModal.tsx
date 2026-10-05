@@ -27,7 +27,7 @@ export function UserModal({
   onOk,
 }: UserModalProps) {
   const { t } = useI18n();
-  const isEdit = Boolean(user);
+  const isEdit = user !== null;
 
   const deptTreeData = [
     { title: t("dept.root"), value: 0, key: 0 },
@@ -45,7 +45,7 @@ export function UserModal({
 
   return (
     <DataModal
-      open={Boolean(open)}
+      open={open === true}
       title={isEdit ? t("user.edit") : t("user.create")}
       onCancel={onCancel}
       onOk={onOk}
@@ -56,7 +56,7 @@ export function UserModal({
           <Input disabled={isEdit} />
         </Form.Item>
         <Form.Item {...userForm.formItemProps.password}>
-          <Input.Password placeholder={isEdit ? "保留空白則不修改密碼" : undefined} />
+          <Input.Password placeholder={isEdit ? t("user.passwordPlaceholder") : undefined} />
         </Form.Item>
         <Form.Item {...userForm.formItemProps.name}>
           <Input />

@@ -10,19 +10,19 @@ export const useUserInfo = () => {
   const { hasPermission } = useAccess();
 
   const menuItems = MENU_ITEMS.filter((item) => {
-    if (!item.icon) return false;
-    if (item.permission && !hasPermission(item.permission)) {
+    if (item.icon === undefined) return false;
+    if (item.permission !== undefined && !hasPermission(item.permission)) {
       return false;
     }
     return true;
   }).map((item) => ({
     key: item.key,
     icon: item.icon,
-    label: t(`routes.${item.key}` as const),
+    label: t(`routes.${item.key}`),
   }));
 
   return {
-    isLogin: Boolean(userInfo.data?.success),
+    isLogin: userInfo.data?.success === true,
     account: userInfo.data?.account ?? undefined,
     menuItems,
   };

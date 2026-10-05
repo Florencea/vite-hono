@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import "dayjs/locale/zh-tw";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { getTranslation } from "../../locales/core.ts";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "../../locales/registry.ts";
 import type { TranslationKey, TranslationParams } from "../../locales/schema.ts";
@@ -16,12 +16,12 @@ export const I18nProvider = ({ children, initialLocale }: I18nProviderProps) => 
     () => initialLocale ?? detectInitialLocale(),
   );
 
-  const setLocale = useCallback((newLocale: SupportedLocale) => {
+  const setLocale = (newLocale: SupportedLocale) => {
     setLocaleState(newLocale);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, newLocale);
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -30,23 +30,17 @@ export const I18nProvider = ({ children, initialLocale }: I18nProviderProps) => 
     }
   }, [locale]);
 
-  const t = useCallback(
-    (key: TranslationKey | (string & {}), params?: TranslationParams) => {
-      const dict = SUPPORTED_LOCALES[locale].dict;
-      return getTranslation(dict, key, params);
-    },
-    [locale],
-  );
+  const t = (key: TranslationKey | (string & {}), params?: TranslationParams) => {
+    const dict = SUPPORTED_LOCALES[locale].dict;
+    return getTranslation(dict, key, params);
+  };
 
-  const value = useMemo(
-    () => ({
-      locale,
-      setLocale,
-      t,
-      supportedLocales: SUPPORTED_LOCALES,
-    }),
-    [locale, setLocale, t],
-  );
+  const value = {
+    locale,
+    setLocale,
+    t,
+    supportedLocales: SUPPORTED_LOCALES,
+  };
 
   return <I18nContext value={value}>{children}</I18nContext>;
 };

@@ -17,7 +17,7 @@ export async function authenticateUser(
     where: { account },
   });
 
-  if (!user) {
+  if (user === undefined) {
     return { success: false, reason: "user_not_found" };
   }
 
@@ -42,7 +42,7 @@ export async function getAuthUserDetail(
   const user = await db.query.users.findFirst({
     where: { id: userId },
   });
-  if (!user) return null;
+  if (user === undefined) return null;
 
   // Query user's roles
   const uRoleRows = await db

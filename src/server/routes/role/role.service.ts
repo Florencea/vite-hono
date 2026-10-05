@@ -35,7 +35,7 @@ export async function createRole(db: Database, input: CreateInput) {
   const existing = await db.query.roles.findFirst({
     where: { code: input.code },
   });
-  if (existing) {
+  if (existing !== undefined) {
     return { success: false as const, reason: "code_exists" as const };
   }
 
@@ -52,7 +52,7 @@ export async function createRole(db: Database, input: CreateInput) {
     .returning();
 
   const role = inserted[0];
-  if (!role) {
+  if (role === undefined) {
     throw new Error("Failed to insert role");
   }
 
@@ -90,7 +90,7 @@ export async function updateRole(db: Database, id: number, input: UpdateInput) {
   const existing = await db.query.roles.findFirst({
     where: { id },
   });
-  if (!existing) {
+  if (existing === undefined) {
     return { success: false as const, reason: "not_found" as const };
   }
 
@@ -135,7 +135,7 @@ export async function updateRole(db: Database, id: number, input: UpdateInput) {
     where: { id },
   });
 
-  if (!updatedRole) {
+  if (updatedRole === undefined) {
     throw new Error("Failed to load updated role");
   }
 
@@ -163,7 +163,7 @@ export async function deleteRole(db: Database, id: number) {
   const existing = await db.query.roles.findFirst({
     where: { id },
   });
-  if (!existing) {
+  if (existing === undefined) {
     return { success: false as const, reason: "not_found" as const };
   }
 

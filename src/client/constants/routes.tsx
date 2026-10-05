@@ -69,11 +69,11 @@ export const useSiteTitle = () => {
 
   const currentItem = MENU_ITEMS.find((item) => item.key === pathname);
 
-  if (!currentItem) {
+  if (currentItem === undefined) {
     return APP_TITLE;
   }
 
-  const translated = t(`routes.${currentItem.key}` as const);
+  const translated = t(`routes.${currentItem.key}`);
   const label = translated !== `routes.${currentItem.key}` ? translated : currentItem.label;
 
   return `${label} - ${APP_TITLE}`;

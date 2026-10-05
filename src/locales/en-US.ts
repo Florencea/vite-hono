@@ -62,6 +62,7 @@ export default {
     employeeNo: "Employee No.",
     title: "Title",
     password: "Password",
+    passwordPlaceholder: "Leave blank to keep password",
     department: "Department",
     roles: "Roles",
     create: "Create User",

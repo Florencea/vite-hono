@@ -4,7 +4,7 @@ import { userInfoQueryOptions } from "../routes/__root.tsx";
 export function useAccess() {
   const { data } = useQuery(userInfoQueryOptions());
 
-  const isLogin = Boolean(data?.success);
+  const isLogin = data?.success === true;
   const roles = data?.roles ?? [];
   const permissions = data?.permissions ?? [];
   const dataScopes = data?.dataScopes ?? [];

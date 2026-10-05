@@ -21,16 +21,16 @@ function buildTree(items: DepartmentItem[]): DepartmentNode[] {
 
   for (const item of items) {
     const node = map.get(item.id);
-    if (!node) continue;
-    if (item.parentId && map.has(item.parentId)) {
+    if (node === undefined) continue;
+    if (item.parentId !== null) {
       const parent = map.get(item.parentId);
-      if (parent) {
+      if (parent !== undefined) {
         parent.children ??= [];
         parent.children.push(node);
+        continue;
       }
-    } else {
-      roots.push(node);
     }
+    roots.push(node);
   }
 
   return roots;
@@ -86,7 +86,7 @@ export function useDepartments() {
     mutationFn: async (values: DepartmentFormValues) => {
       const targetParentId = values.parentId === 0 ? null : values.parentId;
 
-      if (selectedDept) {
+      if (selectedDept !== null) {
         const res = await api.departments[":id"].$put({
           param: { id: selectedDept.id.toString() },
           json: {
@@ -129,11 +129,11 @@ export function useDepartments() {
 
   const initialValues: DepartmentFormValues = {
     name: selectedDept?.name ?? "",
-    parentId: selectedDept ? (selectedDept.parentId ?? 0) : (parentPresetId ?? 0),
+    parentId: selectedDept !== null ? (selectedDept.parentId ?? 0) : (parentPresetId ?? 0),
     sort: selectedDept?.sort ?? 1,
   };
 
-  const formKey = `${selectedDept ? selectedDept.id.toString() : `new-${(parentPresetId ?? 0).toString()}`}-${formRevision.toString()}`;
+  const formKey = `${selectedDept !== null ? selectedDept.id.toString() : `new-${(parentPresetId ?? 0).toString()}`}-${formRevision.toString()}`;
 
   const deptForm = useAntdForm<DepartmentFormValues>({
     formProps: {

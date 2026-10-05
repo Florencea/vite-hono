@@ -15,9 +15,10 @@ export async function getUserList(db: Database, currentUser: ScopeUser) {
     deptCol: users.departmentId,
   });
 
-  const allUsers = scopeCondition
-    ? await db.select().from(users).where(scopeCondition).orderBy(asc(users.id))
-    : await db.select().from(users).orderBy(asc(users.id));
+  const allUsers =
+    scopeCondition !== undefined
+      ? await db.select().from(users).where(scopeCondition).orderBy(asc(users.id))
+      : await db.select().from(users).orderBy(asc(users.id));
 
   return await Promise.all(
     allUsers.map(async (u) => {
@@ -37,7 +38,7 @@ export async function createUser(db: Database, input: CreateInput) {
   const existing = await db.query.users.findFirst({
     where: { account: input.account },
   });
-  if (existing) {
+  if (existing !== undefined) {
     return { success: false as const, reason: "account_exists" as const };
   }
 
@@ -57,7 +58,7 @@ export async function createUser(db: Database, input: CreateInput) {
     .returning();
 
   const user = inserted[0];
-  if (!user) {
+  if (user === undefined) {
     throw new Error("Failed to insert user");
   }
 
@@ -83,7 +84,7 @@ export async function updateUser(db: Database, id: number, input: UpdateInput) {
   const existing = await db.query.users.findFirst({
     where: { id },
   });
-  if (!existing) {
+  if (existing === undefined) {
     return { success: false as const, reason: "not_found" as const };
   }
 
@@ -122,7 +123,7 @@ export async function updateUser(db: Database, id: number, input: UpdateInput) {
     where: { id },
   });
 
-  if (!updatedUser) {
+  if (updatedUser === undefined) {
     throw new Error("Failed to load updated user");
   }
 
@@ -144,7 +145,7 @@ export async function deleteUser(db: Database, id: number) {
   const existing = await db.query.users.findFirst({
     where: { id },
   });
-  if (!existing) {
+  if (existing === undefined) {
     return { success: false as const, reason: "not_found" as const };
   }
   if (existing.account === "admin" || existing.isSystem) {

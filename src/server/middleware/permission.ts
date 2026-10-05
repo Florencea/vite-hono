@@ -12,15 +12,15 @@ import { getAuthUserDetail } from "../routes/auth/auth.service.ts";
 export function requirePermission(...permissionCodes: string[]) {
   const middleware = createMiddleware<AppEnv>(async (c, next) => {
     const session = await getSession(c);
-    if (!session?.id) {
+    if (session?.id === undefined) {
       return c.json({ error: t(c, "errors.auth.unauthorized") }, 401);
     }
 
     let user = c.get("user");
-    if (!user) {
+    if (user === null || user === undefined) {
       const db = getDb(c);
       const detail = await getAuthUserDetail(db, session.id);
-      if (!detail) {
+      if (detail === null) {
         return c.json({ error: t(c, "errors.auth.unauthorized") }, 401);
       }
       c.set("user", detail);
@@ -62,7 +62,7 @@ export function publicRoute() {
 export function authenticatedRoute() {
   const middleware = createMiddleware<AppEnv>(async (c, next) => {
     const session = await getSession(c);
-    if (!session?.id) {
+    if (session?.id === undefined) {
       return c.json({ error: t(c, "errors.auth.unauthorized") }, 401);
     }
     return await next();

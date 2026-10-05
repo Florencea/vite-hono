@@ -68,10 +68,10 @@ export function RoleDrawer({
   onSave,
 }: RoleDrawerProps) {
   const { t } = useI18n();
-  const isEdit = Boolean(role);
+  const isEdit = role !== null;
 
   const selectedScope =
-    (Form.useWatch("dataScope", roleForm.formInstance) as RoleItem["dataScope"] | undefined) ??
+    Form.useWatch<RoleItem["dataScope"]>("dataScope", roleForm.formInstance) ??
     role?.dataScope ??
     "SELF";
 
@@ -88,7 +88,7 @@ export function RoleDrawer({
 
   return (
     <DataDrawer
-      open={Boolean(open)}
+      open={open === true}
       title={isEdit ? t("role.edit") : t("role.create")}
       onClose={onClose}
       size="large"

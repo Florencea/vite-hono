@@ -64,6 +64,7 @@ export interface LocaleSchema {
     employeeNo: string;
     title: string;
     password: string;
+    passwordPlaceholder: string;
     department: string;
     roles: string;
     create: string;
