@@ -17,4 +17,30 @@ allowBuilds:
   esbuild: false
   workerd: false
 minimumReleaseAgeExclude:
-    - hono@4.13.13
+  - hono@4.13.13
+  - "@oxc-transform-react/binding-android-arm-eabi@0.153.0"
+  - "@oxc-transform-react/binding-android-arm64@0.153.0"
+  - "@oxc-transform-react/binding-darwin-arm64@0.153.0"
+  - "@oxc-transform-react/binding-darwin-x64@0.153.0"
+  - "@oxc-transform-react/binding-freebsd-x64@0.153.0"
+  - "@oxc-transform-react/binding-linux-arm-gnueabihf@0.153.0"
+  - "@oxc-transform-react/binding-linux-arm-musleabihf@0.153.0"
+  - "@oxc-transform-react/binding-linux-arm64-gnu@0.153.0"
+  - "@oxc-transform-react/binding-linux-arm64-musl@0.153.0"
+  - "@oxc-transform-react/binding-linux-ppc64-gnu@0.153.0"
+  - "@oxc-transform-react/binding-linux-riscv64-gnu@0.153.0"
+  - "@oxc-transform-react/binding-linux-riscv64-musl@0.153.0"
+  - "@oxc-transform-react/binding-linux-s390x-gnu@0.153.0"
+  - "@oxc-transform-react/binding-linux-x64-gnu@0.153.0"
+  - "@oxc-transform-react/binding-linux-x64-musl@0.153.0"
+  - "@oxc-transform-react/binding-openharmony-arm64@0.153.0"
+  - "@oxc-transform-react/binding-win32-arm64-msvc@0.153.0"
+  - "@oxc-transform-react/binding-win32-ia32-msvc@0.153.0"
+  - "@oxc-transform-react/binding-win32-x64-msvc@0.153.0"
+  - "@scalar/client-side-rendering@0.4.9"
+  - "@scalar/helpers@0.16.1"
+  - "@scalar/hono-api-reference@0.12.10"
+  - "@scalar/schemas@0.13.0"
+  - "@scalar/types@0.23.0"
+  - "@vitejs/plugin-react@6.1.2"
+  - oxc-transform-react@0.153.0
