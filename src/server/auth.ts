@@ -10,7 +10,7 @@ import { SessionDataSchema, type SessionData } from "./routes/auth/auth.schema.t
 
 export type { SessionData };
 
-export const COOKIE_NAME = "vite_hono_session";
+export const COOKIE_NAME = "vp_hono_session";
 const SESSION_TTL = 604800;
 const BCRYPT_SALT_ROUNDS = 10;
 

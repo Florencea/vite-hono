@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "vite-hono",
+  "name": "vp-hono",
   "main": "src/server/worker.ts",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -11,7 +11,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "vite-hono-db",
+      "database_name": "vp-hono-db",
       "database_id": "<YOUR_D1_DATABASE_ID>",
     },
   ],

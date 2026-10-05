@@ -12,9 +12,9 @@ async function loginAs(account: string, password = "password123"): Promise<strin
     body: JSON.stringify({ account, password }),
   });
   const cookieHeader = res.headers.get("set-cookie");
-  const tokenMatch = /vite_hono_session=([^;]+)/.exec(cookieHeader ?? "");
+  const tokenMatch = /vp_hono_session=([^;]+)/.exec(cookieHeader ?? "");
   const token = tokenMatch?.[1];
-  return token ? `vite_hono_session=${token}` : "";
+  return token ? `vp_hono_session=${token}` : "";
 }
 
 test("Permission Guard: Unauthenticated requests to protected endpoints return 401 Unauthorized", async () => {

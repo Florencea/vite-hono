@@ -5,7 +5,7 @@
  * Eliminates implicit build-time environment variable replacements.
  */
 const APP_CONFIG = {
-  title: "Test Vite Hono",
+  title: "VP Hono",
 } as const;
 
 export const APP_TITLE = APP_CONFIG.title;

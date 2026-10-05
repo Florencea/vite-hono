@@ -68,12 +68,12 @@ test("Server Integration Contract: Full login, authenticated session, and logout
   });
   expect(loginRes.status).toBe(200);
   const cookieHeader = loginRes.headers.get("set-cookie");
-  expect(cookieHeader).toContain("vite_hono_session=");
+  expect(cookieHeader).toContain("vp_hono_session=");
 
   // Extract session token
-  const tokenMatch = /vite_hono_session=([^;]+)/.exec(cookieHeader ?? "");
+  const tokenMatch = /vp_hono_session=([^;]+)/.exec(cookieHeader ?? "");
   const tokenValue = tokenMatch?.[1] ?? "";
-  const sessionCookie = `vite_hono_session=${tokenValue}`;
+  const sessionCookie = `vp_hono_session=${tokenValue}`;
 
   // 4. Authenticated getUserInfo returns success and account
   const authUserRes = await app.request("/api/auth/getUserInfo", {

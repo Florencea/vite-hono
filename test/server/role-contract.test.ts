@@ -10,9 +10,9 @@ async function getAdminCookie(): Promise<string> {
     body: JSON.stringify({ account: "admin", password: "string" }),
   });
   const cookieHeader = res.headers.get("set-cookie");
-  const tokenMatch = /vite_hono_session=([^;]+)/.exec(cookieHeader ?? "");
+  const tokenMatch = /vp_hono_session=([^;]+)/.exec(cookieHeader ?? "");
   const token = tokenMatch?.[1];
-  return token ? `vite_hono_session=${token}` : "";
+  return token ? `vp_hono_session=${token}` : "";
 }
 
 test("Role Contract: CRUD lifecycle, custom dataScope, and system role protection", async () => {

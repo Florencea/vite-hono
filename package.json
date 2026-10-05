@@ -1,5 +1,5 @@
 {
-  "name": "vite-hono",
+  "name": "vp-hono",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "db:seed": "node src/server/database/seed.ts",
     "db:studio": "drizzle-kit studio",
     "deploy:cf": "wrangler deploy",
-    "docker:build": "docker build -t vite-hono:latest .",
+    "docker:build": "docker build -t vp-hono:latest .",
     "lint:ci": "actionlint",
     "lint:tailwind": "node scripts/lint-tailwind.ts",
     "lint:tailwind:fix": "node scripts/lint-tailwind.ts --fix",
