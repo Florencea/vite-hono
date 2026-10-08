@@ -1,8 +1,8 @@
-import "vitest-browser-react";
-import { configure } from "vitest-browser-react/pure";
+import { afterEach } from "vite-plus/test";
+import { cleanupApp } from "./test-utils";
 
-configure({
-  reactStrictMode: true,
+afterEach(async () => {
+  await cleanupApp();
 });
 
 const originalFetch = window.fetch.bind(window);

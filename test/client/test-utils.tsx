@@ -1,13 +1,30 @@
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import type { AnyRouter } from "@tanstack/react-router";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
-import { render as browserRender } from "vitest-browser-react";
+import { act, StrictMode } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { page } from "vite-plus/test/browser";
 import { Providers } from "../../src/client/providers";
 import { routeTree } from "../../src/client/routeTree.gen";
 
+let currentRoot: Root | null = null;
+
+export async function cleanupApp(): Promise<void> {
+  if (currentRoot !== null) {
+    await act(async () => {
+      currentRoot?.unmount();
+    });
+    currentRoot = null;
+  }
+  const rootElement = document.getElementById("root");
+  if (rootElement !== null) {
+    rootElement.innerHTML = "";
+  }
+}
+
 function getOrCreateRootContainer(): HTMLElement {
   let container = document.getElementById("root");
-  if (!container) {
+  if (container === null) {
     container = document.createElement("div");
     container.id = "root";
     document.body.appendChild(container);
@@ -21,6 +38,7 @@ const TestRouterProvider = ({ router }: { router: AnyRouter }) => {
 };
 
 export async function renderAppAt(initialUrl = "/") {
+  await cleanupApp();
   const container = getOrCreateRootContainer();
 
   const history = createMemoryHistory({
@@ -42,12 +60,16 @@ export async function renderAppAt(initialUrl = "/") {
     },
   });
 
-  const screen = await browserRender(
-    <Providers container={container} queryClient={queryClient}>
-      <TestRouterProvider router={router} />
-    </Providers>,
-    { container },
-  );
+  currentRoot = createRoot(container);
+  await act(async () => {
+    currentRoot?.render(
+      <StrictMode>
+        <Providers container={container} queryClient={queryClient}>
+          <TestRouterProvider router={router} />
+        </Providers>
+      </StrictMode>,
+    );
+  });
 
-  return Object.assign(screen, { router, container });
+  return Object.assign(page, { router, container });
 }

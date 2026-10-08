@@ -65,7 +65,6 @@
     "vite": "catalog:",
     "vite-plus": "catalog:",
     "vitest": "catalog:",
-    "vitest-browser-react": "2.3.0",
     "vscode-languageserver-protocol": "3.18.4",
     "wrangler": "4.148.0"
   },
