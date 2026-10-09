@@ -70,7 +70,7 @@ importers:
         specifier: 19.3.0
         version: 19.3.0(react@19.3.0)
       tailwind-merge:
-        specifier: ^3.7.0
+        specifier: 3.7.0
         version: 3.7.0
       zod:
         specifier: 4.6.5
