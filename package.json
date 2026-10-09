@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@ant-design/icons": "6.3.4",
-    "@cloudflare/vite-plugin": "1.63.0",
+    "@cloudflare/vite-plugin": "1.63.1",
     "@tailwindcss/language-server": "0.16.0",
     "@tailwindcss/vite": "4.3.3",
     "@tanstack/router-generator": "1.167.40",
@@ -66,7 +66,7 @@
     "vite-plus": "catalog:",
     "vitest": "catalog:",
     "vscode-languageserver-protocol": "3.18.4",
-    "wrangler": "4.148.0"
+    "wrangler": "4.149.0"
   },
   "engines": {
     "node": "24.21.0"
